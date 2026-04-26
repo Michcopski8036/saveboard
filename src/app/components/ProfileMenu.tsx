@@ -1,36 +1,28 @@
 import { useState, useRef } from 'react';
-import { ChevronDown, User, Settings, LogOut, Download, Upload } from 'lucide-react';
+import { ChevronDown, LogOut, Download, Upload } from 'lucide-react';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface ProfileMenuProps {
   onExport?: () => void;
   onImport?: (data: any) => void;
+  onSignOut?: () => void;
+  user?: SupabaseUser | null;
 }
 
-export function ProfileMenu({ onExport, onImport }: ProfileMenuProps) {
+export function ProfileMenu({ onExport, onImport, onSignOut, user }: ProfileMenuProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleProfileClick = (e: React.MouseEvent) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    setMenuPosition({
-      x: rect.right - 200,
-      y: rect.bottom + 8,
-    });
+    setMenuPosition({ x: rect.right - 220, y: rect.bottom + 8 });
     setShowMenu(!showMenu);
   };
 
-  const handleExport = () => {
-    if (onExport) {
-      onExport();
-    }
-    setShowMenu(false);
-  };
-
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-    setShowMenu(false);
-  };
+  const handleExport = () => { if (onExport) onExport(); setShowMenu(false); };
+  const handleImportClick = () => { fileInputRef.current?.click(); setShowMenu(false); };
+  const handleSignOut = () => { if (onSignOut) onSignOut(); setShowMenu(false); };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,85 +32,59 @@ export function ProfileMenu({ onExport, onImport }: ProfileMenuProps) {
         try {
           const data = JSON.parse(event.target?.result as string);
           onImport(data);
-        } catch (error) {
-          alert('Invalid JSON file');
-        }
+        } catch { alert('Invalid JSON file'); }
       };
       reader.readAsText(file);
     }
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
+
+  const avatarUrl = user?.user_metadata?.avatar_url;
+  const email = user?.email || '';
+  const initials = email.charAt(0).toUpperCase();
 
   return (
     <>
-      <button
-        onClick={handleProfileClick}
-        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-      >
-        <img
-          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
-          alt="Profile"
-          className="w-8 h-8 rounded-full object-cover"
-        />
+      <button onClick={handleProfileClick} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#A259FF] to-[#FF7262] flex items-center justify-center text-white text-sm font-medium">
+            {initials}
+          </div>
+        )}
         <ChevronDown className="w-4 h-4 text-gray-700" />
       </button>
 
       {showMenu && (
         <>
-          {/* Backdrop */}
+          <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
           <div
-            className="fixed inset-0 z-40"
-            onClick={() => setShowMenu(false)}
-          />
-
-          {/* Popup Menu */}
-          <div
-            className="fixed z-50 bg-white rounded-[10px] shadow-2xl w-[200px] overflow-hidden"
-            style={{
-              top: `${menuPosition.y}px`,
-              left: `${menuPosition.x}px`,
-            }}
+            className="fixed z-50 bg-white rounded-[10px] shadow-2xl w-[220px] overflow-hidden"
+            style={{ top: `${menuPosition.y}px`, left: `${menuPosition.x}px` }}
           >
             <div className="p-2">
-              <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
-                <User className="w-4 h-4 text-gray-700" />
-                <span className="text-sm">Profile</span>
-              </button>
-              <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
-                <Settings className="w-4 h-4 text-gray-700" />
-                <span className="text-sm">Settings</span>
-              </button>
-              <div className="border-t border-gray-200 my-2" />
-              <button
-                onClick={handleExport}
-                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors"
-              >
+              {email && (
+                <div className="px-3 py-2">
+                  <p className="text-xs text-gray-400 truncate">{email}</p>
+                </div>
+              )}
+              <div className="border-t border-gray-200 my-1" />
+              <button onClick={handleExport} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
                 <Download className="w-4 h-4 text-gray-700" />
                 <span className="text-sm">Export links</span>
               </button>
-              <button
-                onClick={handleImportClick}
-                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors"
-              >
+              <button onClick={handleImportClick} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
                 <Upload className="w-4 h-4 text-gray-700" />
                 <span className="text-sm">Import links</span>
               </button>
-              <div className="border-t border-gray-200 my-2" />
-              <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
-                <LogOut className="w-4 h-4 text-gray-700" />
+              <div className="border-t border-gray-200 my-1" />
+              <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors text-red-500">
+                <LogOut className="w-4 h-4" />
                 <span className="text-sm">Log out</span>
               </button>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleFileChange}
-              className="hidden"
-            />
+            <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileChange} className="hidden" />
           </div>
         </>
       )}
