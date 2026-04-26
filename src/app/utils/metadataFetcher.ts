@@ -13,6 +13,29 @@ function extractYouTubeVideoId(url: string): string | null {
   return null;
 }
 
+// Extract Vimeo video ID from URL
+function extractVimeoVideoId(url: string): string | null {
+  const match = url.match(/vimeo\.com\/(?:.*\/)?(\d+)/);
+  return match ? match[1] : null;
+}
+
+// Fetch Vimeo thumbnail and metadata via oEmbed
+async function fetchVimeoMetadata(url: string): Promise<{ title: string; description: string; image: string } | null> {
+  try {
+    const oembedUrl = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`;
+    const res = await fetch(oembedUrl, { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return {
+      title: data.title || 'Vimeo Video',
+      description: data.description || `Video by ${data.author_name || 'Vimeo user'}`,
+      image: data.thumbnail_url || 'placeholder:default',
+    };
+  } catch {
+    return null;
+  }
+}
+
 // Retry helper with exponential backoff
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -48,6 +71,7 @@ export async function fetchMetadata(url: string): Promise<{
   const hostname = urlObj.hostname.replace('www.', '');
   const isInstagram = hostname.includes('instagram.com');
   const isYouTube = hostname.includes('youtube.com') || hostname.includes('youtu.be');
+  const isVimeo = hostname.includes('vimeo.com');
 
   // Default fallback metadata
   const fallbackMetadata = {
@@ -57,6 +81,38 @@ export async function fetchMetadata(url: string): Promise<{
   };
 
   try {
+
+    // YouTube: guarantee thumbnail from video ID, try Microlink only for title
+    if (isYouTube) {
+      const videoId = extractYouTubeVideoId(url);
+      const thumbnail = videoId
+        ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+        : 'placeholder:youtube';
+      try {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`, { signal: controller.signal });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'success' && data.data?.title) {
+            return { title: data.data.title, description: data.data.description || '', image: thumbnail };
+          }
+        }
+      } catch { /* use fallback below */ }
+      return { title: 'YouTube Video', description: 'View this video on YouTube', image: thumbnail };
+    }
+
+    // Vimeo: use oEmbed API for thumbnail + metadata
+    if (isVimeo) {
+      const vimeoMeta = await fetchVimeoMetadata(url);
+      if (vimeoMeta) return vimeoMeta;
+      const videoId = extractVimeoVideoId(url);
+      return {
+        title: 'Vimeo Video',
+        description: 'View this video on Vimeo',
+        image: videoId ? `https://vumbnail.com/${videoId}.jpg` : 'placeholder:default',
+      };
+    }
 
     // For Instagram, try to use their oEmbed API first
     if (isInstagram) {
@@ -317,7 +373,26 @@ function getDefaultImageForDomain(hostname: string, url?: string): string {
     return 'placeholder:instagram';
   }
 
-  // All other sites use default placeholder with site logo
+  if (hostname.includes('facebook.com') || hostname.includes('fb.com')) {
+    return 'placeholder:facebook';
+  }
+
+  if (hostname.includes('tiktok.com')) {
+    return 'placeholder:tiktok';
+  }
+
+  if (hostname.includes('linkedin.com')) {
+    return 'placeholder:linkedin';
+  }
+
+  if (hostname.includes('vimeo.com')) {
+    if (url) {
+      const videoId = extractVimeoVideoId(url);
+      if (videoId) return `https://vumbnail.com/${videoId}.jpg`;
+    }
+    return 'placeholder:default';
+  }
+
   return 'placeholder:default';
 }
 

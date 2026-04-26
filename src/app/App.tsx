@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { LinkCard, LinkData } from './components/LinkCard';
 import { CategoryFilter } from './components/CategoryFilter';
 import { ProfileMenu } from './components/ProfileMenu';
 import { SortDropdown, SortOption } from './components/SortDropdown';
 import { Auth } from './components/Auth';
-import { Bookmark, Trash2 } from 'lucide-react';
+import { Bookmark, Trash2, Paperclip } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
@@ -26,6 +26,7 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -91,24 +92,63 @@ export default function App() {
     try {
       const { fetchMetadata, generateId } = await import('./utils/metadataFetcher');
       const { parseEmbedCode } = await import('./utils/embedParser');
-      let url = input;
-      let metadata;
+
+      // Embed code
       const embedData = parseEmbedCode(input);
       if (embedData) {
-        url = embedData.url;
-        metadata = { title: embedData.title || 'Embedded Content', description: embedData.description || 'Content from embed code', image: embedData.image || '' };
-      } else {
-        try { new URL(url); } catch { setErrorMessage('Please enter a valid URL'); setIsAdding(false); return; }
-        if (links.some(l => l.url === url)) { setErrorMessage('This URL has already been saved'); setIsAdding(false); return; }
-        metadata = await fetchMetadata(url);
+        const url = embedData.url;
+        const newLink = {
+          id: generateId(), user_id: user.id, url,
+          title: embedData.title || 'Embedded Content',
+          description: embedData.description || 'Content from embed code',
+          image: embedData.image || 'placeholder:default',
+          category: 'None', created_at: Date.now(),
+        };
+        const { error } = await supabase.from('links').insert(newLink);
+        if (error) throw error;
+        setLinks(prev => [{ ...newLink, savedAt: new Date(newLink.created_at) }, ...prev]);
+        setUrlInput('');
+        setSuccessMessage('Link added successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+        return;
       }
+
+      // Memo: not a URL
+      const looksLikeUrl = /^https?:\/\//i.test(input) || /^www\./i.test(input);
+      let isValidUrl = false;
+      if (looksLikeUrl) {
+        try { new URL(input.startsWith('www.') ? 'https://' + input : input); isValidUrl = true; } catch { /* */ }
+      }
+
+      if (!isValidUrl) {
+        const newLink = {
+          id: generateId(), user_id: user.id,
+          url: '#',
+          title: input.slice(0, 50),
+          description: input,
+          image: 'placeholder:memo',
+          category: 'None', created_at: Date.now(),
+        };
+        const { error } = await supabase.from('links').insert(newLink);
+        if (error) throw error;
+        setLinks(prev => [{ ...newLink, savedAt: new Date(newLink.created_at) }, ...prev]);
+        setUrlInput('');
+        setSuccessMessage('Memo saved!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+        return;
+      }
+
+      // Regular URL
+      const url = input.startsWith('www.') ? 'https://' + input : input;
+      if (links.some(l => l.url === url)) { setErrorMessage('This URL has already been saved'); return; }
+      const metadata = await fetchMetadata(url);
       const urlObj = new URL(url);
       const newLink = {
         id: generateId(), user_id: user.id, url,
         title: metadata.title || 'Web Page',
         description: metadata.description || urlObj.hostname.replace('www.', ''),
         image: metadata.image || 'placeholder:default',
-        category: 'Articles', created_at: Date.now(),
+        category: 'None', created_at: Date.now(),
       };
       const { error } = await supabase.from('links').insert(newLink);
       if (error) throw error;
@@ -118,6 +158,44 @@ export default function App() {
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch { setErrorMessage('Failed to add link. Please try again.'); }
     finally { setIsAdding(false); }
+  };
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.type !== 'application/pdf') { setErrorMessage('Only PDF files are supported'); return; }
+    setErrorMessage(''); setSuccessMessage(''); setIsAdding(true);
+    try {
+      const { generateId } = await import('./utils/metadataFetcher');
+      const fileId = generateId();
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `${user.id}/${fileId}-${safeName}`;
+      const { error: uploadError } = await supabase.storage.from('pdfs').upload(path, file, { contentType: 'application/pdf' });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('pdfs').getPublicUrl(path);
+      const newLink = {
+        id: fileId, user_id: user.id,
+        url: publicUrl,
+        title: file.name.replace(/\.pdf$/i, ''),
+        description: `PDF • ${(file.size / 1024).toFixed(0)} KB`,
+        image: 'placeholder:pdf',
+        category: 'None', created_at: Date.now(),
+      };
+      const { error } = await supabase.from('links').insert(newLink);
+      if (error) throw error;
+      setLinks(prev => [{ ...newLink, savedAt: new Date(newLink.created_at) }, ...prev]);
+      setSuccessMessage('PDF uploaded!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err: any) {
+      setErrorMessage(
+        err?.message?.toLowerCase().includes('bucket')
+          ? 'Create a "pdfs" bucket in Supabase Storage first'
+          : 'Failed to upload PDF'
+      );
+    } finally {
+      setIsAdding(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleUpdateCategory = async (linkId: string, newCategory: string) => {
@@ -226,12 +304,18 @@ export default function App() {
           <div className="mb-4">
             <div className="flex gap-2">
               <input
-                type="url" value={urlInput}
+                type="text" value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !isAdding && handleAddUrl()}
-                placeholder="Paste URL or embed code (Instagram, YouTube, etc.)..."
+                placeholder="Paste a URL, or type a note..."
                 className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF] focus:border-transparent"
               />
+              <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" className="hidden" onChange={handlePdfUpload} />
+              <button onClick={() => fileInputRef.current?.click()} disabled={isAdding}
+                className="px-3 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-[10px] transition-colors disabled:opacity-50"
+                title="Upload PDF">
+                <Paperclip className="w-5 h-5" />
+              </button>
               <button onClick={handleAddUrl} disabled={isAdding || !urlInput.trim()}
                 className="px-6 py-3 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-[10px] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
                 {isAdding ? 'Adding...' : 'Add'}
@@ -247,6 +331,7 @@ export default function App() {
             onRenameCategory={handleRenameCategory}
             onReorderCategories={handleReorderCategories}
             onDeleteCategory={handleDeleteCategory}
+            onAddCategory={handleAddCategory}
           />
         </div>
       </header>

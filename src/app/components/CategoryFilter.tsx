@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight, X, Plus } from 'lucide-react';
 import { useDrag, useDrop, DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
@@ -10,6 +10,7 @@ interface CategoryFilterProps {
   onRenameCategory?: (oldName: string, newName: string) => void;
   onReorderCategories?: (categories: string[]) => void;
   onDeleteCategory?: (category: string) => void;
+  onAddCategory?: (category: string) => void;
 }
 
 interface DraggableCategoryProps {
@@ -152,15 +153,29 @@ export function CategoryFilter({
   onRenameCategory,
   onReorderCategories,
   onDeleteCategory,
+  onAddCategory,
 }: CategoryFilterProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryValue, setNewCategoryValue] = useState('');
   const [localCategories, setLocalCategories] = useState(categories);
+  const [isOverflowing, setIsOverflowing] = useState(false);
 
   useEffect(() => {
     setLocalCategories(categories);
   }, [categories]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const check = () => setIsOverflowing(el.scrollWidth > el.clientWidth);
+    check();
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [localCategories]);
 
   const scrollRight = () => {
     if (scrollRef.current) {
@@ -209,6 +224,23 @@ export function CategoryFilter({
     }
   };
 
+  const handleAddConfirm = () => {
+    const trimmed = newCategoryValue.trim();
+    if (trimmed && onAddCategory) {
+      onAddCategory(trimmed);
+    }
+    setNewCategoryValue('');
+    setIsAddingCategory(false);
+  };
+
+  const handleAddKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleAddConfirm();
+    else if (e.key === 'Escape') {
+      setNewCategoryValue('');
+      setIsAddingCategory(false);
+    }
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex items-center gap-2">
@@ -231,14 +263,37 @@ export function CategoryFilter({
               handleKeyDown={handleKeyDown}
             />
           ))}
+          {isAddingCategory && (
+            <input
+              type="text"
+              value={newCategoryValue}
+              onChange={(e) => setNewCategoryValue(e.target.value)}
+              onBlur={handleAddConfirm}
+              onKeyDown={handleAddKeyDown}
+              autoFocus
+              placeholder="Category name"
+              className="text-base whitespace-nowrap pb-2 border-b-2 border-[#A259FF] bg-transparent outline-none text-gray-900 min-w-[100px]"
+            />
+          )}
         </div>
-        <button
-          onClick={scrollRight}
-          className="flex-shrink-0 p-1 hover:bg-gray-100 rounded-[10px] transition-colors"
-          aria-label="Scroll categories"
-        >
-          <ChevronRight className="w-5 h-5 text-gray-700" />
-        </button>
+        {onAddCategory && (
+          <button
+            onClick={() => setIsAddingCategory(true)}
+            className="flex-shrink-0 p-1 hover:bg-gray-100 rounded-[10px] transition-colors"
+            aria-label="Add category"
+          >
+            <Plus className="w-5 h-5 text-gray-700" />
+          </button>
+        )}
+        {isOverflowing && (
+          <button
+            onClick={scrollRight}
+            className="flex-shrink-0 p-1 hover:bg-gray-100 rounded-[10px] transition-colors"
+            aria-label="Scroll categories"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-700" />
+          </button>
+        )}
       </div>
     </DndProvider>
   );

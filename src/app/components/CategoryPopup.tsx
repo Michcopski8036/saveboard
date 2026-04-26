@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Lock } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 
 interface CategoryPopupProps {
   currentCategory: string;
@@ -8,18 +8,38 @@ interface CategoryPopupProps {
   onAddCategory?: (category: string) => void;
   onRenameCategory?: (oldName: string, newName: string) => void;
   categories: string[];
-  position: { x: number; y: number };
 }
 
-const categoryImages: Record<string, string> = {
-  'Articles': 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=100',
-  'Videos': 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=100',
-  'Design': 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=100',
-  'Inspiration': 'https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=100',
-  'Tools': 'https://images.unsplash.com/photo-1484417894907-623942c8ee29?w=100',
-};
+const AVATAR_GRADIENTS = [
+  'linear-gradient(135deg, #A259FF, #FF7262)',
+  'linear-gradient(135deg, #1ABCFE, #0E8FD8)',
+  'linear-gradient(135deg, #FF7262, #FF9F4A)',
+  'linear-gradient(135deg, #0ACF83, #00A86B)',
+  'linear-gradient(135deg, #F7C948, #F5A623)',
+  'linear-gradient(135deg, #6C5CE7, #a29bfe)',
+  'linear-gradient(135deg, #fd79a8, #e84393)',
+  'linear-gradient(135deg, #00b894, #00cec9)',
+];
 
-export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAddCategory, onRenameCategory, categories, position }: CategoryPopupProps) {
+function avatarGradient(name: string): string {
+  const idx = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_GRADIENTS.length;
+  return AVATAR_GRADIENTS[idx];
+}
+
+function CategoryAvatar({ name }: { name: string }) {
+  return (
+    <div
+      className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
+      style={{ background: avatarGradient(name) }}
+    >
+      <span className="text-white font-semibold text-base select-none">
+        {name.charAt(0).toUpperCase()}
+      </span>
+    </div>
+  );
+}
+
+export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAddCategory, onRenameCategory, categories }: CategoryPopupProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -27,19 +47,12 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
 
-  const categoriesWithImages = categories.map(name => ({
-    name,
-    image: categoryImages[name] || 'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=100'
-  }));
-
-  const filteredCategories = categoriesWithImages.filter((cat) =>
-    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCategories = categories.filter((name) =>
+    name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const allCategories = filteredCategories;
-
-  const handleCategoryClick = (categoryName: string) => {
-    onSelectCategory(categoryName);
+  const handleCategoryClick = (name: string) => {
+    onSelectCategory(name);
     onClose();
   };
 
@@ -66,34 +79,21 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleRename();
-    } else if (e.key === 'Escape') {
-      setEditingCategory(null);
-      setEditValue('');
-    }
+    if (e.key === 'Enter') handleRename();
+    else if (e.key === 'Escape') { setEditingCategory(null); setEditValue(''); }
   };
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose} />
 
-      {/* Popup */}
       <div
-        className="fixed z-50 bg-white rounded-[10px] shadow-2xl w-[360px] max-h-[600px] overflow-hidden flex flex-col"
-        style={{
-          top: `${position.y}px`,
-          left: `${position.x}px`,
-        }}
+        className="fixed z-50 bg-white rounded-[10px] shadow-2xl w-[360px] max-w-[90vw] max-h-[600px] overflow-hidden flex flex-col"
+        style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4">
-          <h2 className="text-center text-lg mb-4">Save to board</h2>
-
-          {/* Search */}
+          <h2 className="text-center text-lg mb-4">Change Board</h2>
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
@@ -106,24 +106,18 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
           </div>
         </div>
 
-        {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto px-4">
-          {/* All boards */}
           <div className="mb-2">
-            <h3 className="text-xs mb-2">All boards</h3>
-            {allCategories.map((category, index) => (
+            <h3 className="text-xs text-gray-400 mb-2">All boards</h3>
+            {filteredCategories.map((name, index) => (
               <div
-                key={`all-${category.name}-${index}`}
-                onMouseEnter={() => setHoveredCategory(`all-${category.name}-${index}`)}
+                key={`${name}-${index}`}
+                onMouseEnter={() => setHoveredCategory(`${name}-${index}`)}
                 onMouseLeave={() => setHoveredCategory(null)}
                 className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-[10px] transition-colors"
               >
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-12 h-12 rounded-[10px] object-cover"
-                />
-                {editingCategory === category.name ? (
+                <CategoryAvatar name={name} />
+                {editingCategory === name ? (
                   <input
                     type="text"
                     value={editValue}
@@ -131,22 +125,22 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
                     onBlur={handleRename}
                     onKeyDown={handleKeyDown}
                     autoFocus
-                    className="text-base flex-1 text-left bg-transparent border-b-2 border-[#A259FF] outline-none px-1"
+                    className="text-base flex-1 bg-transparent border-b-2 border-[#A259FF] outline-none px-1"
                   />
                 ) : (
                   <span
                     className="text-base flex-1 text-left cursor-text"
-                    onDoubleClick={() => handleDoubleClick(category.name)}
+                    onDoubleClick={() => handleDoubleClick(name)}
                   >
-                    {category.name}
+                    {name}
                   </span>
                 )}
-                {hoveredCategory === `all-${category.name}-${index}` && !editingCategory && (
+                {hoveredCategory === `${name}-${index}` && !editingCategory && (
                   <button
-                    onClick={() => handleCategoryClick(category.name)}
-                    className="px-5 py-2 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-full hover:opacity-90 transition-opacity"
+                    onClick={() => handleCategoryClick(name)}
+                    className="px-4 py-1.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white text-sm rounded-full hover:opacity-90 transition-opacity"
                   >
-                    Save
+                    Select
                   </button>
                 )}
               </div>
@@ -154,7 +148,6 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
           </div>
         </div>
 
-        {/* Create board - Fixed at bottom */}
         <div className="shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
           {isCreating ? (
             <div className="flex items-center gap-2 px-4 py-3">
@@ -164,10 +157,7 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
                 onChange={(e) => setNewBoardName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleCreateBoard();
-                  if (e.key === 'Escape') {
-                    setIsCreating(false);
-                    setNewBoardName('');
-                  }
+                  if (e.key === 'Escape') { setIsCreating(false); setNewBoardName(''); }
                 }}
                 placeholder="Board name"
                 autoFocus
@@ -186,10 +176,10 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
               onClick={() => setIsCreating(true)}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition-colors"
             >
-              <div className="w-12 h-12 bg-gray-200 rounded-[10px] flex items-center justify-center">
-                <Plus className="w-6 h-6 text-gray-600" />
+              <div className="w-10 h-10 bg-gray-100 rounded-[10px] flex items-center justify-center">
+                <Plus className="w-5 h-5 text-gray-500" />
               </div>
-              <span className="text-base">Create board</span>
+              <span className="text-base text-gray-700">Create board</span>
             </button>
           )}
         </div>
