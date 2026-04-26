@@ -1,0 +1,329 @@
+import { useState } from 'react';
+import { Share2, ChevronDown, X, Play, Volume2, VolumeX, Upload, Send, FileText, Link2, Check } from 'lucide-react';
+import { CategoryPopup } from './CategoryPopup';
+import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder } from './PlatformPlaceholder';
+
+export interface LinkData {
+  id: string;
+  url: string;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  savedAt: Date;
+  comments?: string[];
+  notes?: string;
+}
+
+interface LinkCardProps {
+  link: LinkData;
+  onUpdateCategory?: (linkId: string, newCategory: string) => void;
+  onDelete?: (linkId: string) => void;
+  onAddCategory?: (category: string) => void;
+  onRenameCategory?: (oldName: string, newName: string) => void;
+  onUpdateNotes?: (linkId: string, notes: string) => void;
+  onToggleSelect?: (linkId: string) => void;
+  categories?: string[];
+  selectMode?: boolean;
+  isSelected?: boolean;
+}
+
+// Helper function to extract YouTube video ID
+function getYouTubeVideoId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/,
+    /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]+)/,
+    /(?:youtu\.be\/)([a-zA-Z0-9_-]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) return match[1];
+  }
+  return null;
+}
+
+export function LinkCard({ link, onUpdateCategory, onDelete, onAddCategory, onRenameCategory, onUpdateNotes, onToggleSelect, categories = [], selectMode = false, isSelected = false }: LinkCardProps) {
+  const [showCategoryPopup, setShowCategoryPopup] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [notesInput, setNotesInput] = useState(link.notes || '');
+  const [isCopied, setIsCopied] = useState(false);
+
+  const youtubeVideoId = getYouTubeVideoId(link.url);
+  const isYouTubeVideo = youtubeVideoId !== null;
+  const isYouTubeShort = link.url.includes('/shorts/');
+  const isInstagram = link.url.includes('instagram.com');
+
+  // Detect if this is any type of video link
+  const isVideo = isYouTubeVideo ||
+                  link.url.includes('vimeo.com') ||
+                  link.url.includes('dailymotion.com') ||
+                  link.url.includes('twitch.tv') ||
+                  link.category === 'Videos';
+
+  const handleCopyClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    try {
+      await navigator.clipboard.writeText(link.url);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      // If clipboard API fails, show alert
+      alert(`Copy this link: ${link.url}`);
+    }
+  };
+
+  const handleCategoryClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    setPopupPosition({
+      x: rect.left,
+      y: rect.bottom + 8,
+    });
+    setShowCategoryPopup(true);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onDelete && confirm('Are you sure you want to delete this link?')) {
+      onDelete(link.id);
+    }
+  };
+
+  const handleSelectCategory = (newCategory: string) => {
+    if (onUpdateCategory) {
+      onUpdateCategory(link.id, newCategory);
+    }
+  };
+
+  const handleNotesClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowNotesModal(true);
+  };
+
+  const handleSaveNotes = () => {
+    if (onUpdateNotes) {
+      onUpdateNotes(link.id, notesInput);
+    }
+    setShowNotesModal(false);
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (selectMode && onToggleSelect) {
+      e.preventDefault();
+      onToggleSelect(link.id);
+    }
+  };
+
+  return (
+    <div className="block group">
+      <a
+        href={selectMode ? undefined : link.url}
+        target={selectMode ? undefined : "_blank"}
+        rel={selectMode ? undefined : "noopener noreferrer"}
+        className="block"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={handleCardClick}
+        style={{ cursor: selectMode ? 'pointer' : 'default' }}
+      >
+        <div className={`relative rounded-[10px] overflow-hidden transition-opacity duration-200 ${selectMode && isSelected ? 'ring-4 ring-[#A259FF]' : ''}`}>
+          {isPlaceholder(link.image) ? (
+            <PlatformPlaceholder
+              platform={getPlatformFromPlaceholder(link.image)}
+              domain={new URL(link.url).hostname.replace('www.', '')}
+              className={`w-full ${
+                isYouTubeShort ? 'aspect-[9/16]' :
+                isVideo ? 'aspect-video' :
+                'aspect-[3/2]'
+              }`}
+            />
+          ) : (
+            <img
+              src={link.image}
+              alt={link.title}
+              crossOrigin="anonymous"
+              className={`w-full ${
+                isYouTubeShort ? 'aspect-[9/16] object-cover' :
+                isVideo ? 'aspect-video object-cover' :
+                'object-cover'
+              } ${isYouTubeVideo && isHovered ? 'invisible' : ''}`}
+              style={!isVideo && !isYouTubeShort ? { aspectRatio: 'auto' } : {}}
+            />
+          )}
+          {/* Select mode checkbox */}
+          {selectMode && (
+            <div className="absolute top-3 left-3 z-10 pointer-events-none">
+              <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center ${
+                isSelected ? 'bg-[#A259FF] border-[#A259FF]' : 'bg-white border-white'
+              }`}>
+                {isSelected && (
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+            </div>
+          )}
+          {/* Play button overlay for videos */}
+          {isVideo && !isHovered && !selectMode && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="30" stroke="white" strokeWidth="2" strokeOpacity="0.7" fill="none" />
+                <path d="M26 20v24l20-12L26 20z" fill="white" fillOpacity="0.7" />
+              </svg>
+            </div>
+          )}
+          {isYouTubeVideo && isHovered && (
+            <iframe
+              src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=${isMuted ? '1' : '0'}&controls=0&loop=1&playlist=${youtubeVideoId}`}
+              className={`absolute inset-0 w-full h-full ${isYouTubeShort ? 'aspect-[9/16]' : ''}`}
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+            />
+          )}
+          {/* Hover overlay with buttons and description */}
+          {!selectMode && (
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            <div className="absolute top-3 left-3 pointer-events-auto">
+              <button
+                onClick={handleCategoryClick}
+                className="flex items-center gap-1 px-3 py-2 rounded-[10px] text-sm hover:bg-black/30 transition-colors"
+              >
+                <span className="text-white">{link.category}</span>
+                <ChevronDown className="w-4 h-4 text-white" />
+              </button>
+            </div>
+            <div className="absolute top-3 right-3 flex gap-2 pointer-events-auto">
+              {isYouTubeVideo && isHovered && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMuted(!isMuted);
+                  }}
+                  className="p-2 bg-white/90 backdrop-blur-sm rounded-[10px] hover:bg-white transition-colors"
+                  aria-label={isMuted ? 'Unmute' : 'Mute'}
+                >
+                  {isMuted ? (
+                    <VolumeX className="w-4 h-4 text-gray-900" />
+                  ) : (
+                    <Volume2 className="w-4 h-4 text-gray-900" />
+                  )}
+                </button>
+              )}
+              <button
+                onClick={handleNotesClick}
+                className={`p-2 rounded-[10px] transition-colors ${
+                  link.notes ? 'bg-[#1ABCFE] text-white' : 'bg-white/90 backdrop-blur-sm hover:bg-white text-gray-900'
+                }`}
+                aria-label="Notes"
+              >
+                <FileText className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                className="p-2 bg-gradient-to-r from-[#A259FF] to-[#FF7262] rounded-[10px] hover:opacity-90 transition-opacity"
+                aria-label="Delete"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            </div>
+
+            {/* Content description overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/70 to-transparent pointer-events-none max-h-[70%] overflow-y-auto">
+              <p className="text-white text-sm leading-relaxed whitespace-pre-wrap">
+                {link.description}
+              </p>
+            </div>
+          </div>
+          )}
+        </div>
+      </a>
+      <div className="mt-2 mb-0.5 flex items-start justify-between gap-2 px-1">
+        <a
+          href={link.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1"
+        >
+          <p className="text-xs font-normal text-gray-900 line-clamp-1">
+            {link.title}
+          </p>
+          <p className="text-xs font-normal text-gray-500 line-clamp-1">
+            {new URL(link.url).hostname.replace('www.', '')}
+          </p>
+        </a>
+        <button
+          onClick={handleCopyClick}
+          className="flex-shrink-0 p-1 hover:bg-gray-100 rounded-[10px] transition-colors"
+          aria-label="Copy link"
+        >
+          {isCopied ? (
+            <Check className="w-4 h-4 text-green-600" />
+          ) : (
+            <Link2 className="w-4 h-4 text-gray-700" />
+          )}
+        </button>
+      </div>
+
+      {/* Category Popup */}
+      {showCategoryPopup && (
+        <CategoryPopup
+          currentCategory={link.category}
+          onClose={() => setShowCategoryPopup(false)}
+          onSelectCategory={handleSelectCategory}
+          onAddCategory={onAddCategory}
+          onRenameCategory={onRenameCategory}
+          categories={categories}
+          position={popupPosition}
+        />
+      )}
+
+      {/* Notes Modal */}
+      {showNotesModal && (
+        <>
+          <div
+            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
+            onClick={() => setShowNotesModal(false)}
+          />
+          <div
+            className="fixed z-50 bg-white rounded-[10px] shadow-2xl w-[500px] max-w-[90vw] p-6"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg mb-4">Notes for {link.title}</h3>
+            <textarea
+              value={notesInput}
+              onChange={(e) => setNotesInput(e.target.value)}
+              placeholder="Add your notes here..."
+              className="w-full h-40 px-4 py-3 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF] resize-none"
+            />
+            <div className="flex gap-2 mt-4 justify-end">
+              <button
+                onClick={() => setShowNotesModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-[10px] hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveNotes}
+                className="px-4 py-2 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-[10px] hover:opacity-90 transition-opacity"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
