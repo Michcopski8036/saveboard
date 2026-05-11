@@ -394,7 +394,7 @@ export function LinkCard({
           <div className="flex items-center gap-1 flex-wrap min-w-0">
             {aiTags.map(tag => <AiTag key={tag} label={tag} />)}
           </div>
-          <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+          <div className="flex items-center gap-0.5 shrink-0 opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity duration-150">
             <button onClick={handleFav} className="p-1.5 rounded-lg transition-colors"
               onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
