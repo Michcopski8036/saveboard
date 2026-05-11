@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 type Platform = 'instagram' | 'youtube' | 'twitter' | 'facebook' | 'tiktok' | 'linkedin' | 'pdf' | 'memo' | 'default';
 
@@ -15,8 +16,8 @@ const PLATFORM_CONFIG: Record<Platform, { gradient: string; gloss: string }> = {
     gloss: 'rgba(255,255,255,0.14)',
   },
   memo: {
-    gradient: 'linear-gradient(160deg, #FF9A3C 0%, #FF6B00 100%)',
-    gloss: 'rgba(255,255,255,0.2)',
+    gradient: '#F5F3FF',
+    gloss: 'rgba(124,58,237,0.04)',
   },
   instagram: {
     gradient: 'linear-gradient(135deg, #833AB4 0%, #FD1D1D 50%, #F77737 100%)',
@@ -62,25 +63,7 @@ const BrandLogo = ({ platform, text }: { platform: Platform; text?: string }) =>
         </svg>
       );
     case 'memo':
-      return (
-        <div style={{ position: 'absolute', inset: 0, padding: '16px', display: 'flex', alignItems: 'flex-start' }}>
-          <p style={{
-            fontSize: '13px',
-            lineHeight: '1.6',
-            color: 'rgba(255,255,255,0.95)',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 8,
-            WebkitBoxOrient: 'vertical',
-            width: '100%',
-          }}>
-            {text || ''}
-          </p>
-        </div>
-      );
-    case 'linkedin':
+      return null;
     case 'facebook':
       return (
         <svg style={shadow} width="64" height="64" viewBox="0 0 24 24" fill="white">
@@ -128,19 +111,31 @@ const BrandLogo = ({ platform, text }: { platform: Platform; text?: string }) =>
 };
 
 export function PlatformPlaceholder({ platform, domain, text, className = '' }: PlatformPlaceholderProps) {
-  const config = PLATFORM_CONFIG[platform] ?? PLATFORM_CONFIG.default;
+  const { t } = useTheme();
   const isMemo = platform === 'memo';
+  const config = isMemo
+    ? { gradient: t.memoBg, gloss: t.memoGloss }
+    : (PLATFORM_CONFIG[platform] ?? PLATFORM_CONFIG.default);
 
   return (
     <div
       className={`relative overflow-hidden ${isMemo ? '' : 'flex items-center justify-center'} ${className}`}
-      style={{ background: config.gradient }}
+      style={{ background: config.gradient, ...(isMemo ? { minHeight: '100px' } : {}) }}
     >
       <div
         className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
         style={{ background: `linear-gradient(to bottom, ${config.gloss}, transparent)` }}
       />
-      <BrandLogo platform={platform} text={text} />
+      {isMemo
+        ? (
+          <div style={{ padding: '20px', width: '100%' }}>
+            <p style={{ fontSize: '15px', fontWeight: 600, lineHeight: '1.6', color: t.memoText, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif' }}>
+              {text || ''}
+            </p>
+          </div>
+        )
+        : <BrandLogo platform={platform} text={text} />
+      }
       {platform === 'default' && domain && (
         <span className="absolute bottom-3 text-white/60 text-xs tracking-wide">{domain}</span>
       )}
