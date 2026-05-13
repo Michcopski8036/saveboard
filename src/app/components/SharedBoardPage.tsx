@@ -120,7 +120,12 @@ export function SharedBoardPage() {
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 6px rgba(124,58,237,0.06)'; e.currentTarget.style.borderColor = '#EDE9FE'; }}>
                 {link.image && link.image !== 'placeholder:memo' && link.image !== 'placeholder:pdf' && (
                   <div className="w-full h-36 rounded-xl overflow-hidden shrink-0">
-                    <img src={link.image} alt={link.title} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                    <img
+                      src={link.image}
+                      alt={link.title}
+                      className="w-full h-full object-cover"
+                      onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
+                    />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
