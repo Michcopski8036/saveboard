@@ -210,7 +210,8 @@ export function LinkCard({
         <a href={href} target={href ? '_blank' : undefined} rel={href ? 'noopener noreferrer' : undefined} className="shrink-0" onClick={handleSel}>
           {isPlaceholder(link.image)
             ? <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} text={isMemo ? link.description : undefined} className="w-14 h-14 rounded-xl" />
-            : <img src={link.image} alt={link.title} crossOrigin="anonymous" className="w-14 h-14 rounded-xl object-cover" />}
+            : <img src={link.image} alt={link.title} className="w-14 h-14 rounded-xl object-cover"
+                onError={e => { e.currentTarget.style.display = 'none'; }} />}
         </a>
         <a href={href} target={href ? '_blank' : undefined} rel={href ? 'noopener noreferrer' : undefined} className="flex-1 min-w-0" onClick={handleSel}>
           <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{link.title}</p>
@@ -283,9 +284,10 @@ export function LinkCard({
             text={isMemo ? link.description : undefined}
             className={`w-full ${isYTShort ? 'aspect-[9/16]' : isVideo ? 'aspect-video' : isMemo ? '' : 'aspect-[4/3]'}`} />
         ) : (
-          <img src={link.image} alt={link.title} crossOrigin="anonymous"
+          <img src={link.image} alt={link.title}
             className={`w-full block transition-transform duration-500 ${isYTShort ? 'aspect-[9/16] object-cover' : isVideo ? 'aspect-video object-cover' : 'h-auto'} ${(isYT || isVimeo) && isHovered ? 'invisible' : ''}`}
-            style={{ transform: imgHovered && !isVideo ? 'scale(1.04)' : 'scale(1)' }} />
+            style={{ transform: imgHovered && !isVideo ? 'scale(1.04)' : 'scale(1)' }}
+            onError={e => { const p = e.currentTarget.closest('a'); if (p) p.style.display = 'none'; }} />
         )}
 
         {isArticle && imgHovered && !selectMode && (
