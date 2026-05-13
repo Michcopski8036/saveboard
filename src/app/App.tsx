@@ -3,42 +3,41 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { LinkCard, LinkData } from './components/LinkCard';
 import { Sidebar, type Collection } from './components/Sidebar';
 import { KanbanView } from './components/KanbanView';
+import { GalleryView } from './components/GalleryView';
 import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
-import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, Sun, Moon } from 'lucide-react';
+import { Trash2, Paperclip, Search, Plus, LayoutGrid, LayoutPanelLeft, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ShareModal } from './components/ShareModal';
-import { HomePage } from './components/HomePage';
+import { UpgradePage, FREE_LIMITS } from './components/UpgradePage';
+import { SettingsPage } from './components/SettingsPage';
+import { LanguagePage } from './components/LanguagePage';
+import { ContactPage } from './components/ContactPage';
+import { HelpPage } from './components/HelpPage';
+import { PrivacyPage } from './components/PrivacyPage';
+import { TermsPage } from './components/TermsPage';
+import { deriveAiTags } from './components/LinkCard';
 
-type ViewMode   = 'masonry' | 'grid' | 'list' | 'kanban';
+type ViewMode   = 'masonry' | 'grid' | 'gallery' | 'list' | 'kanban';
 type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
 
 const defaultCategories = ['Articles', 'Videos', 'Design', 'Inspiration', 'Tools'];
 
-const COLLECTION_LABELS: Record<string, string> = {
-  all:           'Home',
-  browse:        'All Links',
-  recent:        'Recently Saved',
-  favorites:     'Favorites',
-  unsorted:      'Unsorted',
-  archive:       'Archive',
-  'ai:suggested':'AI Suggested',
-  'ai:reading':  'Reading List',
-  'ai:trending': 'Trending Now',
-  'ai:picks':    'Top Picks',
-};
+// Labels computed dynamically via tr() in AppContent
 
 export default function App() {
-  return <DndProvider backend={HTML5Backend}><ThemeProvider><AppContent /></ThemeProvider></DndProvider>;
+  return <DndProvider backend={HTML5Backend}><ThemeProvider><LanguageProvider><AppContent /></LanguageProvider></ThemeProvider></DndProvider>;
 }
 
 function AppContent() {
-  const { t, toggleTheme } = useTheme();
+  const { t } = useTheme();
+  const { tr } = useLanguage();
   const [user, setUser]                 = useState<User | null>(null);
   const [authLoading, setAuthLoading]   = useState(true);
   const [links, setLinks]               = useState<LinkData[]>([]);
@@ -61,9 +60,22 @@ function AppContent() {
   const [showFabMenu, setShowFabMenu]   = useState(false);
   const [isRecording, setIsRecording]   = useState(false);
   const [showSearchDrop, setShowSearchDrop] = useState(false);
-  const fileInputRef   = useRef<HTMLInputElement>(null);
-  const searchRef      = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [headerUrl, setHeaderUrl]       = useState('');
+  const [headerStatus, setHeaderStatus] = useState<'idle'|'loading'|'saved'|'error'>('idle');
+  const [showSearch, setShowSearch]     = useState(false);
+  const [showUpgrade, setShowUpgrade]   = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showLanguage, setShowLanguage] = useState(false);
+  const [showContact, setShowContact]   = useState(false);
+  const [showHelp, setShowHelp]         = useState(false);
+  const [showPrivacy, setShowPrivacy]   = useState(false);
+  const [showTerms, setShowTerms]       = useState(false);
+  const isPro = false; // Will be set from Stripe subscription status
+  const fileInputRef    = useRef<HTMLInputElement>(null);
+  const searchRef       = useRef<HTMLDivElement>(null);
+  const searchInputRef  = useRef<HTMLInputElement>(null);
+  const headerInputRef  = useRef<HTMLInputElement>(null);
+  const searchOverlayRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -82,7 +94,10 @@ function AppContent() {
     setIsLoading(true);
     try {
       const { data: ld } = await supabase.from('links').select('*').order('created_at', { ascending: false });
-      if (ld?.length) setLinks(ld.map(l => ({ ...l, savedAt: new Date(l.created_at) })));
+      if (ld?.length) {
+        setLinks(ld.map(l => ({ ...l, savedAt: new Date(l.created_at) })));
+        setFavorites(new Set(ld.filter(l => l.is_favorite).map((l: any) => l.id)));
+      }
       const { data: cd } = await supabase.from('categories').select('name').order('created_at', { ascending: true });
       if (cd?.length) setCategories(cd.map(c => c.name));
       else await supabase.from('categories').insert(defaultCategories.map(name => ({ name, user_id: user!.id })));
@@ -95,21 +110,20 @@ function AppContent() {
   const weekMs = 7 * 24 * 60 * 60 * 1000;
 
   let filtered = (() => {
-    if (selected === 'all')           return [];   // dashboard — no link list
+    if (selected === 'all')            return links;
     if (selected === 'browse')        return links;
     if (selected === 'recent')        return links.filter(l => now - l.savedAt.getTime() < weekMs);
     if (selected === 'favorites')     return links.filter(l => favorites.has(l.id));
     if (selected === 'unsorted')      return links.filter(l => !l.category || l.category === 'None');
-    if (selected === 'archive')       return links.filter(l => l.category === 'Archive');
     if (selected.startsWith('cat:'))  return links.filter(l => l.category === selected.slice(4));
-    // AI Smart Folders (client-side heuristics)
-    if (selected === 'ai:suggested')  return links.filter(l => l.description && l.description.length > 80).slice(0, 20);
-    if (selected === 'ai:reading') {
-      const articleDomains = ['medium', 'substack', 'blog', 'article', 'news', 'dev.to', 'hackernews', 'hn.'];
-      return links.filter(l => { try { const h = new URL(l.url).hostname; return articleDomains.some(d => h.includes(d)); } catch { return false; } });
+    if (selected.startsWith('tag:')) {
+      const tag = selected.slice(4).toLowerCase();
+      return links.filter(l => {
+        if ((l.tags ?? []).includes(tag)) return true;
+        const domain = (() => { try { return new URL(l.url).hostname.toLowerCase().replace('www.', ''); } catch { return ''; } })();
+        return deriveAiTags(l, domain).some(t => t.type !== 'category' && t.label.toLowerCase() === tag);
+      });
     }
-    if (selected === 'ai:trending')   return [...links].sort((a, b) => b.savedAt.getTime() - a.savedAt.getTime()).slice(0, 15);
-    if (selected === 'ai:picks')      return links.filter(l => favorites.has(l.id) || (l.description && l.description.length > 60)).slice(0, 12);
     return links;
   })();
 
@@ -129,18 +143,40 @@ function AppContent() {
     return b.title.localeCompare(a.title);
   });
 
+  const COLLECTION_LABELS: Record<string, string> = {
+    all:       tr('allLinks'),
+    browse:    tr('allLinks'),
+    recent:    tr('recentlySavedLabel'),
+    favorites: tr('favoritesLabel'),
+    unsorted:  tr('unsortedLabel'),
+  };
+
   const collectionLabel = selected.startsWith('cat:')
     ? selected.slice(4)
-    : (COLLECTION_LABELS[selected] ?? 'Home');
+    : selected.startsWith('tag:')
+    ? `#${selected.slice(4)}`
+    : (COLLECTION_LABELS[selected] ?? tr('home'));
 
   const weekLinks = links.filter(l => now - l.savedAt.getTime() < weekMs).length;
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const closeModal = () => { setShowAddModal(false); setUrlInput(''); setErrorMessage(''); setSuccessMessage(''); };
 
-  const handleAddUrl = async (onSuccess?: () => void) => {
-    const input = urlInput.trim();
+  const handleHeaderSave = async () => {
+    const val = headerUrl.trim();
+    if (!val) return;
+    setHeaderStatus('loading');
+    try {
+      await handleAddUrl(val);
+      setHeaderUrl(''); setHeaderStatus('saved');
+      setTimeout(() => setHeaderStatus('idle'), 2000);
+    } catch { setHeaderStatus('error'); setTimeout(() => setHeaderStatus('idle'), 2000); }
+  };
+
+  const handleAddUrl = async (urlOverride?: string, onSuccess?: () => void) => {
+    const input = (urlOverride ?? urlInput).trim();
     if (!input || !user) return;
+    if (!isPro && links.length >= FREE_LIMITS.links) { setShowUpgrade(true); return; }
     setErrorMessage(''); setSuccessMessage(''); setIsAdding(true);
     try {
       const { fetchMetadata, generateId } = await import('./utils/metadataFetcher');
@@ -179,38 +215,48 @@ function AppContent() {
     finally { setIsAdding(false); }
   };
 
-  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    if (file.type !== 'application/pdf') { setErrorMessage('Only PDF files supported'); return; }
     setErrorMessage(''); setSuccessMessage(''); setIsAdding(true);
     try {
       const { generateId } = await import('./utils/metadataFetcher');
       const id = generateId();
       const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const path = `${user.id}/${id}-${safe}`;
-      const { error: ue } = await supabase.storage.from('pdfs').upload(path, file, { contentType: 'application/pdf' });
+      const { error: ue } = await supabase.storage.from('pdfs').upload(path, file, { contentType: file.type });
       if (ue) throw ue;
       const { data: { publicUrl } } = supabase.storage.from('pdfs').getPublicUrl(path);
-      const nl = { id, user_id: user.id, url: publicUrl, title: file.name.replace(/\.pdf$/i, ''), description: `PDF • ${(file.size / 1024).toFixed(0)} KB`, image: 'placeholder:pdf', category: 'None', created_at: Date.now() };
+      const isImage = file.type.startsWith('image/');
+      const isPdf   = file.type === 'application/pdf';
+      const ext     = file.name.split('.').pop()?.toUpperCase() ?? 'FILE';
+      const nl = { id, user_id: user.id, url: publicUrl, title: file.name.replace(/\.[^.]+$/, ''), description: `${ext} • ${(file.size / 1024).toFixed(0)} KB`, image: isImage ? publicUrl : isPdf ? 'placeholder:pdf' : 'placeholder:file', category: 'None', created_at: Date.now() };
       const { error } = await supabase.from('links').insert(nl);
       if (error) throw error;
       setLinks(p => [{ ...nl, savedAt: new Date(nl.created_at) }, ...p]);
-      setSuccessMessage('PDF uploaded!'); setTimeout(() => setSuccessMessage(''), 2500); setShowAddModal(false);
-    } catch (err: any) { setErrorMessage(err?.message?.toLowerCase().includes('bucket') ? 'Create a "pdfs" bucket in Supabase first' : 'PDF upload failed'); }
+      setSuccessMessage('File uploaded!'); setTimeout(() => setSuccessMessage(''), 2500); setShowAddModal(false);
+    } catch (err: any) { setErrorMessage(err?.message?.toLowerCase().includes('bucket') ? 'Storage bucket not set up — check Supabase' : 'Upload failed'); }
     finally { setIsAdding(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
   const handleUpdateCategory  = async (id: string, cat: string) => { await supabase.from('links').update({ category: cat }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, category: cat } : l)); };
   const handleDeleteLink      = async (id: string) => { await supabase.from('links').delete().eq('id', id); setLinks(p => p.filter(l => l.id !== id)); };
   const handleUpdateNotes     = async (id: string, notes: string) => { await supabase.from('links').update({ notes }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, notes } : l)); };
-  const handleToggleFavorite  = (id: string) => { setFavorites(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; }); };
+  const handleUpdateLink      = async (id: string, title: string, description: string) => { await supabase.from('links').update({ title, description }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, title, description } : l)); };
+  const handleUpdateTags      = async (id: string, tags: string[]) => { await supabase.from('links').update({ tags }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, tags } : l)); };
+  const handleToggleFavorite  = async (id: string) => {
+    const isFav = favorites.has(id);
+    setFavorites(p => { const s = new Set(p); isFav ? s.delete(id) : s.add(id); return s; });
+    await supabase.from('links').update({ is_favorite: !isFav }).eq('id', id);
+  };
   const handleToggleSelect    = (id: string) => { setSelectedIds(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; }); };
   const handleBulkDelete      = async () => { if (!selectedIds.size || !confirm(`Delete ${selectedIds.size} link(s)?`)) return; await supabase.from('links').delete().in('id', Array.from(selectedIds)); setLinks(p => p.filter(l => !selectedIds.has(l.id))); setSelectedIds(new Set()); setSelectMode(false); };
 
   const handleAddCategory = async (name: string) => {
     const t = name.trim();
-    if (t && !categories.includes(t)) { await supabase.from('categories').insert({ name: t, user_id: user!.id }); setCategories(p => [...p, t]); }
+    if (!t || categories.includes(t)) return;
+    if (!isPro && categories.length >= FREE_LIMITS.boards) { setShowUpgrade(true); return; }
+    await supabase.from('categories').insert({ name: t, user_id: user!.id }); setCategories(p => [...p, t]);
   };
   const handleRenameCategory = async (old: string, neu: string) => {
     const t = neu.trim();
@@ -229,10 +275,7 @@ function AppContent() {
     setCategories(p => p.filter(c => c !== cat));
     if (selected === `cat:${cat}`) setSelected('all');
   };
-  const focusSearch = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    searchInputRef.current?.focus();
-  };
+  const focusSearch = () => { setShowSearch(true); setTimeout(() => searchOverlayRef.current?.focus(), 50); };
 
   const handleExport = () => {
     const blob = new Blob([JSON.stringify({ links, categories, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
@@ -250,23 +293,39 @@ function AppContent() {
     alert('Import successful!');
   };
 
+  // Build suggested tags list from all links (auto-derived + user-added)
+  const suggestedTags = (() => {
+    const map: Record<string, string> = {};
+    links.forEach(l => {
+      const domain = (() => { try { return new URL(l.url).hostname.toLowerCase().replace('www.', ''); } catch { return ''; } })();
+      deriveAiTags(l, domain).filter(t => t.type !== 'category').forEach(({ label, type }) => {
+        const key = label.toLowerCase();
+        if (!map[key]) map[key] = type;
+      });
+      (l.tags ?? []).forEach(tag => { if (!map[tag]) map[tag] = 'user'; });
+    });
+    return Object.entries(map).map(([label, type]) => ({ label, type })).sort((a, b) => a.label.localeCompare(b.label));
+  })();
+
   const cardProps = (link: LinkData) => ({
     link,
     onUpdateCategory: handleUpdateCategory, onDelete: handleDeleteLink,
     onAddCategory: handleAddCategory, onRenameCategory: handleRenameCategory,
-    onUpdateNotes: handleUpdateNotes, onToggleSelect: handleToggleSelect,
-    onToggleFavorite: handleToggleFavorite, categories,
+    onUpdateNotes: handleUpdateNotes, onUpdateLink: handleUpdateLink, onUpdateTags: handleUpdateTags, onToggleSelect: handleToggleSelect,
+    onToggleFavorite: handleToggleFavorite, onShowUpgrade: () => setShowUpgrade(true),
+    categories, isPro, suggestedTags,
     selectMode, isSelected: selectedIds.has(link.id), isFavorited: favorites.has(link.id),
   });
 
   const viewModes = [
-    { mode: 'masonry' as ViewMode, Icon: Columns2,  label: 'Masonry' },
-    { mode: 'grid'    as ViewMode, Icon: LayoutGrid, label: 'Grid'    },
-    { mode: 'list'    as ViewMode, Icon: List,       label: 'List'    },
-    { mode: 'kanban'  as ViewMode, Icon: Kanban,     label: 'Kanban'  },
+    { mode: 'masonry' as ViewMode, Icon: Columns2,        label: 'Masonry' },
+    { mode: 'grid'    as ViewMode, Icon: LayoutGrid,       label: 'Grid'    },
+    { mode: 'gallery' as ViewMode, Icon: LayoutPanelLeft,  label: 'Gallery' },
+    { mode: 'list'    as ViewMode, Icon: List,             label: 'List'    },
+    { mode: 'kanban'  as ViewMode, Icon: Kanban,           label: 'Kanban'  },
   ];
 
-  const sortLabels: Record<SortOption, string> = { newest: 'Newest', oldest: 'Oldest', 'a-z': 'A–Z', 'z-a': 'Z–A' };
+  const sortLabels: Record<SortOption, string> = { newest: tr('newest'), oldest: tr('oldest'), 'a-z': tr('az'), 'z-a': tr('za') };
 
   // ── Auth / loading states ──────────────────────────────────────────────────
   if (authLoading) return (
@@ -295,6 +354,7 @@ function AppContent() {
         onRenameCategory={handleRenameCategory}
         onDeleteCategory={handleDeleteCategory}
         onShareCategory={cat => setShareCategory(cat)}
+        onUpdateCategory={handleUpdateCategory}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(p => !p)}
       />
@@ -305,7 +365,7 @@ function AppContent() {
       )}
 
       {/* ── Main area ──────────────────────────────────────────────────── */}
-      <div className="flex-1 ml-0 md:ml-16 xl:ml-[260px] flex flex-col min-h-screen" style={{ background: t.pageBg }}>
+      <div className={`flex-1 min-w-0 ml-0 md:ml-16 xl:ml-[260px] flex flex-col ${viewMode === 'gallery' ? 'h-screen overflow-hidden' : 'min-h-screen'}`} style={{ background: t.pageBg }}>
 
         {/* Header */}
         <header className="sticky top-0 z-10" style={{ background: t.headerBg, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${t.headerBorder}` }}>
@@ -318,58 +378,48 @@ function AppContent() {
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Search */}
-            <div className="flex-1 relative" ref={searchRef}>
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none z-10" style={{ color: t.textMuted }} />
-              <input
-                ref={searchInputRef}
-                type="text" value={searchQuery}
-                onChange={e => { setSearchQuery(e.target.value); setShowSearchDrop(e.target.value.trim().length > 0); }}
-                onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; if (searchQuery.trim()) setShowSearchDrop(true); }}
-                onBlur={e => { e.currentTarget.style.borderColor = t.inputBlurBorder; e.currentTarget.style.boxShadow = 'none'; setTimeout(() => setShowSearchDrop(false), 150); }}
-                placeholder="Search links, notes, boards…"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none transition-all"
-                style={{ background: t.inputBg, border: `1px solid ${t.inputBorder}`, color: t.inputText }}
-              />
-              {/* Instant search dropdown */}
-              {showSearchDrop && searchQuery.trim() && (() => {
-                const q = searchQuery.toLowerCase();
-                const hits = links.filter(l => l.title.toLowerCase().includes(q) || l.url.toLowerCase().includes(q) || l.description.toLowerCase().includes(q)).slice(0, 6);
-                if (!hits.length) return null;
-                return (
-                  <div className="absolute top-full left-0 right-0 mt-1.5 rounded-2xl overflow-hidden z-50"
-                    style={{ background: t.searchDropBg, border: `1px solid ${t.searchDropBorder}`, boxShadow: t.searchDropShadow }}>
-                    <div className="p-1.5">
-                      {hits.map(l => {
-                        const dom = (() => { try { return new URL(l.url).hostname.replace('www.', ''); } catch { return 'Note'; } })();
-                        return (
-                          <a key={l.id} href={l.url === '#' ? undefined : l.url} target="_blank" rel="noreferrer"
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors cursor-pointer"
-                            style={{ color: t.searchDropItemText }}
-                            onMouseEnter={e => (e.currentTarget.style.background = t.searchDropItemHoverBg)}
-                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                            onClick={() => setShowSearchDrop(false)}>
-                            <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0 flex items-center justify-center"
-                              style={{ background: t.searchDropIconBg }}>
-                              {l.image && !l.image.startsWith('placeholder:')
-                                ? <img src={l.image} alt="" className="w-full h-full object-cover" />
-                                : <Link2 className="w-3.5 h-3.5" style={{ color: t.textMuted }} />}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[12px] font-medium truncate">{l.title}</p>
-                              <p className="text-[10px] truncate" style={{ color: t.searchDropSecondary }}>{dom}</p>
-                            </div>
-                          </a>
-                        );
-                      })}
-                    </div>
-                    <div className="px-3 py-2" style={{ borderTop: `1px solid ${t.searchDropFooterBorder}` }}>
-                      <p className="text-[10px]" style={{ color: t.searchDropFooterText }}>{filtered.length} result{filtered.length !== 1 ? 's' : ''} in main view</p>
-                    </div>
-                  </div>
-                );
-              })()}
+            {/* URL insert bar */}
+            <div className="flex-1 flex items-center gap-2">
+              <div className="relative flex-1">
+                <Link2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: headerStatus === 'saved' ? '#10B981' : headerStatus === 'error' ? '#EF4444' : t.textMuted }} />
+                <input
+                  ref={headerInputRef}
+                  type="text" value={headerUrl}
+                  onChange={e => { setHeaderUrl(e.target.value); if (headerStatus !== 'idle') setHeaderStatus('idle'); }}
+                  onKeyDown={e => { if (e.key === 'Enter' && headerUrl.trim()) handleHeaderSave(); }}
+                  placeholder={headerStatus === 'saved' ? 'Link saved!' : headerStatus === 'error' ? 'Failed — try again' : tr('placeholder')}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none transition-all"
+                  style={{ background: t.inputBg, border: `1px solid ${headerStatus === 'saved' ? 'rgba(16,185,129,0.4)' : headerStatus === 'error' ? 'rgba(239,68,68,0.4)' : t.inputBorder}`, color: t.inputText }}
+                  onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = t.inputBorder; e.currentTarget.style.boxShadow = 'none'; }}
+                />
+              </div>
+              {headerUrl.trim() && (
+                <button onClick={handleHeaderSave} disabled={headerStatus === 'loading'}
+                  className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-white shrink-0 transition-opacity hover:opacity-90 disabled:opacity-60"
+                  style={{ background: t.accentBg }}>
+                  {headerStatus === 'loading'
+                    ? <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    : <><ArrowRight className="w-4 h-4" /><span className="hidden sm:block">{tr('save')}</span></>}
+                </button>
+              )}
+              <button onClick={() => fileInputRef.current?.click()} title="Upload file"
+                className="p-2 rounded-xl transition-all shrink-0"
+                style={{ background: t.controlContainerBg, border: `1px solid ${t.controlContainerBorder}`, color: t.textMuted }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#7C3AED'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.30)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = t.textMuted; e.currentTarget.style.borderColor = t.controlContainerBorder; }}>
+                <Paperclip className="w-4 h-4" />
+              </button>
             </div>
+
+            {/* Search button — hidden on mobile (bottom nav handles it) */}
+            <button onClick={focusSearch} title="Search"
+              className="hidden sm:block p-2 rounded-xl transition-all shrink-0"
+              style={{ background: t.controlContainerBg, border: `1px solid ${t.controlContainerBorder}`, color: t.textMuted }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#7C3AED'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.30)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = t.textMuted; e.currentTarget.style.borderColor = t.controlContainerBorder; }}>
+              <Search className="w-4 h-4" />
+            </button>
 
             {/* View mode */}
             <div className="hidden sm:flex items-center p-1 rounded-xl gap-0.5" style={{ background: t.controlContainerBg, border: `1px solid ${t.controlContainerBorder}` }}>
@@ -386,65 +436,76 @@ function AppContent() {
             <button onClick={() => { setSelectMode(p => !p); setSelectedIds(new Set()); }}
               className="hidden sm:block px-3 py-1.5 rounded-xl text-[12px] font-medium transition-all"
               style={{ background: selectMode ? t.selectBtnActiveBg : t.selectBtnBg, color: selectMode ? t.selectBtnActiveText : t.selectBtnText, border: `1px solid ${selectMode ? t.selectBtnActiveBorder : t.selectBtnBorder}` }}>
-              {selectMode ? 'Cancel' : 'Select'}
-            </button>
-
-            {/* Theme toggle */}
-            <button onClick={toggleTheme} title={t.isDark ? 'Switch to Light' : 'Switch to Dark'}
-              className="p-2 rounded-xl transition-all"
-              style={{ background: t.controlContainerBg, border: `1px solid ${t.controlContainerBorder}`, color: t.textMuted }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#7C3AED'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.30)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = t.textMuted; e.currentTarget.style.borderColor = t.controlContainerBorder; }}>
-              {t.isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            {/* Add button */}
-            <button onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
-              style={{ background: t.accentBg, boxShadow: t.accentShadow }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = t.accentShadowHover; e.currentTarget.style.opacity = '0.92'; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = t.accentShadow; e.currentTarget.style.opacity = '1'; }}>
-              <Plus className="w-4 h-4" strokeWidth={2.5} />
-              <span className="hidden sm:block">Add Link</span>
+              {selectMode ? tr('cancel') : tr('select')}
             </button>
 
             {/* Avatar */}
-            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} user={user} />
+            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} user={user} isPro={isPro} />
           </div>
 
           {/* Sub-header: title + sort */}
           <div className="px-4 sm:px-6 pb-3.5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
-              <h2 className="text-[17px] font-bold" style={{ color: t.textPrimary }}>{collectionLabel}</h2>
-              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium tabular-nums"
-                style={{ background: t.badgeBg, color: t.badgeText }}>
-                {filtered.length}
-              </span>
+            <div className="flex items-center gap-1.5">
+              {/* Mobile collection arrows */}
+              {(() => {
+                const navList: Collection[] = [
+                  'all', 'recent', 'favorites', 'unsorted',
+                  ...categories.map(c => `cat:${c}` as Collection),
+                ];
+                const idx = navList.indexOf(selected as Collection);
+                const goPrev = () => { if (idx > 0) setSelected(navList[idx - 1]); };
+                const goNext = () => { if (idx < navList.length - 1) setSelected(navList[idx + 1]); };
+                return (
+                  <>
+                    <button onClick={goPrev} disabled={idx <= 0}
+                      className="md:hidden p-1 rounded-lg transition-colors disabled:opacity-25"
+                      style={{ color: t.textMuted }}
+                      onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="md:hidden flex items-center gap-2 rounded-lg px-1 py-0.5 transition-colors active:opacity-70"
+                      onClick={() => setSidebarOpen(true)}>
+                      <h2 className="text-[17px] font-bold" style={{ color: t.textPrimary }}>{collectionLabel}</h2>
+                      <span className="text-[11px] px-2 py-0.5 rounded-full font-medium tabular-nums"
+                        style={{ background: t.badgeBg, color: t.badgeText }}>
+                        {filtered.length}
+                      </span>
+                    </button>
+                    <div className="hidden md:flex items-center gap-2">
+                      <h2 className="text-[17px] font-bold" style={{ color: t.textPrimary }}>{collectionLabel}</h2>
+                      <span className="text-[11px] px-2 py-0.5 rounded-full font-medium tabular-nums"
+                        style={{ background: t.badgeBg, color: t.badgeText }}>
+                        {filtered.length}
+                      </span>
+                    </div>
+                    <button onClick={goNext} disabled={idx >= navList.length - 1}
+                      className="md:hidden p-1 rounded-lg transition-colors disabled:opacity-25"
+                      style={{ color: t.textMuted }}
+                      onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </>
+                );
+              })()}
             </div>
-            <div className="flex items-center gap-1">
+            <select
+              value={sortOption}
+              onChange={e => setSortOption(e.target.value as SortOption)}
+              className="text-[12px] font-medium rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
+              style={{ background: t.sortActiveBg, color: t.sortActiveText, border: 'none' }}>
               {(['newest', 'oldest', 'a-z', 'z-a'] as SortOption[]).map(opt => (
-                <button key={opt} onClick={() => setSortOption(opt)}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all"
-                  style={{ background: sortOption === opt ? t.sortActiveBg : 'transparent', color: sortOption === opt ? t.sortActiveText : t.sortInactiveText }}>
-                  {sortLabels[opt]}
-                </button>
+                <option key={opt} value={opt}>{sortLabels[opt]}</option>
               ))}
-            </div>
+            </select>
           </div>
         </header>
 
         {/* ── Content ────────────────────────────────────────────────── */}
-        <main className="flex-1 px-4 sm:px-6 py-5 pb-24 md:pb-5">
-          {selected === 'all' ? (
-            <HomePage
-              links={links}
-              categories={categories}
-              favorites={favorites}
-              userEmail={user?.email}
-              onSelect={id => { setSelected(id); setSidebarOpen(false); }}
-              onAddLink={() => setShowAddModal(true)}
-            />
-          ) : isLoading ? (
+        <main className={`flex-1 pb-24 md:pb-5 ${viewMode === 'gallery' ? 'flex flex-col overflow-hidden px-4 sm:px-6 py-4' : 'px-4 sm:px-6 py-5'}`}>
+          {isLoading ? (
             <div className="flex justify-center pt-24">
               <svg className="animate-spin h-8 w-8" style={{ color: '#7C3AED' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -457,12 +518,13 @@ function AppContent() {
                 style={{ background: t.emptyIconContainerBg, border: `1px solid ${t.emptyIconContainerBorder}` }}>
                 <Bookmark className="w-7 h-7" style={{ color: t.emptyIconColor }} />
               </div>
-              <p className="text-[15px] font-semibold" style={{ color: t.emptyTitle }}>Nothing here yet</p>
-              <p className="text-[13px] mt-1.5" style={{ color: t.emptySub }}>Add your first link with the button above</p>
+              <p className="text-[15px] font-semibold" style={{ color: t.emptyTitle }}>{tr('nothingHere')}</p>
+              <p className="text-[13px] mt-1.5" style={{ color: t.emptySub }}>{tr('addFirstLink')}</p>
             </div>
           ) : viewMode === 'kanban' ? (
             <KanbanView
-              links={filtered}
+              links={links}
+              selected={selected}
               categories={categories}
               favorites={favorites}
               onToggleFavorite={handleToggleFavorite}
@@ -476,9 +538,11 @@ function AppContent() {
               </Masonry>
             </ResponsiveMasonry>
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
-              {filtered.map(link => <LinkCard key={link.id} {...cardProps(link)} />)}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5" style={{ gridAutoRows: '275px' }}>
+              {filtered.map(link => <LinkCard key={link.id} {...cardProps(link)} compact />)}
             </div>
+          ) : viewMode === 'gallery' ? (
+            <GalleryView links={filtered} favorites={favorites} />
           ) : (
             <div className="flex flex-col gap-2 max-w-2xl mx-auto">
               {filtered.map(link => <LinkCard key={link.id} {...cardProps(link)} listMode />)}
@@ -515,7 +579,7 @@ function AppContent() {
               <input
                 type="text" value={urlInput}
                 onChange={e => setUrlInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !isAdding && urlInput.trim()) handleAddUrl(closeModal); }}
+                onKeyDown={e => { if (e.key === 'Enter' && !isAdding && urlInput.trim()) handleAddUrl(undefined, closeModal); }}
                 placeholder="https://… or write a note"
                 autoFocus
                 className="w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
@@ -534,9 +598,9 @@ function AppContent() {
                 className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[12px] font-medium transition-colors disabled:opacity-50"
                 style={{ background: t.modalPdfBg, border: `1px solid ${t.modalPdfBorder}`, color: t.modalPdfText }}>
                 <Paperclip className="w-3.5 h-3.5" />
-                PDF
+                File
               </button>
-              <button onClick={() => handleAddUrl(closeModal)} disabled={isAdding || !urlInput.trim()}
+              <button onClick={() => handleAddUrl(undefined, closeModal)} disabled={isAdding || !urlInput.trim()}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
                 style={{ background: t.accentBg }}>
                 {isAdding ? (
@@ -555,7 +619,7 @@ function AppContent() {
       )}
 
       {/* Hidden PDF input */}
-      <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" className="hidden" onChange={handlePdfUpload} />
+      <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
 
       {/* ── Floating Action Button (tablet+) ──────────────────────────── */}
       {!selectMode && (
@@ -633,6 +697,65 @@ function AppContent() {
         </div>
       )}
 
+      {/* ── Search overlay ────────────────────────────────────────────── */}
+      {showSearch && (
+        <>
+          <div className="fixed inset-0 z-40 backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.3)' }} onClick={() => { setShowSearch(false); setSearchQuery(''); }} />
+          <div className="fixed top-0 left-0 z-50 px-4 pt-4 pb-3 overflow-hidden" style={{ width: '100vw', background: t.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${t.headerBorder}` }}>
+            <div className="w-full max-w-2xl mx-auto">
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: t.textMuted }} />
+                <input
+                  ref={searchOverlayRef}
+                  autoFocus
+                  type="text" value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Escape') { setShowSearch(false); setSearchQuery(''); } }}
+                  placeholder="Search links, notes, boards…"
+                  className="w-full pl-10 pr-10 py-3 rounded-xl text-sm focus:outline-none transition-all"
+                  style={{ background: t.inputBg, border: `1px solid ${t.inputFocusBorder}`, boxShadow: t.inputFocusShadow, color: t.inputText }}
+                />
+                <button onClick={() => { setShowSearch(false); setSearchQuery(''); }} className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <X className="w-4 h-4" style={{ color: t.textMuted }} />
+                </button>
+              </div>
+              {searchQuery.trim() && (() => {
+                const q = searchQuery.toLowerCase();
+                const hits = links.filter(l => l.title.toLowerCase().includes(q) || l.url.toLowerCase().includes(q) || l.description.toLowerCase().includes(q)).slice(0, 8);
+                if (!hits.length) return <p className="text-[13px] text-center py-4" style={{ color: t.textMuted }}>No results for "{searchQuery}"</p>;
+                return (
+                  <div className="mt-2 rounded-2xl overflow-hidden" style={{ background: t.searchDropBg, border: `1px solid ${t.searchDropBorder}` }}>
+                    <div className="p-1.5">
+                      {hits.map(l => {
+                        const dom = (() => { try { return new URL(l.url).hostname.replace('www.', ''); } catch { return 'Note'; } })();
+                        return (
+                          <a key={l.id} href={l.url === '#' ? undefined : l.url} target="_blank" rel="noreferrer"
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
+                            style={{ color: t.searchDropItemText }}
+                            onMouseEnter={e => (e.currentTarget.style.background = t.searchDropItemHoverBg)}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                            onClick={() => { setShowSearch(false); setSearchQuery(''); }}>
+                            <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 flex items-center justify-center" style={{ background: t.searchDropIconBg }}>
+                              {l.image && !l.image.startsWith('placeholder:')
+                                ? <img src={l.image} alt="" className="w-full h-full object-cover" />
+                                : <Link2 className="w-3.5 h-3.5" style={{ color: t.textMuted }} />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[13px] font-medium truncate">{l.title}</p>
+                              <p className="text-[11px] truncate" style={{ color: t.searchDropSecondary }}>{dom}</p>
+                            </div>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </>
+      )}
+
       {/* ── Share modal ───────────────────────────────────────────────── */}
       {shareCategory && user && (
         <ShareModal
@@ -652,6 +775,49 @@ function AppContent() {
         onOpenMore={() => setSidebarOpen(true)}
         favorites={favorites}
       />
+
+      {/* ── Upgrade page ──────────────────────────────────────────────── */}
+      {showUpgrade && (
+        <UpgradePage
+          onClose={() => setShowUpgrade(false)}
+          currentLinks={links.length}
+          currentBoards={categories.length}
+        />
+      )}
+
+      {/* ── Language page ─────────────────────────────────────────────── */}
+      {showLanguage && <LanguagePage onClose={() => setShowLanguage(false)} />}
+
+      {/* ── Contact page ──────────────────────────────────────────────── */}
+      {showContact && <ContactPage onClose={() => setShowContact(false)} user={user} />}
+
+      {/* ── Help page ─────────────────────────────────────────────────── */}
+      {showHelp && <HelpPage onClose={() => setShowHelp(false)} onShowContact={() => { setShowHelp(false); setShowContact(true); }} />}
+
+      {/* ── Privacy page ──────────────────────────────────────────────── */}
+      {showPrivacy && <PrivacyPage onClose={() => setShowPrivacy(false)} />}
+
+      {/* ── Terms page ────────────────────────────────────────────────── */}
+      {showTerms && <TermsPage onClose={() => setShowTerms(false)} />}
+
+      {/* ── Settings page ─────────────────────────────────────────────── */}
+      {showSettings && (
+        <SettingsPage
+          onClose={() => setShowSettings(false)}
+          user={user}
+          onExport={handleExport}
+          onImport={handleImport}
+          onSignOut={async () => { await supabase.auth.signOut(); setShowSettings(false); }}
+          onShowUpgrade={() => { setShowSettings(false); setShowUpgrade(true); }}
+          onShowContact={() => setShowContact(true)}
+          onShowHelp={() => setShowHelp(true)}
+          onShowPrivacy={() => setShowPrivacy(true)}
+          onShowTerms={() => setShowTerms(true)}
+          linkCount={links.length}
+          boardCount={categories.length}
+          isPro={isPro}
+        />
+      )}
     </div>
   );
 }

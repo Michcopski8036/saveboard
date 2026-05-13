@@ -1,13 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreVertical, Link2, Check, FileText, ChevronDown, Volume2, VolumeX, Heart, Tag, Trash2, Sparkles, Clock, Play, BookOpen, ExternalLink } from 'lucide-react';
+import { MoreVertical, Link2, Check, FileText, ChevronDown, Volume2, VolumeX, Heart, Tag, Trash2, Sparkles, Clock, Play, BookOpen, ExternalLink, Pencil, GripVertical } from 'lucide-react';
+import { useDrag } from 'react-dnd';
 import { CategoryPopup } from './CategoryPopup';
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder } from './PlatformPlaceholder';
 import { useTheme } from '../context/ThemeContext';
 
+export const LINK_DRAG_TYPE = 'LINK_TO_BOARD';
+
 export interface LinkData {
   id: string; url: string; title: string; description: string;
-  image: string; category: string; savedAt: Date; comments?: string[]; notes?: string;
+  image: string; category: string; savedAt: Date; comments?: string[]; notes?: string; tags?: string[];
 }
 
 interface LinkCardProps {
@@ -17,10 +20,14 @@ interface LinkCardProps {
   onAddCategory?: (category: string) => void;
   onRenameCategory?: (oldName: string, newName: string) => void;
   onUpdateNotes?: (linkId: string, notes: string) => void;
+  onUpdateLink?: (linkId: string, title: string, description: string) => void;
+  onUpdateTags?: (linkId: string, tags: string[]) => void;
   onToggleSelect?: (linkId: string) => void;
   onToggleFavorite?: (linkId: string) => void;
+  onShowUpgrade?: () => void;
   categories?: string[];
-  selectMode?: boolean; isSelected?: boolean; isFavorited?: boolean; listMode?: boolean;
+  suggestedTags?: { label: string; type: string }[];
+  selectMode?: boolean; isSelected?: boolean; isFavorited?: boolean; listMode?: boolean; compact?: boolean; isPro?: boolean;
 }
 
 function getYouTubeVideoId(url: string): string | null {
@@ -35,18 +42,34 @@ function fakeVideoDuration(id: string): string {
   const n = [...id].reduce((a, c) => a + c.charCodeAt(0), 0);
   return `${2 + (n % 17)}:${(n % 60).toString().padStart(2, '0')}`;
 }
-function deriveAiTags(link: LinkData, domain: string): string[] {
-  const tags = new Set<string>();
-  if (link.category && link.category !== 'None' && link.category !== 'Archive') tags.add(link.category);
-  if (domain.includes('github') || domain.includes('gitlab')) tags.add('code');
-  if (domain.includes('medium') || domain.includes('substack') || domain.includes('dev.to')) tags.add('article');
-  if (domain.includes('youtube') || domain.includes('vimeo')) tags.add('video');
-  if (domain.includes('twitter') || domain.includes('x.com') || domain.includes('instagram')) tags.add('social');
-  if (domain.includes('figma') || domain.includes('dribbble') || domain.includes('behance')) tags.add('design');
-  const t = link.title.toLowerCase();
-  if (t.includes('tutorial') || t.includes('how to') || t.includes('guide')) tags.add('tutorial');
-  if (t.includes('ai') || t.includes('gpt') || t.includes('machine learning')) tags.add('AI');
-  return [...tags].slice(0, 3);
+export interface TagItem { label: string; type: string; }
+
+export const TAG_COLORS: Record<string, { bg: string; border: string; color: string }> = {
+  category: { bg: 'rgba(124,58,237,0.10)', border: 'rgba(124,58,237,0.22)', color: '#7C3AED' },
+  code:     { bg: 'rgba(37,99,235,0.10)',  border: 'rgba(37,99,235,0.22)',  color: '#2563EB' },
+  article:  { bg: 'rgba(5,150,105,0.10)',  border: 'rgba(5,150,105,0.22)',  color: '#059669' },
+  video:    { bg: 'rgba(220,38,38,0.10)',  border: 'rgba(220,38,38,0.22)',  color: '#DC2626' },
+  social:   { bg: 'rgba(234,88,12,0.10)',  border: 'rgba(234,88,12,0.22)',  color: '#EA580C' },
+  design:   { bg: 'rgba(219,39,119,0.10)', border: 'rgba(219,39,119,0.22)', color: '#DB2777' },
+  tutorial: { bg: 'rgba(217,119,6,0.10)',  border: 'rgba(217,119,6,0.22)',  color: '#D97706' },
+  ai:       { bg: 'rgba(99,102,241,0.10)', border: 'rgba(99,102,241,0.22)', color: '#6366F1' },
+  user:     { bg: 'rgba(20,184,166,0.10)', border: 'rgba(20,184,166,0.22)', color: '#0D9488' },
+  default:  { bg: 'rgba(107,114,128,0.10)',border: 'rgba(107,114,128,0.22)',color: '#6B7280' },
+};
+
+export function deriveAiTags(link: LinkData, domain: string): TagItem[] {
+  const tags: TagItem[] = [];
+  if (link.category && link.category !== 'None' && link.category !== 'Archive')
+    tags.push({ label: link.category, type: 'category' });
+  if (domain.includes('github') || domain.includes('gitlab'))                   tags.push({ label: 'code', type: 'code' });
+  if (domain.includes('medium') || domain.includes('substack') || domain.includes('dev.to')) tags.push({ label: 'article', type: 'article' });
+  if (domain.includes('youtube') || domain.includes('vimeo'))                   tags.push({ label: 'video', type: 'video' });
+  if (domain.includes('twitter') || domain.includes('x.com') || domain.includes('instagram')) tags.push({ label: 'social', type: 'social' });
+  if (domain.includes('figma') || domain.includes('dribbble') || domain.includes('behance')) tags.push({ label: 'design', type: 'design' });
+  const tl = link.title.toLowerCase();
+  if (tl.includes('tutorial') || tl.includes('how to') || tl.includes('guide')) tags.push({ label: 'tutorial', type: 'tutorial' });
+  if (tl.includes(' ai ') || tl.includes('gpt') || tl.includes('machine learning')) tags.push({ label: 'ai', type: 'ai' });
+  return tags.slice(0, 3);
 }
 function getAiSummary(desc: string): string | null {
   if (!desc || desc.startsWith('Link saved from') || desc.length < 30) return null;
@@ -56,58 +79,69 @@ function getReadTime(desc: string): number {
   return Math.max(1, Math.ceil(desc.split(/\s+/).filter(Boolean).length / 200));
 }
 
-function Dropdown({ show, onCopy, isCopied, onCategory, onNotes, onDelete, hasNotes }: {
-  show: boolean; onCopy: (e: React.MouseEvent) => void; isCopied: boolean;
+function Dropdown({ show, rect, onClose, onCopy, isCopied, onEdit, onCategory, onNotes, onDelete, hasNotes }: {
+  show: boolean; rect: DOMRect | null; onClose: () => void;
+  onCopy: (e: React.MouseEvent) => void; isCopied: boolean;
+  onEdit: (e: React.MouseEvent) => void;
   onCategory: (e: React.MouseEvent) => void; onNotes: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void; hasNotes?: boolean;
 }) {
   const { t } = useTheme();
-  if (!show) return null;
+  if (!show || !rect) return null;
   const row = 'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors text-left';
   const bg  = (isDelete = false) => ({
     onMouseEnter: (e: React.MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.background = isDelete ? 'rgba(239,68,68,0.08)' : t.dropdownHoverBg; },
     onMouseLeave: (e: React.MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.background = 'transparent'; },
   });
-  return (
-    <div className="absolute right-0 bottom-full mb-1 z-[60] w-44 overflow-hidden rounded-2xl"
-      style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
-      <div className="p-1">
-        <button onClick={onCopy} className={row} style={{ color: t.dropdownText }} {...bg()}>
-          {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Link2 className="w-4 h-4" style={{ color: t.dropdownIcon }} />}
-          <span className="text-[13px]">{isCopied ? 'Copied!' : 'Copy link'}</span>
-        </button>
-        <button onClick={onCategory} className={row} style={{ color: t.dropdownText }} {...bg()}>
-          <ChevronDown className="w-4 h-4" style={{ color: t.dropdownIcon }} />
-          <span className="text-[13px]">Change Board</span>
-        </button>
-        <button onClick={onNotes} className={row} style={{ color: t.dropdownText }} {...bg()}>
-          <FileText className="w-4 h-4" style={{ color: hasNotes ? '#3B82F6' : t.dropdownIcon }} />
-          <span className="text-[13px]">{hasNotes ? 'Edit notes' : 'Add notes'}</span>
-        </button>
-        <div style={{ borderTop: `1px solid ${t.dropdownDivider}`, margin: '4px 0' }} />
-        <button onClick={onDelete} className={row} {...bg(true)}>
-          <Trash2 className="w-4 h-4" style={{ color: '#EF4444' }} />
-          <span className="text-[13px]" style={{ color: '#EF4444' }}>Delete</span>
-        </button>
+  return createPortal(
+    <>
+      <div className="fixed inset-0" style={{ zIndex: 298 }} onClick={onClose} />
+      <div className="fixed w-48 rounded-2xl overflow-hidden"
+        style={{ zIndex: 299, bottom: window.innerHeight - rect.top + 4, right: window.innerWidth - rect.right, background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}
+        onClick={e => e.stopPropagation()}>
+        <div className="p-1">
+          <button onClick={onCopy} className={row} style={{ color: t.dropdownText }} {...bg()}>
+            {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Link2 className="w-4 h-4" style={{ color: t.dropdownIcon }} />}
+            <span className="text-[13px]">{isCopied ? 'Copied!' : 'Copy link'}</span>
+          </button>
+          <button onClick={onEdit} className={row} style={{ color: t.dropdownText }} {...bg()}>
+            <Pencil className="w-4 h-4" style={{ color: t.dropdownIcon }} />
+            <span className="text-[13px]">Edit content</span>
+          </button>
+          <button onClick={onCategory} className={row} style={{ color: t.dropdownText }} {...bg()}>
+            <ChevronDown className="w-4 h-4" style={{ color: t.dropdownIcon }} />
+            <span className="text-[13px]">Change Board</span>
+          </button>
+          <button onClick={onNotes} className={row} style={{ color: t.dropdownText }} {...bg()}>
+            <FileText className="w-4 h-4" style={{ color: hasNotes ? '#3B82F6' : t.dropdownIcon }} />
+            <span className="text-[13px]">{hasNotes ? 'Edit notes' : 'Add notes'}</span>
+          </button>
+          <div style={{ borderTop: `1px solid ${t.dropdownDivider}`, margin: '4px 0' }} />
+          <button onClick={onDelete} className={row} {...bg(true)}>
+            <Trash2 className="w-4 h-4" style={{ color: '#EF4444' }} />
+            <span className="text-[13px]" style={{ color: '#EF4444' }}>Delete</span>
+          </button>
+        </div>
       </div>
-    </div>
+    </>,
+    document.body
   );
 }
 
-function AiTag({ label }: { label: string }) {
-  const { t } = useTheme();
+function AiTag({ label, type }: { label: string; type: string }) {
+  const c = TAG_COLORS[type] ?? TAG_COLORS.default;
   return (
-    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium"
-      style={{ background: t.aiTagBg, border: `1px solid ${t.aiTagBorder}`, color: t.aiTagText }}>
-      {label}
+    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
+      style={{ background: c.bg, border: `1px solid ${c.border}`, color: c.color }}>
+      {type === 'category' ? label : `#${label}`}
     </span>
   );
 }
 
 export function LinkCard({
-  link, onUpdateCategory, onDelete, onAddCategory, onRenameCategory, onUpdateNotes,
-  onToggleSelect, onToggleFavorite, categories = [], selectMode = false,
-  isSelected = false, isFavorited = false, listMode = false,
+  link, onUpdateCategory, onDelete, onAddCategory, onRenameCategory, onUpdateNotes, onUpdateLink, onUpdateTags,
+  onToggleSelect, onToggleFavorite, onShowUpgrade, categories = [], suggestedTags = [], selectMode = false,
+  isSelected = false, isFavorited = false, listMode = false, compact = false, isPro = false,
 }: LinkCardProps) {
   const { t } = useTheme();
   const [showCategoryPopup, setShowCategoryPopup] = useState(false);
@@ -118,8 +152,19 @@ export function LinkCard({
   const [notesInput, setNotesInput] = useState(link.notes || '');
   const [isCopied, setIsCopied]     = useState(false);
   const [showMenu, setShowMenu]     = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuRect, setMenuRect]     = useState<DOMRect | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editTitle, setEditTitle]   = useState(link.title);
+  const [editDesc, setEditDesc]     = useState(link.description);
+  const [editTags, setEditTags]     = useState<string[]>(link.tags ?? []);
+  const [tagInput, setTagInput]     = useState('');
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const [{ isDragging }, dragRef] = useDrag({
+    type: LINK_DRAG_TYPE,
+    item: { id: link.id },
+    collect: monitor => ({ isDragging: monitor.isDragging() }),
+  });
 
   const isMemo    = link.image === 'placeholder:memo';
   const isPdf     = link.image === 'placeholder:pdf';
@@ -136,60 +181,163 @@ export function LinkCard({
   const duration  = isYT && ytId ? fakeVideoDuration(ytId) : isVimeo && vimeoId ? fakeVideoDuration(vimeoId) : null;
   const isArticle = !isVideo && !isMemo && !isPdf && !isPlaceholder(link.image);
 
-  useEffect(() => {
-    const fn = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false); };
-    if (showMenu) document.addEventListener('mousedown', fn);
-    return () => document.removeEventListener('mousedown', fn);
-  }, [showMenu]);
 
   const sp = (fn: () => void) => (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); fn(); };
   const handleCopyLink  = async (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); try { await navigator.clipboard.writeText(link.url); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); } catch {} setShowMenu(false); };
   const handleCatClick  = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowCategoryPopup(true); setShowMenu(false); };
   const handleDelClick  = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); if (onDelete && confirm('Delete this link?')) onDelete(link.id); };
-  const handleNoteClick = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowNotesModal(true); setShowMenu(false); };
-  const handleMenuTgl   = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowMenu(p => !p); };
+  const handleNoteClick = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); setShowNotesModal(true); };
+  const handleEditClick = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setEditTitle(link.title); setEditDesc(link.description); setEditTags(link.tags ?? []); setTagInput(''); setShowEditModal(true); setShowMenu(false); };
+  const handleMenuTgl   = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setMenuRect(r); setShowMenu(p => !p); };
   const handleFav       = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite?.(link.id); };
   const handleSel       = (e: React.MouseEvent) => { if (selectMode && onToggleSelect) { e.preventDefault(); onToggleSelect(link.id); } };
 
   const selectedBorder = isSelected && selectMode ? '#7C3AED' : undefined;
 
-  const Modals = () => (
+  const notesPortal = showNotesModal ? createPortal(
     <>
-      {showCategoryPopup && createPortal(
-        <CategoryPopup currentCategory={link.category} onClose={() => setShowCategoryPopup(false)}
-          onSelectCategory={c => { onUpdateCategory?.(link.id, c); }} onAddCategory={onAddCategory}
-          onRenameCategory={onRenameCategory} categories={categories} />,
-        document.body
-      )}
-      {showNotesModal && createPortal(
-        <>
-          <div className="fixed inset-0 z-50 backdrop-blur-sm" style={{ background: t.modalBackdrop }} onClick={() => setShowNotesModal(false)} />
-          <div className="fixed z-50 w-[500px] max-w-[90vw] p-6 rounded-2xl"
-            style={{ top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
-            onClick={e => e.stopPropagation()}>
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
-              <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>Notes</h3>
-            </div>
-            <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.title}</p>
-            <textarea value={notesInput} onChange={e => setNotesInput(e.target.value)} placeholder="Add your notes here…"
-              className="w-full h-36 px-4 py-3 text-sm rounded-xl resize-none focus:outline-none transition-all"
-              style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, caretColor: '#7C3AED' }}
+      <div className="fixed inset-0 backdrop-blur-sm" style={{ zIndex: 9998, background: t.modalBackdrop }} onClick={() => setShowNotesModal(false)} />
+      <div className="fixed w-[500px] max-w-[90vw] p-6 rounded-2xl"
+        style={{ zIndex: 9999, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
+        onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
+          <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>Notes</h3>
+        </div>
+        <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.title}</p>
+        <textarea value={notesInput} onChange={e => setNotesInput(e.target.value)} placeholder="Add your notes here…"
+          autoFocus
+          className="w-full h-36 px-4 py-3 text-sm rounded-xl resize-none focus:outline-none transition-all"
+          style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, caretColor: '#7C3AED' }}
+          onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
+          onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
+        <div className="flex gap-2 mt-4 justify-end">
+          <button onClick={() => setShowNotesModal(false)} className="px-4 py-2 rounded-xl text-sm transition-colors"
+            style={{ border: `1px solid ${t.modalInputBorder}`, color: t.textSecondary }}>Cancel</button>
+          <button onClick={() => { onUpdateNotes?.(link.id, notesInput); setShowNotesModal(false); }}
+            className="px-4 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg,#7C3AED,#4338CA)' }}>Save</button>
+        </div>
+      </div>
+    </>,
+    document.body
+  ) : null;
+
+  const editPortal = showEditModal ? createPortal(
+    <>
+      <div className="fixed inset-0 backdrop-blur-sm" style={{ zIndex: 9998, background: t.modalBackdrop }} onClick={() => setShowEditModal(false)} />
+      <div className="fixed w-[500px] max-w-[90vw] p-6 rounded-2xl"
+        style={{ zIndex: 9999, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
+        onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-2 mb-1">
+          <Pencil className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
+          <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>Edit Content</h3>
+        </div>
+        <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.url}</p>
+        <div className="space-y-3">
+          <div>
+            <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Title</label>
+            <input value={editTitle} onChange={e => setEditTitle(e.target.value)}
+              autoFocus
+              className="w-full px-4 py-3 text-sm rounded-xl focus:outline-none transition-all"
+              style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText }}
               onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
               onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
-            <div className="flex gap-2 mt-4 justify-end">
-              <button onClick={() => setShowNotesModal(false)} className="px-4 py-2 rounded-xl text-sm transition-colors"
-                style={{ border: `1px solid ${t.modalInputBorder}`, color: t.textSecondary }}>Cancel</button>
-              <button onClick={() => { onUpdateNotes?.(link.id, notesInput); setShowNotesModal(false); }}
-                className="px-4 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg,#7C3AED,#4338CA)' }}>Save</button>
+          </div>
+          <div>
+            <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Description</label>
+            <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-3 text-sm rounded-xl resize-none focus:outline-none transition-all"
+              style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText }}
+              onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
+              onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
+          </div>
+          <div>
+            <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Tags</label>
+            {editTags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {editTags.map(tag => (
+                  <span key={tag} className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-semibold"
+                    style={{ background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.22)', color: '#0D9488' }}>
+                    #{tag}
+                    <button onClick={() => setEditTags(p => p.filter(t => t !== tag))}
+                      className="text-[10px] leading-none hover:opacity-60">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="relative">
+              <input
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const val = tagInput.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+                    if (val && !editTags.includes(val)) setEditTags(p => [...p, val]);
+                    setTagInput('');
+                  } else if (e.key === 'Backspace' && !tagInput && editTags.length) {
+                    setEditTags(p => p.slice(0, -1));
+                  }
+                }}
+                placeholder="Type a tag and press Enter…"
+                className="w-full px-3 py-2 text-sm rounded-xl focus:outline-none transition-all"
+                style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText }}
+                onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
+                onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }}
+              />
+              {(() => {
+                const filtered = suggestedTags.filter(s =>
+                  s.label.includes(tagInput.toLowerCase()) &&
+                  !editTags.includes(s.label) &&
+                  tagInput.length > 0
+                );
+                if (!filtered.length) return null;
+                return (
+                  <div className="absolute z-10 top-full left-0 right-0 mt-1 rounded-xl overflow-hidden"
+                    style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
+                    {filtered.map(({ label, type }) => {
+                      const c = TAG_COLORS[type] ?? TAG_COLORS.default;
+                      return (
+                        <button key={label}
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => { setEditTags(p => [...p, label]); setTagInput(''); }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors"
+                          onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
+                            style={{ background: c.bg, border: `1px solid ${c.border}`, color: c.color }}>
+                            #{label}
+                          </span>
+                          <span className="text-[12px]" style={{ color: t.dropdownText }}>{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
           </div>
-        </>,
-        document.body
-      )}
-    </>
-  );
+        </div>
+        <div className="flex gap-2 mt-4 justify-end">
+          <button onClick={() => setShowEditModal(false)} className="px-4 py-2 rounded-xl text-sm transition-colors"
+            style={{ border: `1px solid ${t.modalInputBorder}`, color: t.textSecondary }}>Cancel</button>
+          <button onClick={() => { onUpdateLink?.(link.id, editTitle.trim() || link.title, editDesc); onUpdateTags?.(link.id, editTags); setShowEditModal(false); }}
+            className="px-4 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg,#7C3AED,#4338CA)' }}>Save</button>
+        </div>
+      </div>
+    </>,
+    document.body
+  ) : null;
+
+  const categoryPortal = showCategoryPopup ? createPortal(
+    <CategoryPopup currentCategory={link.category} onClose={() => setShowCategoryPopup(false)}
+      onSelectCategory={c => { onUpdateCategory?.(link.id, c); }} onAddCategory={onAddCategory}
+      onRenameCategory={onRenameCategory} categories={categories} />,
+    document.body
+  ) : null;
 
   // ── List mode ──────────────────────────────────────────────────────────────
   if (listMode) {
@@ -217,6 +365,12 @@ export function LinkCard({
           <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{link.title}</p>
           <p className="text-[11px] truncate mt-0.5" style={{ color: t.textMuted }}>{domain}</p>
           {aiSummary && <p className="text-[11px] truncate mt-0.5" style={{ color: t.textMuted }}>{aiSummary}</p>}
+          {(aiTags.length > 0 || (link.tags ?? []).length > 0) && (
+            <div className="flex items-center gap-1 flex-wrap mt-1">
+              {aiTags.map(tag => <AiTag key={tag.label} label={tag.label} type={tag.type} />)}
+              {(link.tags ?? []).map(tag => <AiTag key={`u:${tag}`} label={tag} type="user" />)}
+            </div>
+          )}
         </a>
         {isArticle && (
           <div className="hidden sm:flex items-center gap-1 shrink-0 mr-2">
@@ -230,17 +384,20 @@ export function LinkCard({
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
             <Heart className={`w-4 h-4 ${isFavorited ? 'fill-red-400 text-red-400' : ''}`} style={{ color: isFavorited ? undefined : t.iconAction }} />
           </button>
-          <div className="relative" ref={menuRef}>
+          <div className="relative">
             <button onClick={handleMenuTgl} className="p-2 rounded-xl transition-colors"
               onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
               <MoreVertical className="w-4 h-4" style={{ color: t.iconMuted }} />
             </button>
-            <Dropdown show={showMenu} onCopy={handleCopyLink} isCopied={isCopied}
-              onCategory={handleCatClick} onNotes={handleNoteClick} onDelete={handleDelClick} hasNotes={!!link.notes} />
           </div>
         </div>
-        <Modals />
+        <Dropdown show={showMenu} rect={menuRect} onClose={() => setShowMenu(false)}
+          onCopy={handleCopyLink} isCopied={isCopied} onEdit={handleEditClick}
+          onCategory={handleCatClick} onNotes={handleNoteClick} onDelete={handleDelClick} hasNotes={!!link.notes} />
+        {editPortal}
+        {notesPortal}
+        {categoryPortal}
       </div>
     );
   }
@@ -266,15 +423,15 @@ export function LinkCard({
   };
 
   return (
-    <div ref={cardRef} className="group w-full rounded-2xl overflow-hidden transition-all duration-300"
-      style={{ background: t.cardBg, border: `1px solid ${selectedBorder ?? t.cardBorder}`, boxShadow: t.cardShadow }}
+    <div ref={cardRef} className={`group w-full rounded-2xl overflow-hidden transition-all duration-300${compact ? ' flex flex-col h-full' : ''}`}
+      style={{ background: t.cardBg, border: `1px solid ${selectedBorder ?? t.cardBorder}`, boxShadow: t.cardShadow, opacity: isDragging ? 0.4 : 1 }}
       onMouseEnter={handleCardEnter} onMouseLeave={handleCardLeave}>
 
       {/* Thumbnail */}
       <a href={selectMode || isMemo ? undefined : link.url}
         target={selectMode || isMemo ? undefined : '_blank'}
         rel={selectMode || isMemo ? undefined : 'noopener noreferrer'}
-        className="block relative overflow-hidden"
+        className={`block relative overflow-hidden rounded-t-2xl${compact ? ' h-36 shrink-0' : ''}`}
         onMouseEnter={() => setImgHovered(true)} onMouseLeave={() => setImgHovered(false)}
         onClick={handleSel}
         style={{ cursor: selectMode ? 'pointer' : isMemo ? 'default' : isArticle ? 'alias' : undefined }}>
@@ -282,10 +439,10 @@ export function LinkCard({
         {isPlaceholder(link.image) ? (
           <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} domain={isMemo || isPdf ? undefined : domain}
             text={isMemo ? link.description : undefined}
-            className={`w-full ${isYTShort ? 'aspect-[9/16]' : isVideo ? 'aspect-video' : isMemo ? '' : 'aspect-[4/3]'}`} />
+            className={`w-full ${compact ? 'h-full object-cover' : isYTShort ? 'aspect-[9/16]' : isVideo ? 'aspect-video' : isMemo ? '' : 'aspect-[4/3]'}`} />
         ) : (
           <img src={link.image} alt={link.title}
-            className={`w-full block transition-transform duration-500 ${isYTShort ? 'aspect-[9/16] object-cover' : isVideo ? 'aspect-video object-cover' : 'h-auto'} ${(isYT || isVimeo) && isHovered ? 'invisible' : ''}`}
+            className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isYTShort ? 'aspect-[9/16] object-cover' : isVideo ? 'aspect-video object-cover' : 'h-auto'} ${(isYT || isVimeo) && isHovered ? 'invisible' : ''}`}
             style={{ transform: imgHovered && !isVideo ? 'scale(1.04)' : 'scale(1)' }}
             onError={e => { const p = e.currentTarget.closest('a'); if (p) p.style.display = 'none'; }} />
         )}
@@ -295,6 +452,18 @@ export function LinkCard({
             <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)' }}>
               <ExternalLink className="w-2.5 h-2.5 text-white/80" />
               <span className="text-[10px] text-white/80 font-medium">Open</span>
+            </div>
+          </div>
+        )}
+
+        {/* Drag handle — appears on hover, used to drag card to sidebar boards */}
+        {!selectMode && (
+          <div ref={dragRef}
+            className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-grab active:cursor-grabbing z-10 touch-none"
+            onClick={e => e.preventDefault()}
+            title="Drag to a board">
+            <div className="flex items-center gap-1 px-1.5 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.50)', backdropFilter: 'blur(8px)' }}>
+              <GripVertical className="w-3 h-3 text-white/80" />
             </div>
           </div>
         )}
@@ -343,7 +512,7 @@ export function LinkCard({
       </a>
 
       {/* Info panel */}
-      <div className="px-3.5 pt-3 pb-3.5">
+      <div className={`px-3.5 pt-3 pb-3.5${compact ? ' flex-1 overflow-hidden' : ''}`}>
         {!isMemo && (
           <div className="flex items-center gap-1.5 mb-2">
             <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`} alt=""
@@ -375,7 +544,18 @@ export function LinkCard({
           </p>
         </a>
 
-        {isArticle && aiSummary && (
+        {!compact && link.notes && (
+          <button onClick={handleNoteClick} className="w-full text-left mb-2.5 p-2.5 rounded-xl transition-opacity hover:opacity-80"
+            style={{ background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.28)' }}>
+            <div className="flex items-center gap-1.5 mb-1">
+              <FileText className="w-2.5 h-2.5 shrink-0" style={{ color: '#D97706' }} />
+              <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#D97706' }}>My Note</span>
+            </div>
+            <p className="text-[11px] leading-relaxed line-clamp-3" style={{ color: t.textMuted }}>{link.notes}</p>
+          </button>
+        )}
+
+        {!compact && isArticle && aiSummary && (
           <div className="mb-3 p-2.5 rounded-xl" style={{ background: t.aiSummaryBg, border: `1px solid ${t.aiSummaryBorder}` }}>
             <div className="flex items-center gap-1.5 mb-1.5">
               <Sparkles className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#7C3AED' }} />
@@ -385,7 +565,7 @@ export function LinkCard({
           </div>
         )}
 
-        {isArticle && aiSummary && (
+        {!compact && isArticle && aiSummary && (
           <div className="flex items-center gap-1.5 mb-2.5 flex-wrap">
             <BookOpen className="w-2.5 h-2.5 shrink-0" style={{ color: '#60A5FA', opacity: 0.7 }} />
             <span className="text-[9px]" style={{ color: t.textMuted }}>Article · {readTime} min read</span>
@@ -394,7 +574,8 @@ export function LinkCard({
 
         <div className="flex items-center justify-between gap-2 mt-1.5">
           <div className="flex items-center gap-1 flex-wrap min-w-0">
-            {aiTags.map(tag => <AiTag key={tag} label={tag} />)}
+            {aiTags.map(tag => <AiTag key={tag.label} label={tag.label} type={tag.type} />)}
+            {(link.tags ?? []).map(tag => <AiTag key={`u:${tag}`} label={tag} type="user" />)}
           </div>
           <div className="flex items-center gap-0.5 shrink-0 opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity duration-150">
             <button onClick={handleFav} className="p-1.5 rounded-lg transition-colors"
@@ -407,20 +588,23 @@ export function LinkCard({
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
               <Tag className="w-3.5 h-3.5" style={{ color: t.iconAction }} />
             </button>
-            <div className="relative" ref={menuRef}>
+            <div className="relative">
               <button onClick={handleMenuTgl} className="p-1.5 rounded-lg transition-colors"
                 onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                 <MoreVertical className="w-3.5 h-3.5" style={{ color: t.iconAction }} />
               </button>
-              <Dropdown show={showMenu} onCopy={handleCopyLink} isCopied={isCopied}
-                onCategory={handleCatClick} onNotes={handleNoteClick} onDelete={handleDelClick} hasNotes={!!link.notes} />
             </div>
           </div>
         </div>
       </div>
 
-      <Modals />
+      <Dropdown show={showMenu} rect={menuRect} onClose={() => setShowMenu(false)}
+        onCopy={handleCopyLink} isCopied={isCopied} onEdit={handleEditClick}
+        onCategory={handleCatClick} onNotes={handleNoteClick} onDelete={handleDelClick} hasNotes={!!link.notes} />
+      {editPortal}
+      {notesPortal}
+      {categoryPortal}
     </div>
   );
 }

@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bookmark, Home, Clock, Heart, Inbox, Archive, Plus, Hash, Sparkles, Brain, BookOpen, Zap, Star, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2 } from 'lucide-react';
+import { Bookmark, Home, Clock, Heart, Inbox, Plus, Sparkles, Zap, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2 } from 'lucide-react';
+import { useDrop } from 'react-dnd';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import type { LinkData } from './LinkCard';
+import { TAG_COLORS, deriveAiTags, LINK_DRAG_TYPE } from './LinkCard';
 
 const PALETTE = ['#8B5CF6','#6366F1','#3B82F6','#0EA5E9','#10B981','#F59E0B','#EF4444','#EC4899'];
 function dotColor(n: string): string { const i = [...n].reduce((a,c) => a+c.charCodeAt(0), 0) % PALETTE.length; return PALETTE[i]; }
-function hexToRgb(hex: string): string {
-  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  return `${r},${g},${b}`;
-}
 
 export type Collection = string;
 
@@ -22,32 +21,137 @@ interface SidebarProps {
   onRenameCategory?: (old: string, neu: string) => void;
   onDeleteCategory?: (cat: string) => void;
   onShareCategory?: (cat: string) => void;
+  onUpdateCategory?: (linkId: string, cat: string) => void;
   sidebarOpen: boolean;
   onToggleSidebar?: () => void;
 }
 
-const SMART = [
-  { id: 'all',       label: 'Home',           Icon: Home    },
-  { id: 'recent',    label: 'Recently Saved',  Icon: Clock   },
-  { id: 'favorites', label: 'Favorites',       Icon: Heart   },
-  { id: 'unsorted',  label: 'Unsorted',        Icon: Inbox   },
-  { id: 'archive',   label: 'Archive',         Icon: Archive },
+const SMART_IDS = [
+  { id: 'all',       key: 'home'         as const, Icon: Home    },
+  { id: 'recent',    key: 'recentlySaved' as const, Icon: Clock   },
+  { id: 'favorites', key: 'favorites'    as const, Icon: Heart   },
+  { id: 'unsorted',  key: 'unsorted'     as const, Icon: Inbox   },
 ] as const;
 
-const AI_FOLDERS = [
-  { id: 'ai:suggested', label: 'AI Suggested', Icon: Brain,    color: '#7C3AED', darkColor: '#A78BFA' },
-  { id: 'ai:reading',   label: 'Reading List',  Icon: BookOpen, color: '#2563EB', darkColor: '#60A5FA' },
-  { id: 'ai:trending',  label: 'Trending Now',  Icon: Zap,      color: '#D97706', darkColor: '#FB923C' },
-  { id: 'ai:picks',     label: 'Top Picks',     Icon: Star,     color: '#B45309', darkColor: '#FBBF24' },
-] as const;
 
-const TAGS = ['design','dev','youtube','kdrama','inspiration','tools','news','read-later','ai','startup'];
 
-export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
+interface BoardDropItemProps {
+  cat: string;
+  active: boolean;
+  count: number;
+  color: string;
+  isRenaming: boolean;
+  renameValue: string;
+  isMenuOpen: boolean;
+  menuRef: React.RefObject<HTMLDivElement>;
+  t: any;
+  onSelect: (id: string) => void;
+  onUpdateCategory?: (linkId: string, cat: string) => void;
+  setRenameValue: (v: string) => void;
+  commitRename: (cat: string) => void;
+  setRenamingCat: (v: string | null) => void;
+  setMenuCat: (v: string | null) => void;
+  startRename: (cat: string) => void;
+  onShareCategory?: (cat: string) => void;
+  onDeleteCategory?: (cat: string) => void;
+}
+
+function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isMenuOpen, menuRef, t, onSelect, onUpdateCategory, setRenameValue, commitRename, setRenamingCat, setMenuCat, startRename, onShareCategory, onDeleteCategory }: BoardDropItemProps) {
+  const [{ isOver }, dropRef] = useDrop({
+    accept: LINK_DRAG_TYPE,
+    drop: (item: { id: string }) => { onUpdateCategory?.(item.id, cat); },
+    collect: monitor => ({ isOver: monitor.isOver() }),
+  });
+
+  return (
+    <div ref={dropRef} className="group relative flex items-center rounded-xl transition-all duration-150"
+      style={{
+        background: isOver ? `${color}22` : active ? t.boardActiveBg : 'transparent',
+        border: isOver ? `1.5px solid ${color}66` : active ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent',
+        transform: isOver ? 'scale(1.02)' : 'scale(1)',
+      }}>
+      <button onClick={() => onSelect(`cat:${cat}`)}
+        className="flex-1 flex items-center gap-2.5 px-2.5 py-[9px] text-left min-w-0"
+        style={{ color: active ? t.boardActiveText : t.boardInactiveText }}>
+        <div className="w-2 h-2 rounded-full shrink-0" style={{ background: color, boxShadow: (active || isOver) ? `0 0 7px ${color}80` : 'none' }} />
+        {isRenaming ? (
+          <input autoFocus value={renameValue}
+            onChange={e => setRenameValue(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') commitRename(cat); if (e.key === 'Escape') setRenamingCat(null); }}
+            onBlur={() => commitRename(cat)}
+            onClick={e => e.stopPropagation()}
+            className="flex-1 min-w-0 text-[13px] font-medium bg-transparent focus:outline-none border-b"
+            style={{ color: active ? t.boardActiveText : t.boardInactiveText, borderColor: color }}
+          />
+        ) : (
+          <span className="flex-1 text-[13px] font-medium truncate">{cat}</span>
+        )}
+        {isOver && !isRenaming && (
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: color, color: 'white' }}>Drop</span>
+        )}
+      </button>
+      {!isRenaming && (
+        <>
+          {!isMenuOpen && count > 0 && !isOver && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums mr-2 group-hover:hidden"
+              style={{ background: t.boardCountBg, color: t.boardCountText }}>
+              {count}
+            </span>
+          )}
+          <div className="relative" ref={isMenuOpen ? menuRef : undefined}>
+            <button
+              onClick={e => { e.stopPropagation(); setMenuCat(isMenuOpen ? null : cat); }}
+              className={`p-1 mr-1.5 rounded-md transition-all ${isMenuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+              style={{ color: t.iconMuted }}
+              onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+              <MoreHorizontal className="w-3.5 h-3.5" />
+            </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 z-50 w-36 rounded-xl overflow-hidden"
+                style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
+                <div className="p-1">
+                  <button onClick={() => startRename(cat)}
+                    className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
+                    style={{ color: t.dropdownText }}
+                    onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <Pencil className="w-3.5 h-3.5" style={{ color: t.dropdownIcon }} />
+                    <span className="text-[12px]">Rename</span>
+                  </button>
+                  <button onClick={() => { setMenuCat(null); onShareCategory?.(cat); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
+                    style={{ color: t.dropdownText }}
+                    onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <Share2 className="w-3.5 h-3.5" style={{ color: t.dropdownIcon }} />
+                    <span className="text-[12px]">Share</span>
+                  </button>
+                  <button onClick={() => { setMenuCat(null); onDeleteCategory?.(cat); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
+                    style={{ color: '#EF4444' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-[12px]">Delete</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, onUpdateCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
+
+  const SMART = SMART_IDS.map(({ id, key, Icon }) => ({ id, label: tr(key), Icon }));
   const [addingBoard, setAddingBoard] = useState(false);
   const [boardName, setBoardName]     = useState('');
-  const [aiExpanded, setAiExpanded]   = useState(true);
   const [menuCat, setMenuCat]         = useState<string | null>(null);
   const [renamingCat, setRenamingCat] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
@@ -74,12 +178,27 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
     recent:    recentCount,
     favorites: favorites.size,
     unsorted:  links.filter(l => !l.category || l.category === 'None').length,
-    archive:   links.filter(l => l.category === 'Archive').length,
-    'ai:suggested': Math.min(links.length, 12),
-    'ai:reading':   links.filter(l => ['Articles','Blog','News'].includes(l.category)).length || Math.floor(links.length * 0.3),
-    'ai:trending':  recentCount,
-    'ai:picks':     favorites.size,
   };
+
+  // Merge user-added tags + auto-derived non-category tags
+  // Auto-derived first so their color type takes priority; Sets avoid double-counting
+  const allTagsMap: Record<string, { type: string; ids: Set<string> }> = {};
+  links.forEach(l => {
+    const domain = (() => { try { return new URL(l.url).hostname.toLowerCase().replace('www.', ''); } catch { return ''; } })();
+    deriveAiTags(l, domain).filter(t => t.type !== 'category').forEach(({ label, type }) => {
+      const key = label.toLowerCase();
+      if (!allTagsMap[key]) allTagsMap[key] = { type, ids: new Set() };
+      allTagsMap[key].ids.add(l.id);
+    });
+    (l.tags ?? []).forEach(tag => {
+      const key = tag.toLowerCase();
+      if (!allTagsMap[key]) allTagsMap[key] = { type: 'user', ids: new Set() };
+      allTagsMap[key].ids.add(l.id);
+    });
+  });
+  const allSidebarTags = Object.entries(allTagsMap)
+    .map(([label, { type, ids }]) => ({ label, type, count: ids.size }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   const weekLinks  = counts.recent;
   const totalLinks = links.length;
@@ -174,50 +293,13 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
 
           <section>
-            <p className="text-[9px] font-bold uppercase tracking-[0.18em] px-2 mb-2" style={{ color: t.navSectionLabel }}>Collections</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.18em] px-2 mb-2" style={{ color: t.navSectionLabel }}>{tr('collections')}</p>
             {SMART.map(({ id, label, Icon }) => <NavBtn key={id} id={id} label={label} Icon={Icon} count={counts[id]} />)}
           </section>
 
           <section>
-            <button onClick={() => setAiExpanded(p => !p)} className="w-full flex items-center justify-between px-2 mb-2">
-              <div className="flex items-center gap-1.5">
-                <Brain className="w-2.5 h-2.5" style={{ color: '#7C3AED' }} />
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(124,58,237,0.65)' }}>AI Smart Folders</p>
-              </div>
-              <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold"
-                style={{ background: t.accentChipBg, color: t.accentChipText, border: `1px solid ${t.accentChipBorder}` }}>NEW</span>
-            </button>
-            {aiExpanded && AI_FOLDERS.map(({ id, label, Icon, color, darkColor }) => {
-              const active = isActive(id);
-              const col = t.isDark ? darkColor : color;
-              const count = counts[id] ?? 0;
-              return (
-                <button key={id} onClick={() => onSelect(id)}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-[9px] rounded-xl mb-0.5 transition-all duration-150 text-left"
-                  style={{
-                    background: active ? `rgba(${hexToRgb(col)},0.12)` : 'transparent',
-                    border: active ? `1px solid rgba(${hexToRgb(col)},0.25)` : '1px solid transparent',
-                    color: active ? col : t.navInactiveText,
-                  }}>
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: active ? `rgba(${hexToRgb(col)},0.18)` : t.navInactiveIconBg }}>
-                    <Icon className="w-3.5 h-3.5" style={{ color: active ? col : t.navInactiveIcon }} />
-                  </div>
-                  <span className="flex-1 text-[13px] font-medium truncate">{label}</span>
-                  {count > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums"
-                      style={{ background: active ? `rgba(${hexToRgb(col)},0.15)` : t.badgeBg, color: active ? col : t.badgeText }}>
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </section>
-
-          <section>
             <div className="flex items-center justify-between px-2 mb-2">
-              <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: t.navSectionLabel }}>Boards</p>
+              <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: t.navSectionLabel }}>{tr('boards')}</p>
               <button onClick={() => setAddingBoard(true)} className="p-0.5 rounded-md transition-all"
                 style={{ color: t.iconMuted }}
                 onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; e.currentTarget.style.color = t.textSecondary; }}
@@ -233,7 +315,7 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
                   className="flex-1 flex items-center gap-2.5 px-2.5 py-[9px] text-left min-w-0"
                   style={{ color: isActive('browse') ? t.boardActiveText : t.boardInactiveText }}>
                   <div className="w-2 h-2 rounded-full shrink-0" style={{ background: '#9CA3AF' }} />
-                  <span className="flex-1 text-[13px] font-medium truncate">All</span>
+                  <span className="flex-1 text-[13px] font-medium truncate">{tr('all')}</span>
                   {links.length > 0 && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums"
                       style={{ background: t.boardCountBg, color: t.boardCountText }}>
@@ -242,88 +324,29 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
                   )}
                 </button>
               </div>
-              {categories.map(cat => {
-                const active = isActive(`cat:${cat}`);
-                const count = links.filter(l => l.category === cat).length;
-                const color = dotColor(cat);
-                const isRenaming = renamingCat === cat;
-                const isMenuOpen = menuCat === cat;
-                return (
-                  <div key={cat} className="group relative flex items-center rounded-xl transition-all duration-150"
-                    style={{ background: active ? t.boardActiveBg : 'transparent', border: active ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent' }}>
-                    <button onClick={() => onSelect(`cat:${cat}`)}
-                      className="flex-1 flex items-center gap-2.5 px-2.5 py-[9px] text-left min-w-0"
-                      style={{ color: active ? t.boardActiveText : t.boardInactiveText }}>
-                      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: color, boxShadow: active ? `0 0 7px ${color}80` : 'none' }} />
-                      {isRenaming ? (
-                        <input
-                          autoFocus
-                          value={renameValue}
-                          onChange={e => setRenameValue(e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter') commitRename(cat); if (e.key === 'Escape') setRenamingCat(null); }}
-                          onBlur={() => commitRename(cat)}
-                          onClick={e => e.stopPropagation()}
-                          className="flex-1 min-w-0 text-[13px] font-medium bg-transparent focus:outline-none border-b"
-                          style={{ color: active ? t.boardActiveText : t.boardInactiveText, borderColor: color }}
-                        />
-                      ) : (
-                        <span className="flex-1 text-[13px] font-medium truncate">{cat}</span>
-                      )}
-                    </button>
-                    {!isRenaming && (
-                      <>
-                        {!isMenuOpen && count > 0 && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums mr-2 group-hover:hidden"
-                            style={{ background: t.boardCountBg, color: t.boardCountText }}>
-                            {count}
-                          </span>
-                        )}
-                        <div className="relative" ref={isMenuOpen ? menuRef : undefined}>
-                          <button
-                            onClick={e => { e.stopPropagation(); setMenuCat(isMenuOpen ? null : cat); }}
-                            className={`p-1 mr-1.5 rounded-md transition-all ${isMenuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-                            style={{ color: t.iconMuted }}
-                            onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
-                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                            <MoreHorizontal className="w-3.5 h-3.5" />
-                          </button>
-                          {isMenuOpen && (
-                            <div className="absolute right-0 top-full mt-1 z-50 w-36 rounded-xl overflow-hidden"
-                              style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
-                              <div className="p-1">
-                                <button onClick={() => startRename(cat)}
-                                  className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
-                                  style={{ color: t.dropdownText }}
-                                  onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
-                                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                                  <Pencil className="w-3.5 h-3.5" style={{ color: t.dropdownIcon }} />
-                                  <span className="text-[12px]">Rename</span>
-                                </button>
-                                <button onClick={() => { setMenuCat(null); onShareCategory?.(cat); }}
-                                  className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
-                                  style={{ color: t.dropdownText }}
-                                  onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
-                                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                                  <Share2 className="w-3.5 h-3.5" style={{ color: t.dropdownIcon }} />
-                                  <span className="text-[12px]">Share</span>
-                                </button>
-                                <button onClick={() => { setMenuCat(null); onDeleteCategory?.(cat); }}
-                                  className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
-                                  style={{ color: '#EF4444' }}
-                                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
-                                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                                  <span className="text-[12px]">Delete</span>
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
+              {categories.map(cat => (
+                <BoardDropItem
+                  key={cat}
+                  cat={cat}
+                  active={isActive(`cat:${cat}`)}
+                  count={links.filter(l => l.category === cat).length}
+                  color={dotColor(cat)}
+                  isRenaming={renamingCat === cat}
+                  renameValue={renameValue}
+                  isMenuOpen={menuCat === cat}
+                  menuRef={menuRef}
+                  t={t}
+                  onSelect={onSelect}
+                  onUpdateCategory={onUpdateCategory}
+                  setRenameValue={setRenameValue}
+                  commitRename={commitRename}
+                  setRenamingCat={setRenamingCat}
+                  setMenuCat={setMenuCat}
+                  startRename={startRename}
+                  onShareCategory={onShareCategory}
+                  onDeleteCategory={onDeleteCategory}
+                />
+              ))}
             </div>
             {addingBoard && (
               <div className="mt-2 px-1">
@@ -341,19 +364,32 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
           </section>
 
           <section>
-            <p className="text-[9px] font-bold uppercase tracking-[0.18em] px-2 mb-2" style={{ color: t.navSectionLabel }}>Tags</p>
-            <div className="px-1 flex flex-wrap gap-1.5">
-              {TAGS.map(tag => (
-                <button key={tag}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all"
-                  style={{ background: t.tagBg, border: `1px solid ${t.tagBorder}`, color: t.tagText }}
-                  onMouseEnter={e => { e.currentTarget.style.background = t.tagHoverBg; e.currentTarget.style.borderColor = t.tagHoverBorder; e.currentTarget.style.color = t.tagHoverText; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = t.tagBg; e.currentTarget.style.borderColor = t.tagBorder; e.currentTarget.style.color = t.tagText; }}>
-                  <Hash className="w-2.5 h-2.5" />
-                  {tag}
-                </button>
-              ))}
-            </div>
+            <p className="text-[9px] font-bold uppercase tracking-[0.18em] px-2 mb-2" style={{ color: t.navSectionLabel }}>{tr('tags')}</p>
+            {allSidebarTags.length === 0 ? (
+              <p className="px-2 text-[11px] leading-relaxed" style={{ color: t.textFaint }}>
+                Tags appear here automatically as you save links.
+              </p>
+            ) : (
+              <div className="px-1 flex flex-wrap gap-1.5">
+                {allSidebarTags.map(({ label, type, count }) => {
+                  const active = isActive(`tag:${label}`);
+                  const c = TAG_COLORS[type] ?? TAG_COLORS.default;
+                  return (
+                    <button key={label}
+                      onClick={() => onSelect(`tag:${label}`)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold transition-all"
+                      style={{
+                        background: active ? c.bg.replace('0.10', '0.22') : c.bg,
+                        border: `1px solid ${active ? c.border.replace('0.22', '0.45') : c.border}`,
+                        color: c.color,
+                      }}>
+                      #{label}
+                      {count > 1 && <span className="ml-0.5 text-[9px] opacity-60">{count}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </section>
         </div>
 
@@ -361,17 +397,17 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
         <div className="px-4 pb-5 pt-4 shrink-0" style={{ borderTop: `1px solid ${t.logoDivider}` }}>
           <div className="flex items-center gap-1.5 mb-3">
             <Zap className="w-3 h-3" style={{ color: '#7C3AED' }} />
-            <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(124,58,237,0.60)' }}>Quick Stats</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(124,58,237,0.60)' }}>{tr('quickStats')}</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl p-3" style={{ background: t.statCard1Bg, border: `1px solid ${t.statCard1Border}` }}>
-              <p className="text-[9px] font-medium mb-1.5" style={{ color: t.statCard1Label }}>Total Links</p>
+              <p className="text-[9px] font-medium mb-1.5" style={{ color: t.statCard1Label }}>{tr('totalLinks')}</p>
               <p className="text-xl font-bold tabular-nums" style={{ color: t.statCard1Number }}>{totalLinks}</p>
             </div>
             <div className="rounded-xl p-3 relative overflow-hidden"
               style={{ background: 'linear-gradient(135deg,rgba(124,58,237,0.12),rgba(99,102,241,0.08))', border: '1px solid rgba(124,58,237,0.20)' }}>
 
-              <p className="text-[9px] font-medium mb-1.5" style={{ color: 'rgba(124,58,237,0.60)' }}>This Week</p>
+              <p className="text-[9px] font-medium mb-1.5" style={{ color: 'rgba(124,58,237,0.60)' }}>{tr('thisWeek')}</p>
               <p className="text-xl font-bold tabular-nums"
                 style={{ background: 'linear-gradient(90deg,#7C3AED,#6366F1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{weekLinks}</p>
             </div>
@@ -405,11 +441,6 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
         {SMART.map(({ id, label, Icon }) => (
           <RailBtn key={id} id={id} label={label} Icon={Icon} count={counts[id]} />
         ))}
-
-        <div className="w-7 h-px my-1 shrink-0" style={{ background: t.logoDivider }} />
-
-        {/* AI folders (brain icon represents all) */}
-        <RailBtn id="ai:suggested" label="AI Smart Folders" Icon={Brain} count={counts['ai:suggested']} />
 
         <div className="w-7 h-px my-1 shrink-0" style={{ background: t.logoDivider }} />
 

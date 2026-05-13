@@ -104,7 +104,7 @@ const light: T = {
   logoDivider: 'rgba(0,0,0,0.07)', logoText: '#111827',
   logoIconBg: 'linear-gradient(135deg, #818CF8 0%, #9333EA 50%, #F87171 100%)',
   logoIconShadow: '0 4px 14px rgba(147,51,234,0.40)',
-  logoTextGradient: 'linear-gradient(90deg, #A78BFA 0%, #F87171 100%)',
+  logoTextGradient: 'linear-gradient(90deg, #8B5CF6 0%, #7C3AED 45%, #F87171 100%)',
   accentBg: 'linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #F87171 100%)',
   accentShadow: '0 4px 16px rgba(167,139,250,0.45)',
   accentShadowHover: '0 6px 24px rgba(167,139,250,0.65)',
@@ -174,7 +174,7 @@ const dark: T = {
   logoDivider: 'rgba(255,255,255,0.05)', logoText: 'white',
   logoIconBg: 'linear-gradient(135deg, #7C3AED, #4338CA)',
   logoIconShadow: '0 4px 14px rgba(124,58,237,0.35)',
-  logoTextGradient: 'linear-gradient(90deg, #7C3AED, #6366F1)',
+  logoTextGradient: 'linear-gradient(90deg, #7C3AED 0%, #4338CA 100%)',
   accentBg: 'linear-gradient(135deg, #7C3AED, #4F46E5)',
   accentShadow: '0 4px 16px rgba(124,58,237,0.35)',
   accentShadowHover: '0 6px 24px rgba(124,58,237,0.55)',
@@ -235,27 +235,44 @@ const dark: T = {
 };
 
 // ── Context ──────────────────────────────────────────────────────────────────
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 interface ThemeContextValue {
   t: T;
+  theme: ThemeMode;
+  setTheme: (mode: ThemeMode) => void;
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue>({ t: light, toggleTheme: () => {} });
+const ThemeContext = createContext<ThemeContextValue>({ t: light, theme: 'light', setTheme: () => {}, toggleTheme: () => {} });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    try { return localStorage.getItem('lb-theme') === 'dark'; } catch { return false; }
+  const [theme, setThemeMode] = useState<ThemeMode>(() => {
+    try { return (localStorage.getItem('lb-theme') as ThemeMode) ?? 'light'; } catch { return 'light'; }
   });
+  const [systemIsDark, setSystemIsDark] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : false
+  );
 
   useEffect(() => {
-    try { localStorage.setItem('lb-theme', isDark ? 'dark' : 'light'); } catch {}
-  }, [isDark]);
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => setSystemIsDark(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
-  const toggleTheme = () => setIsDark(p => !p);
+  useEffect(() => {
+    try { localStorage.setItem('lb-theme', theme); } catch {}
+  }, [theme]);
+
+  const isDark = theme === 'dark' || (theme === 'system' && systemIsDark);
   const t = isDark ? dark : light;
 
+  const setTheme = (mode: ThemeMode) => setThemeMode(mode);
+  const toggleTheme = () => setThemeMode(isDark ? 'light' : 'dark');
+
   return (
-    <ThemeContext.Provider value={{ t, toggleTheme }}>
+    <ThemeContext.Provider value={{ t, theme, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
