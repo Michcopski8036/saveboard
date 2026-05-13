@@ -43,11 +43,7 @@ export function SharedBoardPage() {
       setBoard(boardData);
 
       const { data: linksData } = await supabase
-        .from('links')
-        .select('*')
-        .eq('user_id', boardData.owner_id)
-        .eq('category', boardData.category)
-        .order('saved_at', { ascending: false });
+        .rpc('get_shared_board_links', { p_token: token });
 
       setLinks((linksData ?? []).map((l: any) => ({
         ...l,
