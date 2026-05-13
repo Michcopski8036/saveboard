@@ -7,7 +7,17 @@ import { GalleryView } from './components/GalleryView';
 import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
-import { Trash2, Paperclip, Search, Plus, LayoutGrid, LayoutPanelLeft, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+
+function GalleryIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="9" height="18" rx="2" />
+      <rect x="14" y="3" width="7" height="8" rx="2" />
+      <rect x="14" y="13" width="7" height="8" rx="2" />
+    </svg>
+  );
+}
 import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -320,7 +330,7 @@ function AppContent() {
   const viewModes = [
     { mode: 'masonry' as ViewMode, Icon: Columns2,        label: 'Masonry' },
     { mode: 'grid'    as ViewMode, Icon: LayoutGrid,       label: 'Grid'    },
-    { mode: 'gallery' as ViewMode, Icon: LayoutPanelLeft,  label: 'Gallery' },
+    { mode: 'gallery' as ViewMode, Icon: GalleryIcon,      label: 'Gallery' },
     { mode: 'list'    as ViewMode, Icon: List,             label: 'List'    },
     { mode: 'kanban'  as ViewMode, Icon: Kanban,           label: 'Kanban'  },
   ];
