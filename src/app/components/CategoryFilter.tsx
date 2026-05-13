@@ -1,7 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { ChevronRight, X, Plus } from 'lucide-react';
-import { useDrag, useDrop, DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useDrag, useDrop } from 'react-dnd';
 
 interface CategoryFilterProps {
   categories: string[];
@@ -242,8 +241,7 @@ export function CategoryFilter({
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2">
         <div ref={scrollRef} className="flex gap-6 overflow-x-auto scrollbar-hide flex-1">
           {localCategories.map((category, index) => (
             <DraggableCategory
@@ -295,6 +293,5 @@ export function CategoryFilter({
           </button>
         )}
       </div>
-    </DndProvider>
   );
 }

@@ -10,6 +10,8 @@ import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, B
 import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 type ViewMode   = 'masonry' | 'grid' | 'list' | 'kanban';
 type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
@@ -29,7 +31,7 @@ const COLLECTION_LABELS: Record<string, string> = {
 };
 
 export default function App() {
-  return <ThemeProvider><AppContent /></ThemeProvider>;
+  return <DndProvider backend={HTML5Backend}><ThemeProvider><AppContent /></ThemeProvider></DndProvider>;
 }
 
 function AppContent() {
@@ -285,6 +287,8 @@ function AppContent() {
         links={links}
         favorites={favorites}
         onAddCategory={handleAddCategory}
+        onRenameCategory={handleRenameCategory}
+        onDeleteCategory={handleDeleteCategory}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(p => !p)}
       />
@@ -451,7 +455,7 @@ function AppContent() {
               onUpdateCategory={handleUpdateCategory}
             />
           ) : viewMode === 'masonry' ? (
-            <ResponsiveMasonry columnsCountBreakPoints={{ 0: 1, 400: 2, 768: 3, 1280: 4, 1600: 5 }}>
+            <ResponsiveMasonry columnsCountBreakPoints={{ 0: 1, 360: 2, 768: 3, 1280: 4, 1600: 5 }}>
               <Masonry gutter="14px">
                 {filtered.map(link => <LinkCard key={link.id} {...cardProps(link)} />)}
               </Masonry>

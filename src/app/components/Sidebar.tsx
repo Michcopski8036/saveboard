@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Bookmark, Home, Clock, Heart, Inbox, Archive, Plus, Hash, Sparkles, Brain, BookOpen, Zap, Star, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Bookmark, Home, Clock, Heart, Inbox, Archive, Plus, Hash, Sparkles, Brain, BookOpen, Zap, Star, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import type { LinkData } from './LinkCard';
 
@@ -19,6 +19,8 @@ interface SidebarProps {
   links: LinkData[];
   favorites: Set<string>;
   onAddCategory?: (name: string) => void;
+  onRenameCategory?: (old: string, neu: string) => void;
+  onDeleteCategory?: (cat: string) => void;
   sidebarOpen: boolean;
   onToggleSidebar?: () => void;
 }
@@ -40,11 +42,28 @@ const AI_FOLDERS = [
 
 const TAGS = ['design','dev','youtube','kdrama','inspiration','tools','news','read-later','ai','startup'];
 
-export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
+export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
   const { t } = useTheme();
   const [addingBoard, setAddingBoard] = useState(false);
   const [boardName, setBoardName]     = useState('');
   const [aiExpanded, setAiExpanded]   = useState(true);
+  const [menuCat, setMenuCat]         = useState<string | null>(null);
+  const [renamingCat, setRenamingCat] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fn = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuCat(null); };
+    if (menuCat) document.addEventListener('mousedown', fn);
+    return () => document.removeEventListener('mousedown', fn);
+  }, [menuCat]);
+
+  const startRename = (cat: string) => { setMenuCat(null); setRenamingCat(cat); setRenameValue(cat); };
+  const commitRename = (cat: string) => {
+    const v = renameValue.trim();
+    if (v && v !== cat) onRenameCategory?.(cat, v);
+    setRenamingCat(null);
+  };
 
   const now = Date.now();
   const wk  = 7 * 24 * 60 * 60 * 1000;
@@ -206,23 +225,94 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
               </button>
             </div>
             <div className="space-y-0.5">
+              {/* All boards shortcut */}
+              <div className="group relative flex items-center rounded-xl transition-all duration-150"
+                style={{ background: isActive('all') ? t.boardActiveBg : 'transparent', border: isActive('all') ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent' }}>
+                <button onClick={() => onSelect('all')}
+                  className="flex-1 flex items-center gap-2.5 px-2.5 py-[9px] text-left min-w-0"
+                  style={{ color: isActive('all') ? t.boardActiveText : t.boardInactiveText }}>
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: '#9CA3AF' }} />
+                  <span className="flex-1 text-[13px] font-medium truncate">All</span>
+                  {links.length > 0 && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums"
+                      style={{ background: t.boardCountBg, color: t.boardCountText }}>
+                      {links.length}
+                    </span>
+                  )}
+                </button>
+              </div>
               {categories.map(cat => {
                 const active = isActive(`cat:${cat}`);
                 const count = links.filter(l => l.category === cat).length;
                 const color = dotColor(cat);
+                const isRenaming = renamingCat === cat;
+                const isMenuOpen = menuCat === cat;
                 return (
-                  <button key={cat} onClick={() => onSelect(`cat:${cat}`)}
-                    className="w-full flex items-center gap-2.5 px-2.5 py-[9px] rounded-xl transition-all duration-150 text-left"
-                    style={{ background: active ? t.boardActiveBg : 'transparent', border: active ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent', color: active ? t.boardActiveText : t.boardInactiveText }}>
-                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: color, boxShadow: active ? `0 0 7px ${color}80` : 'none' }} />
-                    <span className="flex-1 text-[13px] font-medium truncate">{cat}</span>
-                    {count > 0 && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums"
-                        style={{ background: t.boardCountBg, color: t.boardCountText }}>
-                        {count}
-                      </span>
+                  <div key={cat} className="group relative flex items-center rounded-xl transition-all duration-150"
+                    style={{ background: active ? t.boardActiveBg : 'transparent', border: active ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent' }}>
+                    <button onClick={() => onSelect(`cat:${cat}`)}
+                      className="flex-1 flex items-center gap-2.5 px-2.5 py-[9px] text-left min-w-0"
+                      style={{ color: active ? t.boardActiveText : t.boardInactiveText }}>
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: color, boxShadow: active ? `0 0 7px ${color}80` : 'none' }} />
+                      {isRenaming ? (
+                        <input
+                          autoFocus
+                          value={renameValue}
+                          onChange={e => setRenameValue(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') commitRename(cat); if (e.key === 'Escape') setRenamingCat(null); }}
+                          onBlur={() => commitRename(cat)}
+                          onClick={e => e.stopPropagation()}
+                          className="flex-1 min-w-0 text-[13px] font-medium bg-transparent focus:outline-none border-b"
+                          style={{ color: active ? t.boardActiveText : t.boardInactiveText, borderColor: color }}
+                        />
+                      ) : (
+                        <span className="flex-1 text-[13px] font-medium truncate">{cat}</span>
+                      )}
+                    </button>
+                    {!isRenaming && (
+                      <>
+                        {!isMenuOpen && count > 0 && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums mr-2 group-hover:hidden"
+                            style={{ background: t.boardCountBg, color: t.boardCountText }}>
+                            {count}
+                          </span>
+                        )}
+                        <div className="relative" ref={isMenuOpen ? menuRef : undefined}>
+                          <button
+                            onClick={e => { e.stopPropagation(); setMenuCat(isMenuOpen ? null : cat); }}
+                            className={`p-1 mr-1.5 rounded-md transition-all ${isMenuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                            style={{ color: t.iconMuted }}
+                            onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                            <MoreHorizontal className="w-3.5 h-3.5" />
+                          </button>
+                          {isMenuOpen && (
+                            <div className="absolute right-0 top-full mt-1 z-50 w-36 rounded-xl overflow-hidden"
+                              style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
+                              <div className="p-1">
+                                <button onClick={() => startRename(cat)}
+                                  className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
+                                  style={{ color: t.dropdownText }}
+                                  onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
+                                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                                  <Pencil className="w-3.5 h-3.5" style={{ color: t.dropdownIcon }} />
+                                  <span className="text-[12px]">Rename</span>
+                                </button>
+                                <button onClick={() => { setMenuCat(null); onDeleteCategory?.(cat); }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
+                                  style={{ color: '#EF4444' }}
+                                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
+                                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                                  <span className="text-[12px]">Delete</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>

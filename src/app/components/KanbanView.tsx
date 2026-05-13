@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 import { MoreVertical, Heart, Trash2, Link2, Check, Sparkles } from 'lucide-react';
 import { isPlaceholder, getPlatformFromPlaceholder, PlatformPlaceholder } from './PlatformPlaceholder';
 import { useTheme } from '../context/ThemeContext';
 import type { LinkData } from './LinkCard';
+
+const DRAG_TYPE = 'KANBAN_CARD';
 
 const COL_PALETTE = ['#8B5CF6','#6366F1','#3B82F6','#0EA5E9','#10B981','#F59E0B','#EF4444','#EC4899','#14B8A6'];
 function colColor(name: string): string {
@@ -27,6 +30,12 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete }: KanbanCar
   const isMemo = link.image === 'placeholder:memo';
   const dom = isMemo ? 'Note' : link.image === 'placeholder:pdf' ? 'PDF' : domain(link);
 
+  const [{ isDragging }, drag] = useDrag({
+    type: DRAG_TYPE,
+    item: { id: link.id, category: link.category },
+    collect: monitor => ({ isDragging: monitor.isDragging() }),
+  });
+
   useEffect(() => {
     const fn = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false); };
     if (showMenu) document.addEventListener('mousedown', fn);
@@ -40,9 +49,14 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete }: KanbanCar
   };
 
   return (
-    <div className="group rounded-xl p-3 transition-all duration-200 cursor-pointer"
-      style={{ background: t.kanbanCardBg, border: `1px solid ${t.kanbanCardBorder}`, boxShadow: t.kanbanCardShadow }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = t.kanbanCardHoverShadow; e.currentTarget.style.borderColor = t.kanbanCardHoverBorder; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+    <div ref={drag} className="group rounded-xl p-3 transition-all duration-200 cursor-grab active:cursor-grabbing"
+      style={{
+        background: t.kanbanCardBg,
+        border: `1px solid ${t.kanbanCardBorder}`,
+        boxShadow: t.kanbanCardShadow,
+        opacity: isDragging ? 0.4 : 1,
+      }}
+      onMouseEnter={e => { if (!isDragging) { e.currentTarget.style.boxShadow = t.kanbanCardHoverShadow; e.currentTarget.style.borderColor = t.kanbanCardHoverBorder; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = t.kanbanCardShadow; e.currentTarget.style.borderColor = t.kanbanCardBorder; e.currentTarget.style.transform = 'translateY(0)'; }}>
 
       <div className="flex gap-2.5 mb-2.5">
@@ -113,8 +127,87 @@ interface KanbanViewProps {
   onToggleFavorite: (id: string) => void; onDelete: (id: string) => void; onUpdateCategory: (id: string, cat: string) => void;
 }
 
-export function KanbanView({ links, categories, favorites, onToggleFavorite, onDelete, onUpdateCategory }: KanbanViewProps) {
+interface KanbanColumnProps {
+  col: { id: string; label: string; links: LinkData[] };
+  color: string;
+  favorites: Set<string>;
+  categories: string[];
+  onToggleFavorite: (id: string) => void;
+  onDelete: (id: string) => void;
+  onUpdateCategory: (id: string, cat: string) => void;
+}
+
+function KanbanColumn({ col, color, favorites, categories, onToggleFavorite, onDelete, onUpdateCategory }: KanbanColumnProps) {
   const { t } = useTheme();
+
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: DRAG_TYPE,
+    drop: (item: { id: string; category: string | undefined }) => {
+      const targetCategory = col.id === 'none' ? 'None' : col.id;
+      const currentCategory = item.category ?? 'None';
+      if (currentCategory !== targetCategory) {
+        onUpdateCategory(item.id, targetCategory);
+      }
+    },
+    canDrop: (item: { id: string; category: string | undefined }) => {
+      const targetCategory = col.id === 'none' ? 'None' : col.id;
+      return (item.category ?? 'None') !== targetCategory;
+    },
+    collect: monitor => ({ isOver: monitor.isOver(), canDrop: monitor.canDrop() }),
+  });
+
+  const isActive = isOver && canDrop;
+
+  return (
+    <div ref={drop} className="flex flex-col shrink-0 rounded-2xl transition-all duration-150"
+      style={{
+        width: 270,
+        background: t.kanbanColBg,
+        border: `1px solid ${isActive ? color : t.kanbanColBorder}`,
+        boxShadow: isActive ? `0 0 0 2px ${color}40` : undefined,
+      }}>
+      <div className="px-4 py-3.5 flex items-center justify-between shrink-0"
+        style={{ borderBottom: `1px solid ${t.kanbanColDivider}` }}>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ background: color, boxShadow: `0 0 7px ${color}60` }} />
+          <span className="text-[13px] font-semibold" style={{ color: t.kanbanColTitle }}>{col.label}</span>
+        </div>
+        <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums"
+          style={{ background: t.kanbanColCountBg, color: t.kanbanColCountText }}>
+          {col.links.length}
+        </span>
+      </div>
+      <div className="h-[2px] mx-4 rounded-full" style={{ background: `linear-gradient(90deg, ${color}50, transparent)` }} />
+      <div className="flex-1 overflow-y-auto p-3 space-y-2" style={{ minHeight: 80 }}>
+        {isActive && col.links.length === 0 && (
+          <div className="rounded-xl border-2 border-dashed h-16 flex items-center justify-center"
+            style={{ borderColor: color, background: `${color}10` }}>
+            <p className="text-[11px] font-medium" style={{ color }}>Drop here</p>
+          </div>
+        )}
+        {col.links.length === 0 && !isActive ? (
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <p className="text-[11px]" style={{ color: t.kanbanEmptyText }}>No links here</p>
+          </div>
+        ) : (
+          col.links.map(link => (
+            <KanbanCard key={link.id} link={link} isFavorited={favorites.has(link.id)}
+              onToggleFavorite={onToggleFavorite} onDelete={onDelete}
+              onUpdateCategory={onUpdateCategory} categories={categories} />
+          ))
+        )}
+        {isActive && col.links.length > 0 && (
+          <div className="rounded-xl border-2 border-dashed h-12 flex items-center justify-center"
+            style={{ borderColor: color, background: `${color}10` }}>
+            <p className="text-[11px] font-medium" style={{ color }}>Drop here</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function KanbanView({ links, categories, favorites, onToggleFavorite, onDelete, onUpdateCategory }: KanbanViewProps) {
   const columns = [
     { id: 'none', label: 'Unsorted', links: links.filter(l => !l.category || l.category === 'None') },
     ...categories.map(cat => ({ id: cat, label: cat, links: links.filter(l => l.category === cat) })),
@@ -126,34 +219,10 @@ export function KanbanView({ links, categories, favorites, onToggleFavorite, onD
       {columns.map(col => {
         const color = col.id === 'none' ? '#9CA3AF' : col.id === 'archive' ? '#6B7280' : colColor(col.label);
         return (
-          <div key={col.id} className="flex flex-col shrink-0 rounded-2xl"
-            style={{ width: 270, background: t.kanbanColBg, border: `1px solid ${t.kanbanColBorder}` }}>
-            <div className="px-4 py-3.5 flex items-center justify-between shrink-0"
-              style={{ borderBottom: `1px solid ${t.kanbanColDivider}` }}>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ background: color, boxShadow: `0 0 7px ${color}60` }} />
-                <span className="text-[13px] font-semibold" style={{ color: t.kanbanColTitle }}>{col.label}</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums"
-                style={{ background: t.kanbanColCountBg, color: t.kanbanColCountText }}>
-                {col.links.length}
-              </span>
-            </div>
-            <div className="h-[2px] mx-4 rounded-full" style={{ background: `linear-gradient(90deg, ${color}50, transparent)` }} />
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {col.links.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <p className="text-[11px]" style={{ color: t.kanbanEmptyText }}>No links here</p>
-                </div>
-              ) : (
-                col.links.map(link => (
-                  <KanbanCard key={link.id} link={link} isFavorited={favorites.has(link.id)}
-                    onToggleFavorite={onToggleFavorite} onDelete={onDelete}
-                    onUpdateCategory={onUpdateCategory} categories={categories} />
-                ))
-              )}
-            </div>
-          </div>
+          <KanbanColumn key={col.id} col={col} color={color}
+            favorites={favorites} categories={categories}
+            onToggleFavorite={onToggleFavorite} onDelete={onDelete}
+            onUpdateCategory={onUpdateCategory} />
         );
       })}
     </div>
