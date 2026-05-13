@@ -12,9 +12,9 @@ import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, B
 function GalleryIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="9" height="18" rx="2" />
-      <rect x="14" y="3" width="7" height="8" rx="2" />
-      <rect x="14" y="13" width="7" height="8" rx="2" />
+      <rect x="3" y="3" width="7" height="8" rx="2" />
+      <rect x="3" y="13" width="7" height="8" rx="2" />
+      <rect x="12" y="3" width="9" height="18" rx="2" />
     </svg>
   );
 }
@@ -329,10 +329,8 @@ function AppContent() {
 
   const viewModes = [
     { mode: 'masonry' as ViewMode, Icon: Columns2,        label: 'Masonry' },
-    { mode: 'grid'    as ViewMode, Icon: LayoutGrid,       label: 'Grid'    },
-    { mode: 'gallery' as ViewMode, Icon: GalleryIcon,      label: 'Gallery' },
-    { mode: 'list'    as ViewMode, Icon: List,             label: 'List'    },
-    { mode: 'kanban'  as ViewMode, Icon: Kanban,           label: 'Kanban'  },
+    { mode: 'gallery' as ViewMode, Icon: GalleryIcon,     label: 'Gallery' },
+    { mode: 'kanban'  as ViewMode, Icon: Kanban,          label: 'Kanban'  },
   ];
 
   const sortLabels: Record<SortOption, string> = { newest: tr('newest'), oldest: tr('oldest'), 'a-z': tr('az'), 'z-a': tr('za') };
