@@ -12,6 +12,7 @@ import type { User } from '@supabase/supabase-js';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { ShareModal } from './components/ShareModal';
 
 type ViewMode   = 'masonry' | 'grid' | 'list' | 'kanban';
 type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
@@ -54,6 +55,7 @@ function AppContent() {
   const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
   const [showAddModal, setShowAddModal] = useState(false);
   const [sidebarOpen, setSidebarOpen]   = useState(false);
+  const [shareCategory, setShareCategory] = useState<string | null>(null);
   const [showFabMenu, setShowFabMenu]   = useState(false);
   const [isRecording, setIsRecording]   = useState(false);
   const [showSearchDrop, setShowSearchDrop] = useState(false);
@@ -289,6 +291,7 @@ function AppContent() {
         onAddCategory={handleAddCategory}
         onRenameCategory={handleRenameCategory}
         onDeleteCategory={handleDeleteCategory}
+        onShareCategory={cat => setShareCategory(cat)}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(p => !p)}
       />
@@ -616,6 +619,11 @@ function AppContent() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* ── Share modal ───────────────────────────────────────────────── */}
+      {shareCategory && user && (
+        <ShareModal category={shareCategory} userId={user.id} onClose={() => setShareCategory(null)} />
       )}
 
       {/* ── Bottom nav (mobile only) ───────────────────────────────────── */}

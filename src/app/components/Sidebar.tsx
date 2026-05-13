@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bookmark, Home, Clock, Heart, Inbox, Archive, Plus, Hash, Sparkles, Brain, BookOpen, Zap, Star, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Bookmark, Home, Clock, Heart, Inbox, Archive, Plus, Hash, Sparkles, Brain, BookOpen, Zap, Star, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import type { LinkData } from './LinkCard';
 
@@ -21,6 +21,7 @@ interface SidebarProps {
   onAddCategory?: (name: string) => void;
   onRenameCategory?: (old: string, neu: string) => void;
   onDeleteCategory?: (cat: string) => void;
+  onShareCategory?: (cat: string) => void;
   sidebarOpen: boolean;
   onToggleSidebar?: () => void;
 }
@@ -42,7 +43,7 @@ const AI_FOLDERS = [
 
 const TAGS = ['design','dev','youtube','kdrama','inspiration','tools','news','read-later','ai','startup'];
 
-export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
+export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
   const { t } = useTheme();
   const [addingBoard, setAddingBoard] = useState(false);
   const [boardName, setBoardName]     = useState('');
@@ -297,6 +298,14 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
                                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                                   <Pencil className="w-3.5 h-3.5" style={{ color: t.dropdownIcon }} />
                                   <span className="text-[12px]">Rename</span>
+                                </button>
+                                <button onClick={() => { setMenuCat(null); onShareCategory?.(cat); }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
+                                  style={{ color: t.dropdownText }}
+                                  onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
+                                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                                  <Share2 className="w-3.5 h-3.5" style={{ color: t.dropdownIcon }} />
+                                  <span className="text-[12px]">Share</span>
                                 </button>
                                 <button onClick={() => { setMenuCat(null); onDeleteCategory?.(cat); }}
                                   className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"

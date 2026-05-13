@@ -1,0 +1,141 @@
+import { useState, useEffect } from 'react';
+import { X, Copy, Check, Link2, Loader2, Trash2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useTheme } from '../context/ThemeContext';
+
+interface ShareModalProps {
+  category: string;
+  userId: string;
+  onClose: () => void;
+}
+
+const BASE_URL = window.location.origin;
+
+export function ShareModal({ category, userId, onClose }: ShareModalProps) {
+  const { t } = useTheme();
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [revoking, setRevoking] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('shared_boards')
+        .select('token')
+        .eq('owner_id', userId)
+        .eq('category', category)
+        .maybeSingle();
+
+      if (data?.token) { setToken(data.token); setLoading(false); return; }
+
+      const { data: inserted } = await supabase
+        .from('shared_boards')
+        .insert({ owner_id: userId, category })
+        .select('token')
+        .single();
+
+      setToken(inserted?.token ?? null);
+      setLoading(false);
+    })();
+  }, [category, userId]);
+
+  const shareUrl = token ? `${BASE_URL}/share/${token}` : '';
+
+  const handleCopy = async () => {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRevoke = async () => {
+    if (!token) return;
+    setRevoking(true);
+    await supabase.from('shared_boards').delete().eq('token', token);
+    setToken(null);
+    setRevoking(false);
+  };
+
+  const handleCreateNew = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('shared_boards')
+      .insert({ owner_id: userId, category })
+      .select('token')
+      .single();
+    setToken(data?.token ?? null);
+    setLoading(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl"
+        style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${t.cardBorder}` }}>
+          <div>
+            <p className="text-[15px] font-bold" style={{ color: t.textPrimary }}>Share Board</p>
+            <p className="text-[12px] mt-0.5" style={{ color: t.textMuted }}>
+              <span className="font-semibold" style={{ color: t.textSecondary }}>{category}</span> — anyone with the link can view
+            </p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl transition-colors"
+            style={{ color: t.iconMuted }}
+            onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-5 py-5 space-y-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#7C3AED' }} />
+            </div>
+          ) : token ? (
+            <>
+              {/* Link display */}
+              <div className="flex items-center gap-2 rounded-xl px-3 py-2.5"
+                style={{ background: t.inputBg, border: `1px solid ${t.inputBorder}` }}>
+                <Link2 className="w-3.5 h-3.5 shrink-0" style={{ color: '#7C3AED' }} />
+                <span className="flex-1 text-[12px] truncate font-mono" style={{ color: t.textSecondary }}>{shareUrl}</span>
+              </div>
+
+              {/* Copy button */}
+              <button onClick={handleCopy}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-[13px] text-white transition-opacity hover:opacity-90"
+                style={{ background: copied ? '#22C55E' : 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? 'Copied!' : 'Copy Link'}
+              </button>
+
+              {/* Revoke */}
+              <button onClick={handleRevoke} disabled={revoking}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[12px] transition-colors disabled:opacity-50"
+                style={{ color: '#EF4444' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.07)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                {revoking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                Revoke link
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-[13px] text-center py-2" style={{ color: t.textMuted }}>No active share link.</p>
+              <button onClick={handleCreateNew}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-[13px] text-white transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+                <Link2 className="w-4 h-4" />
+                Create share link
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
