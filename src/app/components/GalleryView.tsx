@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ExternalLink, Link2, RefreshCw, Sparkles, Play, Clock, FileText } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { isPlaceholder, getPlatformFromPlaceholder, PlatformPlaceholder } from './PlatformPlaceholder';
@@ -183,9 +183,15 @@ function GalleryCard({ link, isActive, onClick }: { link: LinkData; isActive: bo
 
 export function GalleryView({ links, favorites }: GalleryViewProps) {
   const { t } = useTheme();
-  const [selected, setSelected] = useState<LinkData | null>(null);
+  const [selected, setSelected] = useState<LinkData | null>(links[0] ?? null);
   const [iframeError, setIframeError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
+
+  useEffect(() => {
+    setSelected(links[0] ?? null);
+    setIframeError(false);
+    setIframeKey(k => k + 1);
+  }, [links]);
 
   const handleSelect = (link: LinkData) => {
     setSelected(link);
