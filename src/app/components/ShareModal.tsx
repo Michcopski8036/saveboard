@@ -2,32 +2,38 @@ import { useState, useEffect } from 'react';
 import { X, Copy, Check, Link2, Loader2, Trash2, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTheme } from '../context/ThemeContext';
+import type { LinkData } from './LinkCard';
 
 interface ShareModalProps {
   category: string;
   userId: string;
+  links: LinkData[];
   onClose: () => void;
 }
 
 const BASE_URL = window.location.origin;
 
-async function snapshotLinks(userId: string, category: string, token: string) {
-  const { data: links } = await supabase
-    .from('links')
-    .select('id, url, title, description, image, category, notes, saved_at')
-    .eq('user_id', userId)
-    .eq('category', category)
-    .order('saved_at', { ascending: false });
+async function pushSnapshot(links: LinkData[], token: string) {
+  const snapshot = links.map(l => ({
+    id: l.id,
+    url: l.url,
+    title: l.title,
+    description: l.description,
+    image: l.image,
+    category: l.category,
+    notes: l.notes ?? null,
+    saved_at: l.savedAt.toISOString(),
+  }));
 
   await supabase
     .from('shared_boards')
-    .update({ links_snapshot: links ?? [], synced_at: new Date().toISOString() })
+    .update({ links_snapshot: snapshot, synced_at: new Date().toISOString() })
     .eq('token', token);
 
-  return links ?? [];
+  return snapshot.length;
 }
 
-export function ShareModal({ category, userId, onClose }: ShareModalProps) {
+export function ShareModal({ category, userId, links, onClose }: ShareModalProps) {
   const { t } = useTheme();
   const [token, setToken] = useState<string | null>(null);
   const [linkCount, setLinkCount] = useState(0);
@@ -43,15 +49,13 @@ export function ShareModal({ category, userId, onClose }: ShareModalProps) {
 
       const { data: existing } = await supabase
         .from('shared_boards')
-        .select('token, synced_at, links_snapshot')
+        .select('token')
         .eq('owner_id', userId)
         .eq('category', category)
         .maybeSingle();
 
       if (existing?.token) {
         tok = existing.token;
-        setSyncedAt(existing.synced_at ? new Date(existing.synced_at) : null);
-        setLinkCount((existing.links_snapshot ?? []).length);
       } else {
         const { data: inserted } = await supabase
           .from('shared_boards')
@@ -62,9 +66,8 @@ export function ShareModal({ category, userId, onClose }: ShareModalProps) {
       }
 
       setToken(tok);
-      // Always refresh the snapshot when the modal opens
-      const links = await snapshotLinks(userId, category, tok);
-      setLinkCount(links.length);
+      const count = await pushSnapshot(links, tok);
+      setLinkCount(count);
       setSyncedAt(new Date());
       setLoading(false);
     })();
@@ -82,8 +85,8 @@ export function ShareModal({ category, userId, onClose }: ShareModalProps) {
   const handleSync = async () => {
     if (!token) return;
     setSyncing(true);
-    const links = await snapshotLinks(userId, category, token);
-    setLinkCount(links.length);
+    const count = await pushSnapshot(links, token);
+    setLinkCount(count);
     setSyncedAt(new Date());
     setSyncing(false);
   };
@@ -106,16 +109,12 @@ export function ShareModal({ category, userId, onClose }: ShareModalProps) {
     const tok = data?.token ?? null;
     setToken(tok);
     if (tok) {
-      const links = await snapshotLinks(userId, category, tok);
-      setLinkCount(links.length);
+      const count = await pushSnapshot(links, tok);
+      setLinkCount(count);
       setSyncedAt(new Date());
     }
     setLoading(false);
   };
-
-  const syncLabel = syncedAt
-    ? `${linkCount} link${linkCount !== 1 ? 's' : ''} · synced just now`
-    : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -149,17 +148,17 @@ export function ShareModal({ category, userId, onClose }: ShareModalProps) {
           ) : token ? (
             <>
               {/* Sync status */}
-              {syncLabel && (
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-[11px]" style={{ color: t.textMuted }}>{syncLabel}</p>
-                  <button onClick={handleSync} disabled={syncing}
-                    className="flex items-center gap-1 text-[11px] font-medium disabled:opacity-50"
-                    style={{ color: '#7C3AED' }}>
-                    <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
-                    Sync
-                  </button>
-                </div>
-              )}
+              <div className="flex items-center justify-between px-1">
+                <p className="text-[11px]" style={{ color: t.textMuted }}>
+                  {syncedAt ? `${linkCount} link${linkCount !== 1 ? 's' : ''} · synced just now` : 'Not synced yet'}
+                </p>
+                <button onClick={handleSync} disabled={syncing}
+                  className="flex items-center gap-1 text-[11px] font-medium disabled:opacity-50"
+                  style={{ color: '#7C3AED' }}>
+                  <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
+                  Sync
+                </button>
+              </div>
 
               {/* Link display */}
               <div className="flex items-center gap-2 rounded-xl px-3 py-2.5"

@@ -623,7 +623,12 @@ function AppContent() {
 
       {/* ── Share modal ───────────────────────────────────────────────── */}
       {shareCategory && user && (
-        <ShareModal category={shareCategory} userId={user.id} onClose={() => setShareCategory(null)} />
+        <ShareModal
+          category={shareCategory}
+          userId={user.id}
+          links={links.filter(l => l.category === shareCategory)}
+          onClose={() => setShareCategory(null)}
+        />
       )}
 
       {/* ── Bottom nav (mobile only) ───────────────────────────────────── */}
