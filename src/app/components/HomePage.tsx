@@ -69,6 +69,43 @@ export function HomePage({ links, categories, favorites, userEmail, onSelect, on
         </button>
       </div>
 
+      {/* ── Recently Saved ───────────────────────────────────────────── */}
+      {recent.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>Recently Saved</p>
+            <button onClick={() => onSelect('recent')}
+              className="flex items-center gap-1 text-[12px] font-medium transition-opacity hover:opacity-70"
+              style={{ color: '#7C3AED' }}>
+              View all <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {recent.map(l => (
+              <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer"
+                className="shrink-0 w-40 rounded-2xl overflow-hidden transition-all hover:-translate-y-0.5"
+                style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                {l.image && l.image !== 'placeholder:memo' && l.image !== 'placeholder:pdf' ? (
+                  <div className="w-full h-24 overflow-hidden">
+                    <img src={l.image} alt={l.title} className="w-full h-full object-cover"
+                      onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
+                  </div>
+                ) : (
+                  <div className="w-full h-24 flex items-center justify-center"
+                    style={{ background: `rgba(${hexToRgb(dotColor(l.category || 'x'))},0.08)` }}>
+                    <Bookmark className="w-6 h-6" style={{ color: dotColor(l.category || 'x'), opacity: 0.4 }} />
+                  </div>
+                )}
+                <div className="p-2.5">
+                  <p className="text-[11px] font-semibold line-clamp-2 leading-snug" style={{ color: t.textPrimary }}>{l.title}</p>
+                  <p className="text-[10px] mt-1 truncate" style={{ color: t.textMuted }}>{domain(l.url) || timeAgo(l.savedAt)}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Stats row ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map(({ label, value, icon: Icon, color }) => (
@@ -165,42 +202,6 @@ export function HomePage({ links, categories, favorites, userEmail, onSelect, on
         )}
       </div>
 
-      {/* ── Recently Saved ───────────────────────────────────────────── */}
-      {recent.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>Recently Saved</p>
-            <button onClick={() => onSelect('recent')}
-              className="flex items-center gap-1 text-[12px] font-medium transition-opacity hover:opacity-70"
-              style={{ color: '#7C3AED' }}>
-              View all <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {recent.map(l => (
-              <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer"
-                className="shrink-0 w-40 rounded-2xl overflow-hidden transition-all hover:-translate-y-0.5"
-                style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                {l.image && l.image !== 'placeholder:memo' && l.image !== 'placeholder:pdf' ? (
-                  <div className="w-full h-24 overflow-hidden">
-                    <img src={l.image} alt={l.title} className="w-full h-full object-cover"
-                      onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
-                  </div>
-                ) : (
-                  <div className="w-full h-24 flex items-center justify-center"
-                    style={{ background: `rgba(${hexToRgb(dotColor(l.category || 'x'))},0.08)` }}>
-                    <Bookmark className="w-6 h-6" style={{ color: dotColor(l.category || 'x'), opacity: 0.4 }} />
-                  </div>
-                )}
-                <div className="p-2.5">
-                  <p className="text-[11px] font-semibold line-clamp-2 leading-snug" style={{ color: t.textPrimary }}>{l.title}</p>
-                  <p className="text-[10px] mt-1 truncate" style={{ color: t.textMuted }}>{domain(l.url) || timeAgo(l.savedAt)}</p>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
