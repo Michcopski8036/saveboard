@@ -106,48 +106,6 @@ export function HomePage({ links, categories, favorites, userEmail, onSelect, on
         </div>
       )}
 
-      {/* ── Stats row ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {stats.map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="rounded-2xl p-4"
-            style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: t.textMuted }}>{label}</p>
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: `rgba(${hexToRgb(color)},0.12)` }}>
-                <Icon className="w-3.5 h-3.5" style={{ color }} />
-              </div>
-            </div>
-            <p className="text-[28px] font-bold tabular-nums leading-none" style={{ color: t.textPrimary }}>{value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Quick nav ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          { id: 'browse', label: 'All Links', Icon: Bookmark, desc: `${links.length} saved`, color: '#7C3AED' },
-          { id: 'recent', label: 'Recent', Icon: Clock, desc: `${thisWeek} this week`, color: '#6366F1' },
-          { id: 'favorites', label: 'Favorites', Icon: Heart, desc: `${favorites.size} links`, color: '#EC4899' },
-          { id: 'unsorted', label: 'Unsorted', Icon: Inbox, desc: `${unsorted} links`, color: '#F59E0B' },
-        ].map(({ id, label, Icon, desc, color }) => (
-          <button key={id} onClick={() => onSelect(id)}
-            className="flex items-center gap-3 p-3.5 rounded-2xl text-left transition-all hover:-translate-y-0.5"
-            style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.boxShadow = `0 4px 16px rgba(${hexToRgb(color)},0.12)`; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = t.cardBorder; e.currentTarget.style.boxShadow = 'none'; }}>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: `rgba(${hexToRgb(color)},0.10)` }}>
-              <Icon className="w-4 h-4" style={{ color }} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{label}</p>
-              <p className="text-[11px]" style={{ color: t.textMuted }}>{desc}</p>
-            </div>
-          </button>
-        ))}
-      </div>
-
       {/* ── Boards ───────────────────────────────────────────────────── */}
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -200,6 +158,48 @@ export function HomePage({ links, categories, favorites, userEmail, onSelect, on
             })}
           </div>
         )}
+      </div>
+
+      {/* ── Stats row ────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {stats.map(({ label, value, icon: Icon, color }) => (
+          <div key={label} className="rounded-2xl p-4"
+            style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: t.textMuted }}>{label}</p>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ background: `rgba(${hexToRgb(color)},0.12)` }}>
+                <Icon className="w-3.5 h-3.5" style={{ color }} />
+              </div>
+            </div>
+            <p className="text-[28px] font-bold tabular-nums leading-none" style={{ color: t.textPrimary }}>{value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Quick nav ────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { id: 'browse', label: 'All Links', Icon: Bookmark, desc: `${links.length} saved`, color: '#7C3AED' },
+          { id: 'recent', label: 'Recent', Icon: Clock, desc: `${thisWeek} this week`, color: '#6366F1' },
+          { id: 'favorites', label: 'Favorites', Icon: Heart, desc: `${favorites.size} links`, color: '#EC4899' },
+          { id: 'unsorted', label: 'Unsorted', Icon: Inbox, desc: `${unsorted} links`, color: '#F59E0B' },
+        ].map(({ id, label, Icon, desc, color }) => (
+          <button key={id} onClick={() => onSelect(id)}
+            className="flex items-center gap-3 p-3.5 rounded-2xl text-left transition-all hover:-translate-y-0.5"
+            style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.boxShadow = `0 4px 16px rgba(${hexToRgb(color)},0.12)`; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = t.cardBorder; e.currentTarget.style.boxShadow = 'none'; }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: `rgba(${hexToRgb(color)},0.10)` }}>
+              <Icon className="w-4 h-4" style={{ color }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{label}</p>
+              <p className="text-[11px]" style={{ color: t.textMuted }}>{desc}</p>
+            </div>
+          </button>
+        ))}
       </div>
 
     </div>
