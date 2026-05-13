@@ -13,6 +13,7 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ShareModal } from './components/ShareModal';
+import { HomePage } from './components/HomePage';
 
 type ViewMode   = 'masonry' | 'grid' | 'list' | 'kanban';
 type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
@@ -21,6 +22,7 @@ const defaultCategories = ['Articles', 'Videos', 'Design', 'Inspiration', 'Tools
 
 const COLLECTION_LABELS: Record<string, string> = {
   all:           'Home',
+  browse:        'All Links',
   recent:        'Recently Saved',
   favorites:     'Favorites',
   unsorted:      'Unsorted',
@@ -93,7 +95,8 @@ function AppContent() {
   const weekMs = 7 * 24 * 60 * 60 * 1000;
 
   let filtered = (() => {
-    if (selected === 'all')           return links;
+    if (selected === 'all')           return [];   // dashboard — no link list
+    if (selected === 'browse')        return links;
     if (selected === 'recent')        return links.filter(l => now - l.savedAt.getTime() < weekMs);
     if (selected === 'favorites')     return links.filter(l => favorites.has(l.id));
     if (selected === 'unsorted')      return links.filter(l => !l.category || l.category === 'None');
@@ -432,7 +435,16 @@ function AppContent() {
 
         {/* ── Content ────────────────────────────────────────────────── */}
         <main className="flex-1 px-4 sm:px-6 py-5 pb-24 md:pb-5">
-          {isLoading ? (
+          {selected === 'all' ? (
+            <HomePage
+              links={links}
+              categories={categories}
+              favorites={favorites}
+              userEmail={user?.email}
+              onSelect={id => { setSelected(id); setSidebarOpen(false); }}
+              onAddLink={() => setShowAddModal(true)}
+            />
+          ) : isLoading ? (
             <div className="flex justify-center pt-24">
               <svg className="animate-spin h-8 w-8" style={{ color: '#7C3AED' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

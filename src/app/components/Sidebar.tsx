@@ -228,10 +228,10 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
             <div className="space-y-0.5">
               {/* All boards shortcut */}
               <div className="group relative flex items-center rounded-xl transition-all duration-150"
-                style={{ background: isActive('all') ? t.boardActiveBg : 'transparent', border: isActive('all') ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent' }}>
-                <button onClick={() => onSelect('all')}
+                style={{ background: isActive('browse') ? t.boardActiveBg : 'transparent', border: isActive('browse') ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent' }}>
+                <button onClick={() => onSelect('browse')}
                   className="flex-1 flex items-center gap-2.5 px-2.5 py-[9px] text-left min-w-0"
-                  style={{ color: isActive('all') ? t.boardActiveText : t.boardInactiveText }}>
+                  style={{ color: isActive('browse') ? t.boardActiveText : t.boardInactiveText }}>
                   <div className="w-2 h-2 rounded-full shrink-0" style={{ background: '#9CA3AF' }} />
                   <span className="flex-1 text-[13px] font-medium truncate">All</span>
                   {links.length > 0 && (
