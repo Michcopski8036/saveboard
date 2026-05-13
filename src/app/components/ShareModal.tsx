@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Copy, Check, Link2, Loader2, Trash2 } from 'lucide-react';
+import { X, Copy, Check, Link2, Loader2, Trash2, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTheme } from '../context/ThemeContext';
 
@@ -11,31 +11,61 @@ interface ShareModalProps {
 
 const BASE_URL = window.location.origin;
 
+async function snapshotLinks(userId: string, category: string, token: string) {
+  const { data: links } = await supabase
+    .from('links')
+    .select('id, url, title, description, image, category, notes, saved_at')
+    .eq('user_id', userId)
+    .eq('category', category)
+    .order('saved_at', { ascending: false });
+
+  await supabase
+    .from('shared_boards')
+    .update({ links_snapshot: links ?? [], synced_at: new Date().toISOString() })
+    .eq('token', token);
+
+  return links ?? [];
+}
+
 export function ShareModal({ category, userId, onClose }: ShareModalProps) {
   const { t } = useTheme();
   const [token, setToken] = useState<string | null>(null);
+  const [linkCount, setLinkCount] = useState(0);
+  const [syncedAt, setSyncedAt] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [revoking, setRevoking] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
+      let tok: string;
+
+      const { data: existing } = await supabase
         .from('shared_boards')
-        .select('token')
+        .select('token, synced_at, links_snapshot')
         .eq('owner_id', userId)
         .eq('category', category)
         .maybeSingle();
 
-      if (data?.token) { setToken(data.token); setLoading(false); return; }
+      if (existing?.token) {
+        tok = existing.token;
+        setSyncedAt(existing.synced_at ? new Date(existing.synced_at) : null);
+        setLinkCount((existing.links_snapshot ?? []).length);
+      } else {
+        const { data: inserted } = await supabase
+          .from('shared_boards')
+          .insert({ owner_id: userId, category, links_snapshot: [], synced_at: null })
+          .select('token')
+          .single();
+        tok = inserted?.token ?? '';
+      }
 
-      const { data: inserted } = await supabase
-        .from('shared_boards')
-        .insert({ owner_id: userId, category })
-        .select('token')
-        .single();
-
-      setToken(inserted?.token ?? null);
+      setToken(tok);
+      // Always refresh the snapshot when the modal opens
+      const links = await snapshotLinks(userId, category, tok);
+      setLinkCount(links.length);
+      setSyncedAt(new Date());
       setLoading(false);
     })();
   }, [category, userId]);
@@ -47,6 +77,15 @@ export function ShareModal({ category, userId, onClose }: ShareModalProps) {
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSync = async () => {
+    if (!token) return;
+    setSyncing(true);
+    const links = await snapshotLinks(userId, category, token);
+    setLinkCount(links.length);
+    setSyncedAt(new Date());
+    setSyncing(false);
   };
 
   const handleRevoke = async () => {
@@ -61,15 +100,26 @@ export function ShareModal({ category, userId, onClose }: ShareModalProps) {
     setLoading(true);
     const { data } = await supabase
       .from('shared_boards')
-      .insert({ owner_id: userId, category })
+      .insert({ owner_id: userId, category, links_snapshot: [] })
       .select('token')
       .single();
-    setToken(data?.token ?? null);
+    const tok = data?.token ?? null;
+    setToken(tok);
+    if (tok) {
+      const links = await snapshotLinks(userId, category, tok);
+      setLinkCount(links.length);
+      setSyncedAt(new Date());
+    }
     setLoading(false);
   };
 
+  const syncLabel = syncedAt
+    ? `${linkCount} link${linkCount !== 1 ? 's' : ''} · synced just now`
+    : null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl"
         style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
@@ -91,13 +141,26 @@ export function ShareModal({ category, userId, onClose }: ShareModalProps) {
         </div>
 
         {/* Body */}
-        <div className="px-5 py-5 space-y-4">
+        <div className="px-5 py-5 space-y-3">
           {loading ? (
-            <div className="flex items-center justify-center py-4">
+            <div className="flex items-center justify-center py-6">
               <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#7C3AED' }} />
             </div>
           ) : token ? (
             <>
+              {/* Sync status */}
+              {syncLabel && (
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-[11px]" style={{ color: t.textMuted }}>{syncLabel}</p>
+                  <button onClick={handleSync} disabled={syncing}
+                    className="flex items-center gap-1 text-[11px] font-medium disabled:opacity-50"
+                    style={{ color: '#7C3AED' }}>
+                    <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
+                    Sync
+                  </button>
+                </div>
+              )}
+
               {/* Link display */}
               <div className="flex items-center gap-2 rounded-xl px-3 py-2.5"
                 style={{ background: t.inputBg, border: `1px solid ${t.inputBorder}` }}>

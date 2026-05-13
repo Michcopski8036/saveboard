@@ -2,21 +2,31 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { supabase } from '../lib/supabase';
 import { Bookmark, ExternalLink, Clock, Globe } from 'lucide-react';
-import type { LinkData } from './LinkCard';
+
+interface SharedLink {
+  id: string;
+  url: string;
+  title: string;
+  description?: string;
+  image?: string;
+  category: string;
+  notes?: string;
+  saved_at: string;
+}
 
 interface SharedBoard {
   token: string;
-  owner_id: string;
   category: string;
-  created_at: string;
+  links_snapshot: SharedLink[];
+  synced_at: string | null;
 }
 
 function domain(url: string): string {
   try { return new URL(url).hostname.replace('www.', ''); } catch { return url; }
 }
 
-function timeAgo(date: Date): string {
-  const s = Math.floor((Date.now() - date.getTime()) / 1000);
+function timeAgo(iso: string): string {
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return 'just now';
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
@@ -26,29 +36,20 @@ function timeAgo(date: Date): string {
 export function SharedBoardPage() {
   const { token } = useParams<{ token: string }>();
   const [board, setBoard] = useState<SharedBoard | null>(null);
-  const [links, setLinks] = useState<LinkData[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     if (!token) return;
     (async () => {
-      const { data: boardData, error: boardErr } = await supabase
+      const { data, error } = await supabase
         .from('shared_boards')
-        .select('*')
+        .select('token, category, links_snapshot, synced_at')
         .eq('token', token)
         .single();
 
-      if (boardErr || !boardData) { setNotFound(true); setLoading(false); return; }
-      setBoard(boardData);
-
-      const { data: linksData } = await supabase
-        .rpc('get_shared_board_links', { p_token: token });
-
-      setLinks((linksData ?? []).map((l: any) => ({
-        ...l,
-        savedAt: new Date(l.saved_at),
-      })));
+      if (error || !data) { setNotFound(true); setLoading(false); return; }
+      setBoard(data);
       setLoading(false);
     })();
   }, [token]);
@@ -74,6 +75,8 @@ export function SharedBoardPage() {
     </div>
   );
 
+  const links = board?.links_snapshot ?? [];
+
   return (
     <div className="min-h-screen" style={{ background: '#F8F7FF' }}>
       {/* Header */}
@@ -97,7 +100,10 @@ export function SharedBoardPage() {
       <div className="max-w-5xl mx-auto px-4 pt-8 pb-4">
         <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(124,58,237,0.5)' }}>Shared Board</p>
         <h1 className="text-[28px] font-bold text-gray-900">{board?.category}</h1>
-        <p className="text-[13px] text-gray-400 mt-1">{links.length} link{links.length !== 1 ? 's' : ''}</p>
+        <p className="text-[13px] text-gray-400 mt-1">
+          {links.length} link{links.length !== 1 ? 's' : ''}
+          {board?.synced_at && <span> · shared {timeAgo(board.synced_at)}</span>}
+        </p>
       </div>
 
       {/* Links grid */}
@@ -130,7 +136,7 @@ export function SharedBoardPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="w-3 h-3 text-gray-300" />
-                    <span className="text-[11px] text-gray-400">{timeAgo(link.savedAt)}</span>
+                    <span className="text-[11px] text-gray-400">{timeAgo(link.saved_at)}</span>
                   </div>
                 </div>
                 <ExternalLink className="w-3.5 h-3.5 text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity self-end -mt-1" />
