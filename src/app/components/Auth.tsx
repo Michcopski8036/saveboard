@@ -53,7 +53,7 @@ export function Auth() {
           {isLogin ? 'Welcome back' : 'Create account'}
         </h2>
         <p className="text-gray-500 text-center mb-8 text-sm">
-          {isLogin ? 'Sign in to access your links' : 'Start saving your favorite links'}
+          {isLogin ? 'Sign in to access your saves' : 'Start saving your favourite links'}
         </p>
 
         <button
