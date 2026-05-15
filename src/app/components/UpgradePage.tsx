@@ -9,14 +9,14 @@ interface UpgradePageProps {
 export const FREE_LIMITS = { links: 30, boards: 5 };
 
 const comparisonRows: { feature: string; free: boolean | string; pro: boolean | string; team: boolean | string }[] = [
-  { feature: 'Links',            free: '30 max',     pro: '300',       team: 'Unlimited' },
+  { feature: 'Saves',            free: '30 max',     pro: '300',       team: 'Unlimited' },
   { feature: 'Boards',           free: '5 max',      pro: '30',        team: 'Unlimited' },
   { feature: 'File uploads',     free: true,         pro: true,        team: true        },
   { feature: 'Notes on cards',   free: true,         pro: true,        team: true        },
   { feature: 'Favorites',        free: true,         pro: true,        team: true        },
   { feature: 'AI tags & summary',free: true,         pro: true,        team: true        },
   { feature: 'Kanban view',      free: true,         pro: true,        team: true        },
-  { feature: 'Export links',     free: true,         pro: true,        team: true        },
+  { feature: 'Export saves',     free: true,         pro: true,        team: true        },
   { feature: 'Shared boards',    free: true,         pro: true,        team: true        },
   { feature: 'Team members',     free: '1',          pro: '3',         team: '5+'        },
 ];
@@ -70,7 +70,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
               <div className="mt-6 inline-flex gap-8 bg-white/10 rounded-2xl px-8 py-4">
                 <div className="text-left">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-white/60 text-[11px]">Links</p>
+                    <p className="text-white/60 text-[11px]">Saves</p>
                     <p className="text-white text-[12px] font-semibold">{currentLinks}/{FREE_LIMITS.links}</p>
                   </div>
                   <div className="w-28 h-1.5 rounded-full bg-white/20">
@@ -98,7 +98,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
                 <p className="text-[32px] font-bold text-gray-900 leading-none mb-1">$0</p>
                 <p className="text-[12px] text-gray-400 mb-5">Forever free</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
-                  {['30 links', '5 boards', 'All features included', 'Export links'].map(f => (
+                  {['30 saves', '5 boards', 'All features included', 'Export saves'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-500">
                       <Check className="w-3.5 h-3.5 text-gray-300 shrink-0" />{f}
                     </li>
@@ -122,7 +122,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
                 <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">$3.49<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                 <p className="text-[12px] font-semibold text-purple-600 mb-5">or $24/yr — save 43%</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
-                  {['300 links','30 boards','All features included','Priority support','1 team member'].map(f => (
+                  {['300 saves','30 boards','All features included','Priority support','1 team member'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
                       <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
                     </li>
@@ -145,7 +145,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
                 <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">$6<span className="text-[16px] font-normal text-gray-400">/seat/mo</span></p>
                 <p className="text-[12px] text-gray-400 mb-5">Min 3 seats · billed monthly</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
-                  {['Unlimited links','Unlimited boards','All features included','Up to 5+ members','Admin dashboard'].map(f => (
+                  {['Unlimited saves','Unlimited boards','All features included','Up to 5+ members','Admin dashboard'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
                       <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />{f}
                     </li>
