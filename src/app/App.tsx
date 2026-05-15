@@ -150,12 +150,12 @@ function AppContent() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const { data: ld } = await supabase.from('links').select('*').order('created_at', { ascending: false });
+      const { data: ld } = await supabase.from('links').select('*').eq('user_id', user!.id).order('created_at', { ascending: false });
       if (ld?.length) {
         setLinks(ld.map(l => ({ ...l, savedAt: new Date(l.created_at) })));
         setFavorites(new Set(ld.filter(l => l.is_favorite).map((l: any) => l.id)));
       }
-      const { data: cd } = await supabase.from('categories').select('name').order('created_at', { ascending: true });
+      const { data: cd } = await supabase.from('categories').select('name').eq('user_id', user!.id).order('created_at', { ascending: true });
       if (cd?.length) setCategories(cd.map(c => c.name));
       else await supabase.from('categories').insert(defaultCategories.map(name => ({ name, user_id: user!.id })));
     } catch (e) { console.error(e); }
