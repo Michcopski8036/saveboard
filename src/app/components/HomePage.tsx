@@ -191,7 +191,7 @@ export function HomePage({ links, categories, favorites, userEmail, onSelect, on
       {/* ── Quick nav ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { id: 'browse', label: 'All Links', Icon: Bookmark, desc: `${links.length} saved`, color: '#7C3AED' },
+          { id: 'browse', label: 'All Saves', Icon: Bookmark, desc: `${links.length} saved`, color: '#7C3AED' },
           { id: 'recent', label: 'Recent', Icon: Clock, desc: `${thisWeek} this week`, color: '#6366F1' },
           { id: 'favorites', label: 'Favorites', Icon: Heart, desc: `${favorites.size} links`, color: '#EC4899' },
           { id: 'unsorted', label: 'Unsorted', Icon: Inbox, desc: `${unsorted} links`, color: '#F59E0B' },

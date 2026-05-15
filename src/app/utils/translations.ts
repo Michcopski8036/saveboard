@@ -12,7 +12,7 @@ export const translations = {
     // Sort
     newest: 'Newest', oldest: 'Oldest', az: 'A–Z', za: 'Z–A',
     // Collection labels
-    allLinks: 'All Links', recentlySavedLabel: 'Recently Saved',
+    allLinks: 'All Saves', recentlySavedLabel: 'Recently Saved',
     favoritesLabel: 'Favorites', unsortedLabel: 'Unsorted',
     // Card
     aiSummary: 'AI SUMMARY', myNote: 'MY NOTE', article: 'Article', minRead: 'min read',
