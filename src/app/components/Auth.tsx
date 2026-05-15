@@ -45,7 +45,7 @@ export function Auth() {
             <Bookmark className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-xl font-semibold text-gray-900">
-            Link<span className="bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">Board</span>
+            Save<span className="bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">Board</span>
           </h1>
         </div>
 
