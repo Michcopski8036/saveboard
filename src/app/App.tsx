@@ -77,6 +77,7 @@ function AppContent() {
   const [showSettings, setShowSettings] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
   const [showContact, setShowContact]   = useState(false);
+  const [deleteBoardConfirm, setDeleteBoardConfirm] = useState<{ cat: string; count: number } | null>(null);
   const [showHelp, setShowHelp]         = useState(false);
   const [showPrivacy, setShowPrivacy]   = useState(false);
   const [showTerms, setShowTerms]       = useState(false);
@@ -319,10 +320,21 @@ function AppContent() {
     setLinks(p => p.map(l => l.category === old ? { ...l, category: t } : l));
     if (selected === `cat:${old}`) setSelected(`cat:${t}`);
   };
-  const handleDeleteCategory = async (cat: string) => {
-    const using = links.filter(l => l.category === cat);
-    if (using.length && !confirm(`${using.length} link(s) will be uncategorized. Continue?`)) return;
-    if (using.length) { await supabase.from('links').update({ category: 'None' }).eq('category', cat).eq('user_id', user!.id); setLinks(p => p.map(l => l.category === cat ? { ...l, category: 'None' } : l)); }
+  const handleDeleteCategory = (cat: string) => {
+    const count = links.filter(l => l.category === cat).length;
+    if (count > 0) { setDeleteBoardConfirm({ cat, count }); return; }
+    execDeleteCategory(cat, false);
+  };
+
+  const execDeleteCategory = async (cat: string, deleteSaves: boolean) => {
+    setDeleteBoardConfirm(null);
+    if (deleteSaves) {
+      await supabase.from('links').delete().eq('category', cat).eq('user_id', user!.id);
+      setLinks(p => p.filter(l => l.category !== cat));
+    } else {
+      await supabase.from('links').update({ category: 'None' }).eq('category', cat).eq('user_id', user!.id);
+      setLinks(p => p.map(l => l.category === cat ? { ...l, category: 'None' } : l));
+    }
     await supabase.from('categories').delete().eq('name', cat).eq('user_id', user!.id);
     setCategories(p => p.filter(c => c !== cat));
     if (selected === `cat:${cat}`) setSelected('all');
@@ -801,6 +813,40 @@ function AppContent() {
                   </div>
                 );
               })()}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── Delete board confirm modal ────────────────────────────────── */}
+      {deleteBoardConfirm && (
+        <>
+          <div className="fixed inset-0 z-[9990] bg-black/50" onClick={() => setDeleteBoardConfirm(null)} />
+          <div className="fixed z-[9991] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] rounded-2xl p-6 shadow-2xl"
+            style={{ background: t.cardBg }}>
+            <h3 className="text-[16px] font-bold mb-1" style={{ color: t.textPrimary }}>Delete "{deleteBoardConfirm.cat}"?</h3>
+            <p className="text-[13px] mb-5" style={{ color: t.textMuted }}>
+              This board has <strong>{deleteBoardConfirm.count}</strong> save{deleteBoardConfirm.count !== 1 ? 's' : ''}. What would you like to do with them?
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => execDeleteCategory(deleteBoardConfirm.cat, false)}
+                className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-opacity hover:opacity-90"
+                style={{ background: t.badgeBg, color: t.textPrimary }}>
+                Keep saves → move to Unsorted
+              </button>
+              <button
+                onClick={() => execDeleteCategory(deleteBoardConfirm.cat, true)}
+                className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ background: '#EF4444' }}>
+                Delete saves too
+              </button>
+              <button
+                onClick={() => setDeleteBoardConfirm(null)}
+                className="w-full py-2 text-[13px] transition-opacity hover:opacity-70"
+                style={{ color: t.textMuted }}>
+                Cancel
+              </button>
             </div>
           </div>
         </>
