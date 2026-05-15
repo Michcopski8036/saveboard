@@ -122,7 +122,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
                 <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">$3.49<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                 <p className="text-[12px] font-semibold text-purple-600 mb-5">or $24/yr — save 43%</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
-                  {['300 saves','30 boards','All features included','Priority support','1 team member'].map(f => (
+                  {['300 saves','30 boards','All features included','Priority support','3 team members'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
                       <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
                     </li>
