@@ -8,6 +8,7 @@ import { GalleryView } from './components/GalleryView';
 import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
+import { LandingPage } from './components/LandingPage';
 import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2 } from 'lucide-react';
 
 function GalleryIcon({ className }: { className?: string }) {
@@ -51,6 +52,7 @@ function AppContent() {
   const { tr } = useLanguage();
   const [user, setUser]                 = useState<User | null>(null);
   const [authLoading, setAuthLoading]   = useState(true);
+  const [showAuth, setShowAuth]         = useState(false);
   const [links, setLinks]               = useState<LinkData[]>([]);
   const [categories, setCategories]     = useState<string[]>([]);
   const [isLoading, setIsLoading]       = useState(false);
@@ -403,7 +405,10 @@ function AppContent() {
     </div>
   );
 
-  if (!user) return <Auth />;
+  if (!user) {
+    if (showAuth) return <Auth />;
+    return <LandingPage onGetStarted={() => setShowAuth(true)} />;
+  }
 
   // ── Main render ────────────────────────────────────────────────────────────
   return (
