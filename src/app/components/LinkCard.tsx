@@ -179,6 +179,7 @@ export function LinkCard({
   const aiSummary = getAiSummary(link.description);
   const readTime  = getReadTime(link.description);
   const duration  = isYT && ytId ? fakeVideoDuration(ytId) : isVimeo && vimeoId ? fakeVideoDuration(vimeoId) : null;
+  const isDefaultPlaceholder = link.image === 'placeholder:default';
   const isArticle = !isVideo && !isMemo && !isPdf && !isPlaceholder(link.image);
 
 
@@ -355,12 +356,14 @@ export function LinkCard({
             </div>
           </button>
         )}
-        <a href={href} target={href ? '_blank' : undefined} rel={href ? 'noopener noreferrer' : undefined} className="shrink-0" onClick={handleSel}>
-          {isPlaceholder(link.image)
-            ? <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} text={isMemo ? link.description : undefined} className="w-14 h-14 rounded-xl" />
-            : <img src={link.image} alt={link.title} className="w-14 h-14 rounded-xl object-cover"
-                onError={e => { e.currentTarget.style.display = 'none'; }} />}
-        </a>
+        {!isDefaultPlaceholder && (
+          <a href={href} target={href ? '_blank' : undefined} rel={href ? 'noopener noreferrer' : undefined} className="shrink-0" onClick={handleSel}>
+            {isPlaceholder(link.image)
+              ? <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} text={isMemo ? link.description : undefined} className="w-14 h-14 rounded-xl" />
+              : <img src={link.image} alt={link.title} className="w-14 h-14 rounded-xl object-cover"
+                  onError={e => { e.currentTarget.style.display = 'none'; }} />}
+          </a>
+        )}
         <a href={href} target={href ? '_blank' : undefined} rel={href ? 'noopener noreferrer' : undefined} className="flex-1 min-w-0" onClick={handleSel}>
           <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{link.title}</p>
           <p className="text-[11px] truncate mt-0.5" style={{ color: t.textMuted }}>{domain}</p>
@@ -423,12 +426,12 @@ export function LinkCard({
   };
 
   return (
-    <div ref={cardRef} className={`group w-full rounded-2xl overflow-hidden transition-all duration-300${compact ? ' flex flex-col h-full' : ''}`}
+    <div ref={cardRef} className={`group w-full rounded-2xl overflow-hidden transition-all duration-300 relative${compact ? ' flex flex-col h-full' : ''}`}
       style={{ background: t.cardBg, border: `1px solid ${selectedBorder ?? t.cardBorder}`, boxShadow: t.cardShadow, opacity: isDragging ? 0.4 : 1 }}
       onMouseEnter={handleCardEnter} onMouseLeave={handleCardLeave}>
 
       {/* Thumbnail */}
-      <a href={selectMode || isMemo ? undefined : link.url}
+      {!isDefaultPlaceholder && <a href={selectMode || isMemo ? undefined : link.url}
         target={selectMode || isMemo ? undefined : '_blank'}
         rel={selectMode || isMemo ? undefined : 'noopener noreferrer'}
         className={`block relative overflow-hidden rounded-t-2xl${compact ? ' h-36 shrink-0' : ''}`}
@@ -452,18 +455,6 @@ export function LinkCard({
             <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)' }}>
               <ExternalLink className="w-2.5 h-2.5 text-white/80" />
               <span className="text-[10px] text-white/80 font-medium">Open</span>
-            </div>
-          </div>
-        )}
-
-        {/* Drag handle — appears on hover, used to drag card to sidebar boards */}
-        {!selectMode && (
-          <div ref={dragRef}
-            className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-grab active:cursor-grabbing z-10 touch-none"
-            onClick={e => e.preventDefault()}
-            title="Drag to a board">
-            <div className="flex items-center gap-1 px-1.5 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.50)', backdropFilter: 'blur(8px)' }}>
-              <GripVertical className="w-3 h-3 text-white/80" />
             </div>
           </div>
         )}
@@ -509,7 +500,19 @@ export function LinkCard({
             </div>
           </div>
         )}
-      </a>
+      </a>}
+
+      {/* Drag handle — always rendered so dragging works even without a thumbnail */}
+      {!selectMode && (
+        <div ref={dragRef}
+          className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-grab active:cursor-grabbing z-10 touch-none"
+          onClick={e => e.preventDefault()}
+          title="Drag to a board">
+          <div className="flex items-center gap-1 px-1.5 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.50)', backdropFilter: 'blur(8px)' }}>
+            <GripVertical className="w-3 h-3 text-white/80" />
+          </div>
+        </div>
+      )}
 
       {/* Info panel */}
       <div className={`px-3.5 pt-3 pb-3.5${compact ? ' flex-1 overflow-hidden' : ''}`}>
