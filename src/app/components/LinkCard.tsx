@@ -445,7 +445,7 @@ export function LinkCard({
             className={`w-full ${compact ? 'h-full object-cover' : isYTShort ? 'aspect-[9/16]' : isMemo ? '' : 'aspect-video'}`} />
         ) : (
           <img src={link.image} alt={link.title}
-            className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isYTShort ? 'aspect-[9/16] object-cover' : 'aspect-video object-cover'} ${(isYT || isVimeo) && isHovered ? 'invisible' : ''}`}
+            className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isYTShort ? 'aspect-[9/16] object-cover' : isVideo ? 'aspect-video object-cover' : 'h-auto'} ${(isYT || isVimeo) && isHovered ? 'invisible' : ''}`}
             style={{ transform: imgHovered && !isVideo ? 'scale(1.04)' : 'scale(1)' }}
             onError={e => { const p = e.currentTarget.closest('a'); if (p) p.style.display = 'none'; }} />
         )}
