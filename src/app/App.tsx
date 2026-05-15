@@ -37,7 +37,7 @@ import { deriveAiTags } from './components/LinkCard';
 type ViewMode   = 'masonry' | 'grid' | 'gallery' | 'list' | 'kanban';
 type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
 
-const defaultCategories = ['Articles', 'Videos', 'Design', 'Inspiration', 'Tools'];
+const defaultCategories = ['Events', 'Recipes', 'Fitness'];
 
 // Labels computed dynamically via tr() in AppContent
 
