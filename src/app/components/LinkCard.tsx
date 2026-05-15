@@ -442,7 +442,7 @@ export function LinkCard({
         {isPlaceholder(link.image) ? (
           <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} domain={isMemo || isPdf ? undefined : domain}
             text={isMemo ? link.description : undefined}
-            className={`w-full ${compact ? 'h-full object-cover' : isYTShort ? 'aspect-[9/16]' : isVideo ? 'aspect-video' : isMemo ? '' : 'h-24'}`} />
+            className={`w-full ${compact ? 'h-full object-cover' : isYTShort ? 'aspect-[9/16]' : isMemo ? '' : 'aspect-video'}`} />
         ) : (
           <img src={link.image} alt={link.title}
             className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isYTShort ? 'aspect-[9/16] object-cover' : isVideo ? 'aspect-video object-cover' : 'h-auto'} ${(isYT || isVimeo) && isHovered ? 'invisible' : ''}`}
