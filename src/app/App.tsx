@@ -51,7 +51,7 @@ function AppContent() {
   const [user, setUser]                 = useState<User | null>(null);
   const [authLoading, setAuthLoading]   = useState(true);
   const [links, setLinks]               = useState<LinkData[]>([]);
-  const [categories, setCategories]     = useState<string[]>(defaultCategories);
+  const [categories, setCategories]     = useState<string[]>([]);
   const [isLoading, setIsLoading]       = useState(false);
   const [isAdding, setIsAdding]         = useState(false);
   const [urlInput, setUrlInput]         = useState('');
@@ -96,7 +96,7 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    if (!user) { setLinks([]); setCategories(defaultCategories); return; }
+    if (!user) { setLinks([]); setCategories([]); return; }
     loadData();
   }, [user]);
 
