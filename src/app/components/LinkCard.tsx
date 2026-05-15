@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { MoreVertical, Link2, Check, FileText, ChevronDown, Volume2, VolumeX, Heart, Tag, Trash2, Sparkles, Clock, Play, BookOpen, ExternalLink, Pencil, GripVertical } from 'lucide-react';
-import { useDrag } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import { CategoryPopup } from './CategoryPopup';
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder } from './PlatformPlaceholder';
 import { useTheme } from '../context/ThemeContext';
@@ -25,6 +25,7 @@ interface LinkCardProps {
   onToggleSelect?: (linkId: string) => void;
   onToggleFavorite?: (linkId: string) => void;
   onShowUpgrade?: () => void;
+  onMoveCard?: (dragId: string, hoverId: string) => void;
   categories?: string[];
   suggestedTags?: { label: string; type: string }[];
   selectMode?: boolean; isSelected?: boolean; isFavorited?: boolean; listMode?: boolean; compact?: boolean; isPro?: boolean;
@@ -140,7 +141,7 @@ function AiTag({ label, type }: { label: string; type: string }) {
 
 export function LinkCard({
   link, onUpdateCategory, onDelete, onAddCategory, onRenameCategory, onUpdateNotes, onUpdateLink, onUpdateTags,
-  onToggleSelect, onToggleFavorite, onShowUpgrade, categories = [], suggestedTags = [], selectMode = false,
+  onToggleSelect, onToggleFavorite, onShowUpgrade, onMoveCard, categories = [], suggestedTags = [], selectMode = false,
   isSelected = false, isFavorited = false, listMode = false, compact = false, isPro = false,
 }: LinkCardProps) {
   const { t } = useTheme();
@@ -164,6 +165,14 @@ export function LinkCard({
     type: LINK_DRAG_TYPE,
     item: { id: link.id },
     collect: monitor => ({ isDragging: monitor.isDragging() }),
+  });
+
+  const [{ isOver }, dropRef] = useDrop<{ id: string }, void, { isOver: boolean }>({
+    accept: LINK_DRAG_TYPE,
+    drop(item) {
+      if (item.id !== link.id) onMoveCard?.(item.id, link.id);
+    },
+    collect: monitor => ({ isOver: monitor.isOver() && monitor.canDrop() }),
   });
 
   const isMemo    = link.image === 'placeholder:memo';
@@ -426,8 +435,9 @@ export function LinkCard({
   };
 
   return (
-    <div ref={cardRef} className={`group w-full rounded-2xl overflow-hidden transition-all duration-300 relative${compact ? ' flex flex-col h-full' : ''}`}
-      style={{ background: t.cardBg, border: `1px solid ${selectedBorder ?? t.cardBorder}`, boxShadow: t.cardShadow, opacity: isDragging ? 0.4 : 1 }}
+    <div ref={node => { (cardRef as React.MutableRefObject<HTMLDivElement | null>).current = node; dropRef(node); }}
+      className={`group w-full rounded-2xl overflow-hidden transition-all duration-300 relative${compact ? ' flex flex-col h-full' : ''}`}
+      style={{ background: t.cardBg, border: `1px solid ${isOver ? '#A259FF' : (selectedBorder ?? t.cardBorder)}`, boxShadow: isOver ? '0 0 0 2px #A259FF40' : t.cardShadow, opacity: isDragging ? 0.4 : 1 }}
       onMouseEnter={handleCardEnter} onMouseLeave={handleCardLeave}>
 
       {/* Thumbnail */}
@@ -517,7 +527,7 @@ export function LinkCard({
         <div ref={dragRef}
           className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-grab active:cursor-grabbing z-10 touch-none"
           onClick={e => e.preventDefault()}
-          title="Drag to a board">
+          title="Drag to reorder or move to a board">
           <div className="flex items-center gap-1 px-1.5 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.50)', backdropFilter: 'blur(8px)' }}>
             <GripVertical className="w-3 h-3 text-white/80" />
           </div>

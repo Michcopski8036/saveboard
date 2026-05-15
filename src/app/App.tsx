@@ -37,7 +37,7 @@ import { TermsPage } from './components/TermsPage';
 import { deriveAiTags } from './components/LinkCard';
 
 type ViewMode   = 'masonry' | 'grid' | 'gallery' | 'list' | 'kanban';
-type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
+type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a' | 'custom';
 
 const defaultCategories = ['Events', 'Recipes', 'Fitness'];
 
@@ -154,7 +154,17 @@ function AppContent() {
     try {
       const { data: ld } = await supabase.from('links').select('*').eq('user_id', user!.id).order('created_at', { ascending: false });
       if (ld?.length) {
-        setLinks(ld.map(l => ({ ...l, savedAt: new Date(l.created_at) })));
+        let mapped = ld.map(l => ({ ...l, savedAt: new Date(l.created_at) }));
+        try {
+          const stored = localStorage.getItem(`sb_order_${user!.id}`);
+          if (stored) {
+            const order: string[] = JSON.parse(stored);
+            const orderMap = new Map(order.map((id, i) => [id, i]));
+            mapped = mapped.sort((a, b) => (orderMap.get(a.id) ?? 999999) - (orderMap.get(b.id) ?? 999999));
+            setSortOption('custom');
+          }
+        } catch {}
+        setLinks(mapped);
         setFavorites(new Set(ld.filter(l => l.is_favorite).map((l: any) => l.id)));
       }
       const { data: cd } = await supabase.from('categories').select('name').eq('user_id', user!.id).order('created_at', { ascending: true });
@@ -196,6 +206,7 @@ function AppContent() {
   }
 
   filtered = [...filtered].sort((a, b) => {
+    if (sortOption === 'custom') return 0;
     if (sortOption === 'newest') return b.savedAt.getTime() - a.savedAt.getTime();
     if (sortOption === 'oldest') return a.savedAt.getTime() - b.savedAt.getTime();
     if (sortOption === 'a-z')    return a.title.localeCompare(b.title);
@@ -382,7 +393,7 @@ function AppContent() {
     onUpdateCategory: handleUpdateCategory, onDelete: handleDeleteLink,
     onAddCategory: handleAddCategory, onRenameCategory: handleRenameCategory,
     onUpdateNotes: handleUpdateNotes, onUpdateLink: handleUpdateLink, onUpdateTags: handleUpdateTags, onToggleSelect: handleToggleSelect,
-    onToggleFavorite: handleToggleFavorite, onShowUpgrade: () => setShowUpgrade(true),
+    onToggleFavorite: handleToggleFavorite, onShowUpgrade: () => setShowUpgrade(true), onMoveCard: moveCard,
     categories, isPro, suggestedTags,
     selectMode, isSelected: selectedIds.has(link.id), isFavorited: favorites.has(link.id),
   });
@@ -393,7 +404,22 @@ function AppContent() {
     { mode: 'kanban'  as ViewMode, Icon: Kanban,          label: 'Kanban'  },
   ];
 
-  const sortLabels: Record<SortOption, string> = { newest: tr('newest'), oldest: tr('oldest'), 'a-z': tr('az'), 'z-a': tr('za') };
+  const sortLabels: Record<SortOption, string> = { newest: tr('newest'), oldest: tr('oldest'), 'a-z': tr('az'), 'z-a': tr('za'), custom: 'Custom' };
+
+  const moveCard = (dragId: string, hoverId: string) => {
+    if (dragId === hoverId) return;
+    setSortOption('custom');
+    setLinks(prev => {
+      const arr = [...prev];
+      const from = arr.findIndex(l => l.id === dragId);
+      const to   = arr.findIndex(l => l.id === hoverId);
+      if (from === -1 || to === -1) return prev;
+      const [moved] = arr.splice(from, 1);
+      arr.splice(to, 0, moved);
+      if (user) localStorage.setItem(`sb_order_${user.id}`, JSON.stringify(arr.map(l => l.id)));
+      return arr;
+    });
+  };
 
   // ── Auth / loading states ──────────────────────────────────────────────────
   if (authLoading) return (
@@ -584,7 +610,7 @@ function AppContent() {
                   <div className="fixed inset-0 z-40" onClick={() => setShowMobileSortMenu(false)} />
                   <div className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden w-28 z-50"
                     style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
-                    {(['newest', 'oldest', 'a-z', 'z-a'] as SortOption[]).map(opt => (
+                    {(['newest', 'oldest', 'a-z', 'z-a', ...(sortOption === 'custom' ? ['custom'] : [])] as SortOption[]).map(opt => (
                       <button key={opt} className="w-full px-3 py-2 text-left text-[12px]"
                         style={{ color: sortOption === opt ? '#7C3AED' : t.dropdownText, fontWeight: sortOption === opt ? 600 : 400 }}
                         onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
@@ -603,7 +629,7 @@ function AppContent() {
               onChange={e => setSortOption(e.target.value as SortOption)}
               className="hidden md:block text-[12px] font-medium rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
               style={{ background: t.sortActiveBg, color: t.sortActiveText, border: 'none' }}>
-              {(['newest', 'oldest', 'a-z', 'z-a'] as SortOption[]).map(opt => (
+              {(['newest', 'oldest', 'a-z', 'z-a', ...(sortOption === 'custom' ? ['custom'] : [])] as SortOption[]).map(opt => (
                 <option key={opt} value={opt}>{sortLabels[opt]}</option>
               ))}
             </select>
