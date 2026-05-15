@@ -5,7 +5,14 @@
       <stop offset="48%" stop-color="#A259FF"/>
       <stop offset="100%" stop-color="#F24E1E"/>
     </linearGradient>
+    <clipPath id="c">
+      <rect width="64" height="64" rx="12"/>
+    </clipPath>
   </defs>
-  <path d="M22 5H42Q54 5 54 17V59L32 46L10 59V17Q10 5 22 5Z"
-        fill="url(#g)"/>
+  <!-- White background -->
+  <rect width="64" height="64" rx="12" fill="white"/>
+  <!-- Gradient accent bar at top -->
+  <rect width="64" height="5" fill="url(#g)" clip-path="url(#c)"/>
+  <!-- Gradient bookmark -->
+  <path d="M22 13H42Q50 13 50 21V53L32 43L14 53V21Q14 13 22 13Z" fill="url(#g)"/>
 </svg>
