@@ -8,7 +8,7 @@ import { GalleryView } from './components/GalleryView';
 import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
-import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, MoreVertical, Pencil, Share2 } from 'lucide-react';
+import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2 } from 'lucide-react';
 
 function GalleryIcon({ className }: { className?: string }) {
   return (
@@ -81,6 +81,7 @@ function AppContent() {
   const [deleteBoardConfirm, setDeleteBoardConfirm] = useState<{ cat: string; count: number } | null>(null);
   const [showMobileBoardMenu, setShowMobileBoardMenu] = useState(false);
   const [mobileBoardMenuRect, setMobileBoardMenuRect] = useState<DOMRect | null>(null);
+  const [showMobileSortMenu, setShowMobileSortMenu] = useState(false);
   const [showHelp, setShowHelp]         = useState(false);
   const [showPrivacy, setShowPrivacy]   = useState(false);
   const [showTerms, setShowTerms]       = useState(false);
@@ -564,11 +565,39 @@ function AppContent() {
                 );
               })()}
             </div>
+            {/* Mobile sort: custom dropdown to avoid iOS native select sizing */}
+            <div className="relative md:hidden">
+              <button
+                className="flex items-center gap-1 text-[12px] font-medium rounded-lg px-2 py-1"
+                style={{ background: t.sortActiveBg, color: t.sortActiveText }}
+                onClick={() => setShowMobileSortMenu(p => !p)}>
+                {sortLabels[sortOption]}
+                <ChevronDown className="w-3 h-3" />
+              </button>
+              {showMobileSortMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowMobileSortMenu(false)} />
+                  <div className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden w-28 z-50"
+                    style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
+                    {(['newest', 'oldest', 'a-z', 'z-a'] as SortOption[]).map(opt => (
+                      <button key={opt} className="w-full px-3 py-2 text-left text-[12px]"
+                        style={{ color: sortOption === opt ? '#7C3AED' : t.dropdownText, fontWeight: sortOption === opt ? 600 : 400 }}
+                        onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        onClick={() => { setSortOption(opt); setShowMobileSortMenu(false); }}>
+                        {sortLabels[opt]}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            {/* Desktop sort: native select */}
             <select
               value={sortOption}
               onChange={e => setSortOption(e.target.value as SortOption)}
-              className="text-[11px] sm:text-[12px] font-medium rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 focus:outline-none cursor-pointer"
-              style={{ background: t.sortActiveBg, color: t.sortActiveText, border: 'none', fontSize: '11px' }}>
+              className="hidden md:block text-[12px] font-medium rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
+              style={{ background: t.sortActiveBg, color: t.sortActiveText, border: 'none' }}>
               {(['newest', 'oldest', 'a-z', 'z-a'] as SortOption[]).map(opt => (
                 <option key={opt} value={opt}>{sortLabels[opt]}</option>
               ))}
