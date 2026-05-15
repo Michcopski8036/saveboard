@@ -502,6 +502,16 @@ export function LinkCard({
         )}
       </a>}
 
+      {/* Select checkbox for no-image cards (thumbnail is hidden, so render here) */}
+      {isDefaultPlaceholder && selectMode && (
+        <div className="absolute top-2.5 left-2.5 z-10" onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleSelect?.(link.id); }}>
+          <div className="w-6 h-6 rounded-md flex items-center justify-center"
+            style={{ background: isSelected ? '#7C3AED' : (t.isDark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.85)'), border: `2px solid ${isSelected ? '#7C3AED' : (t.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.25)')}`, backdropFilter: 'blur(6px)' }}>
+            {isSelected && <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+          </div>
+        </div>
+      )}
+
       {/* Drag handle — always rendered so dragging works even without a thumbnail */}
       {!selectMode && (
         <div ref={dragRef}
