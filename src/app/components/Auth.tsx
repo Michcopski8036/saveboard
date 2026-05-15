@@ -45,15 +45,26 @@ export function Auth() {
     });
   };
 
+  const [copied, setCopied] = useState(false);
+
   const openInBrowser = () => {
     const url = window.location.href;
-    // Try Chrome deep link on Android, fallback to copying
-    const chromeUrl = `googlechrome://navigate?url=${encodeURIComponent(url)}`;
-    window.location.href = chromeUrl;
-    // Fallback: copy URL after short delay
-    setTimeout(() => {
-      navigator.clipboard?.writeText(url).catch(() => {});
-    }, 500);
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      // iOS Chrome scheme: replace https:// with googlechromes://
+      window.location.href = url.replace(/^https:\/\//, 'googlechromes://').replace(/^http:\/\//, 'googlechrome://');
+    } else {
+      // Android Chrome intent
+      const host = url.replace(/^https?:\/\//, '');
+      window.location.href = `intent://${host}#Intent;scheme=https;package=com.android.chrome;end`;
+    }
+  };
+
+  const copyLink = () => {
+    navigator.clipboard?.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
 
   return (
@@ -66,12 +77,19 @@ export function Auth() {
           <p className="text-[12px] text-amber-700 text-center mt-0.5">
             Open SaveBoard in Chrome or Safari to sign in with Google.
           </p>
-          <button
-            onClick={openInBrowser}
-            className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 transition-colors">
-            <ExternalLink className="w-3.5 h-3.5" />
-            Open in Chrome
-          </button>
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={openInBrowser}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 transition-colors">
+              <ExternalLink className="w-3.5 h-3.5" />
+              Open in Chrome
+            </button>
+            <button
+              onClick={copyLink}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 transition-colors">
+              {copied ? '✓ Copied!' : 'Copy Link'}
+            </button>
+          </div>
         </div>
       )}
       <div className="w-full max-w-sm" style={{ marginTop: inApp ? '110px' : 0 }}>
