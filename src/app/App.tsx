@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { LinkCard, LinkData } from './components/LinkCard';
 import { Sidebar, type Collection } from './components/Sidebar';
@@ -7,7 +8,7 @@ import { GalleryView } from './components/GalleryView';
 import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
-import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, MoreVertical, Pencil, Share2 } from 'lucide-react';
 
 function GalleryIcon({ className }: { className?: string }) {
   return (
@@ -78,6 +79,8 @@ function AppContent() {
   const [showLanguage, setShowLanguage] = useState(false);
   const [showContact, setShowContact]   = useState(false);
   const [deleteBoardConfirm, setDeleteBoardConfirm] = useState<{ cat: string; count: number } | null>(null);
+  const [showMobileBoardMenu, setShowMobileBoardMenu] = useState(false);
+  const [mobileBoardMenuRect, setMobileBoardMenuRect] = useState<DOMRect | null>(null);
   const [showHelp, setShowHelp]         = useState(false);
   const [showPrivacy, setShowPrivacy]   = useState(false);
   const [showTerms, setShowTerms]       = useState(false);
@@ -549,6 +552,14 @@ function AppContent() {
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                       <ChevronRight className="w-4 h-4" />
                     </button>
+                    {(selected as string).startsWith('cat:') && (
+                      <button
+                        className="md:hidden p-1.5 rounded-lg transition-colors"
+                        style={{ color: t.textMuted }}
+                        onClick={e => { e.stopPropagation(); setMobileBoardMenuRect(e.currentTarget.getBoundingClientRect()); setShowMobileBoardMenu(p => !p); }}>
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    )}
                   </>
                 );
               })()}
@@ -556,8 +567,8 @@ function AppContent() {
             <select
               value={sortOption}
               onChange={e => setSortOption(e.target.value as SortOption)}
-              className="text-[12px] font-medium rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
-              style={{ background: t.sortActiveBg, color: t.sortActiveText, border: 'none' }}>
+              className="text-[11px] sm:text-[12px] font-medium rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 focus:outline-none cursor-pointer"
+              style={{ background: t.sortActiveBg, color: t.sortActiveText, border: 'none', fontSize: '11px' }}>
               {(['newest', 'oldest', 'a-z', 'z-a'] as SortOption[]).map(opt => (
                 <option key={opt} value={opt}>{sortLabels[opt]}</option>
               ))}
@@ -816,6 +827,60 @@ function AppContent() {
             </div>
           </div>
         </>
+      )}
+
+      {/* ── Mobile board 3-dots menu ─────────────────────────────────── */}
+      {showMobileBoardMenu && mobileBoardMenuRect && createPortal(
+        <>
+          <div className="fixed inset-0" style={{ zIndex: 298 }} onClick={() => setShowMobileBoardMenu(false)} />
+          <div className="fixed rounded-2xl overflow-hidden w-44"
+            style={{
+              zIndex: 299,
+              top: mobileBoardMenuRect.bottom + 6,
+              left: Math.min(mobileBoardMenuRect.left, window.innerWidth - 184),
+              background: t.dropdownBg,
+              border: `1px solid ${t.dropdownBorder}`,
+              boxShadow: t.dropdownShadow,
+            }}>
+            <div className="p-1">
+              {(() => {
+                const cat = (selected as string).replace('cat:', '');
+                const row = 'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-colors text-left text-[13px]';
+                return (
+                  <>
+                    <button className={row} style={{ color: t.dropdownText }}
+                      onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      onClick={() => {
+                        setShowMobileBoardMenu(false);
+                        const neu = window.prompt('Rename board:', cat);
+                        if (neu && neu.trim() && neu.trim() !== cat) handleRenameCategory(cat, neu.trim());
+                      }}>
+                      <Pencil className="w-4 h-4" style={{ color: t.dropdownIcon }} />
+                      Rename
+                    </button>
+                    <button className={row} style={{ color: t.dropdownText }}
+                      onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      onClick={() => { setShowMobileBoardMenu(false); setShareCategory(cat); }}>
+                      <Share2 className="w-4 h-4" style={{ color: t.dropdownIcon }} />
+                      Share
+                    </button>
+                    <div style={{ borderTop: `1px solid ${t.dropdownDivider}`, margin: '4px 0' }} />
+                    <button className={row}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      onClick={() => { setShowMobileBoardMenu(false); handleDeleteCategory(cat); }}>
+                      <Trash2 className="w-4 h-4" style={{ color: '#EF4444' }} />
+                      <span style={{ color: '#EF4444' }}>Delete</span>
+                    </button>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </>,
+        document.body
       )}
 
       {/* ── Delete board confirm modal ────────────────────────────────── */}
