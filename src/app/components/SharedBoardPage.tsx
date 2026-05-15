@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { supabase } from '../lib/supabase';
-import { Bookmark, ExternalLink, Clock, Globe } from 'lucide-react';
+import { Bookmark, ExternalLink, Clock, Globe, BookmarkPlus, Check, Loader2 } from 'lucide-react';
 
 interface SharedLink {
   id: string;
@@ -38,6 +38,13 @@ export function SharedBoardPage() {
   const [board, setBoard] = useState<SharedBoard | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -53,6 +60,51 @@ export function SharedBoardPage() {
       setLoading(false);
     })();
   }, [token]);
+
+  const handleSaveBoard = async () => {
+    if (!user) {
+      // Store intent and redirect to main app (auth wall)
+      localStorage.setItem('saveboard-pending-import', token!);
+      window.location.href = window.location.origin;
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const catName = board!.category;
+
+      // Create category if it doesn't exist
+      const { data: existingCat } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('name', catName)
+        .eq('user_id', user.id)
+        .single();
+
+      if (!existingCat) {
+        await supabase.from('categories').insert({ name: catName, user_id: user.id });
+      }
+
+      // Clone all links into the user's account
+      const newLinks = board!.links_snapshot.map(l => ({
+        id: crypto.randomUUID(),
+        user_id: user.id,
+        url: l.url,
+        title: l.title,
+        description: l.description || '',
+        image: l.image || '',
+        category: catName,
+        created_at: Date.now(),
+      }));
+
+      await supabase.from('links').insert(newLinks);
+      setSaved(true);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8F7FF' }}>
@@ -88,7 +140,7 @@ export function SharedBoardPage() {
             </div>
             <span className="text-[14px] font-bold" style={{ background: 'linear-gradient(90deg,#7C3AED,#6366F1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>SaveBoard</span>
           </div>
-          <a href="https://link-board-seven.vercel.app" target="_blank" rel="noopener noreferrer"
+          <a href="https://www.saveboard.app" target="_blank" rel="noopener noreferrer"
             className="text-[12px] px-3 py-1.5 rounded-lg font-medium text-white transition-opacity hover:opacity-90"
             style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
             Get SaveBoard
@@ -96,20 +148,36 @@ export function SharedBoardPage() {
         </div>
       </header>
 
-      {/* Board title */}
-      <div className="max-w-5xl mx-auto px-4 pt-8 pb-4">
-        <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(124,58,237,0.5)' }}>Shared Board</p>
-        <h1 className="text-[28px] font-bold text-gray-900">{board?.category}</h1>
-        <p className="text-[13px] text-gray-400 mt-1">
-          {links.length} link{links.length !== 1 ? 's' : ''}
-          {board?.synced_at && <span> · shared {timeAgo(board.synced_at)}</span>}
-        </p>
+      {/* Board title + Save button */}
+      <div className="max-w-5xl mx-auto px-4 pt-8 pb-4 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(124,58,237,0.5)' }}>Shared Board</p>
+          <h1 className="text-[28px] font-bold text-gray-900">{board?.category}</h1>
+          <p className="text-[13px] text-gray-400 mt-1">
+            {links.length} save{links.length !== 1 ? 's' : ''}
+            {board?.synced_at && <span> · shared {timeAgo(board.synced_at)}</span>}
+          </p>
+        </div>
+
+        <button
+          onClick={handleSaveBoard}
+          disabled={saving || saved}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold text-white shrink-0 transition-all hover:opacity-90 disabled:opacity-70 mt-2"
+          style={{ background: saved ? '#10B981' : 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+          {saving ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
+          ) : saved ? (
+            <><Check className="w-4 h-4" /> Saved!</>
+          ) : (
+            <><BookmarkPlus className="w-4 h-4" /> Save Board</>
+          )}
+        </button>
       </div>
 
       {/* Links grid */}
       <div className="max-w-5xl mx-auto px-4 pb-12">
         {links.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">No links in this board yet.</div>
+          <div className="text-center py-20 text-gray-400">No saves in this board yet.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {links.map(link => (
@@ -150,6 +218,21 @@ export function SharedBoardPage() {
           </div>
         )}
       </div>
+
+      {/* Sign-in prompt for non-logged-in users */}
+      {!user && (
+        <div className="fixed bottom-0 inset-x-0 p-4" style={{ background: 'rgba(248,247,255,0.95)', backdropFilter: 'blur(12px)', borderTop: '1px solid #E5E3F0' }}>
+          <div className="max-w-sm mx-auto text-center">
+            <p className="text-[13px] text-gray-500 mb-3">Sign in to save this board to your SaveBoard</p>
+            <button
+              onClick={handleSaveBoard}
+              className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+              Sign in & Save Board
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

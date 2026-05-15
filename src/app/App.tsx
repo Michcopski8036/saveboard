@@ -97,8 +97,44 @@ function AppContent() {
 
   useEffect(() => {
     if (!user) { setLinks([]); setCategories([]); return; }
-    loadData();
+    loadData().then(() => handlePendingImport());
   }, [user]);
+
+  const handlePendingImport = async () => {
+    const token = localStorage.getItem('saveboard-pending-import');
+    if (!token || !user) return;
+    localStorage.removeItem('saveboard-pending-import');
+    try {
+      const { data } = await supabase
+        .from('shared_boards')
+        .select('category, links_snapshot')
+        .eq('token', token)
+        .single();
+      if (!data) return;
+
+      const catName = data.category;
+      const { data: existingCat } = await supabase
+        .from('categories').select('name').eq('name', catName).eq('user_id', user.id).single();
+      if (!existingCat) {
+        await supabase.from('categories').insert({ name: catName, user_id: user.id });
+        setCategories(p => [...p, catName]);
+      }
+
+      const newLinks = data.links_snapshot.map((l: any) => ({
+        id: crypto.randomUUID(),
+        user_id: user.id,
+        url: l.url,
+        title: l.title,
+        description: l.description || '',
+        image: l.image || '',
+        category: catName,
+        created_at: Date.now(),
+      }));
+      await supabase.from('links').insert(newLinks);
+      setLinks(p => [...newLinks.map((l: any) => ({ ...l, savedAt: new Date(l.created_at) })), ...p]);
+      alert(`"${catName}" board saved to your SaveBoard!`);
+    } catch (e) { console.error(e); }
+  };
 
   const loadData = async () => {
     setIsLoading(true);
