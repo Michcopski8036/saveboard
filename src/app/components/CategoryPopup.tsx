@@ -85,10 +85,10 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
 
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose} />
+      <div className="fixed inset-0 z-[9998] bg-black/50" onClick={onClose} />
 
       <div
-        className="fixed z-50 bg-white rounded-[10px] shadow-2xl w-[360px] max-w-[90vw] max-h-[600px] overflow-hidden flex flex-col"
+        className="fixed z-[9999] bg-white rounded-[10px] shadow-2xl w-[360px] max-w-[90vw] max-h-[600px] overflow-hidden flex flex-col"
         style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -114,7 +114,8 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
                 key={`${name}-${index}`}
                 onMouseEnter={() => setHoveredCategory(`${name}-${index}`)}
                 onMouseLeave={() => setHoveredCategory(null)}
-                className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-[10px] transition-colors"
+                onClick={() => !editingCategory && handleCategoryClick(name)}
+                className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-[10px] transition-colors cursor-pointer"
               >
                 <CategoryAvatar name={name} />
                 {editingCategory === name ? (
@@ -124,21 +125,22 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
                     onChange={(e) => setEditValue(e.target.value)}
                     onBlur={handleRename}
                     onKeyDown={handleKeyDown}
+                    onClick={(e) => e.stopPropagation()}
                     autoFocus
                     className="text-base flex-1 bg-transparent border-b-2 border-[#A259FF] outline-none px-1"
                   />
                 ) : (
                   <span
-                    className="text-base flex-1 text-left cursor-text"
-                    onDoubleClick={() => handleDoubleClick(name)}
+                    className="text-base flex-1 text-left"
+                    onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(name); }}
                   >
                     {name}
                   </span>
                 )}
                 {hoveredCategory === `${name}-${index}` && !editingCategory && (
                   <button
-                    onClick={() => handleCategoryClick(name)}
-                    className="px-4 py-1.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white text-sm rounded-full hover:opacity-90 transition-opacity"
+                    onClick={(e) => { e.stopPropagation(); handleCategoryClick(name); }}
+                    className="px-4 py-1.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white text-sm rounded-full hover:opacity-90 transition-opacity shrink-0"
                   >
                     Select
                   </button>

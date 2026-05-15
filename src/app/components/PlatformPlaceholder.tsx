@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { useTheme } from '../context/ThemeContext';
 
-type Platform = 'instagram' | 'youtube' | 'twitter' | 'facebook' | 'tiktok' | 'linkedin' | 'pdf' | 'memo' | 'default';
+type Platform = 'instagram' | 'youtube' | 'twitter' | 'facebook' | 'tiktok' | 'linkedin' | 'pdf' | 'memo' | 'file' | 'default';
 
 interface PlatformPlaceholderProps {
   platform: Platform;
@@ -14,6 +14,10 @@ const PLATFORM_CONFIG: Record<Platform, { gradient: string; gloss: string }> = {
   pdf: {
     gradient: 'linear-gradient(135deg, #E53E3E 0%, #C53030 100%)',
     gloss: 'rgba(255,255,255,0.14)',
+  },
+  file: {
+    gradient: 'linear-gradient(135deg, #4A5568 0%, #2D3748 100%)',
+    gloss: 'rgba(255,255,255,0.12)',
   },
   memo: {
     gradient: '#F5F3FF',
@@ -60,6 +64,13 @@ const BrandLogo = ({ platform, text }: { platform: Platform; text?: string }) =>
           <polyline points="14 2 14 8 20 8" stroke="white" strokeWidth="1.5" fill="none"/>
           <line x1="9" y1="13" x2="15" y2="13" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5"/>
           <line x1="9" y1="17" x2="15" y2="17" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5"/>
+        </svg>
+      );
+    case 'file':
+      return (
+        <svg style={shadow} width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
         </svg>
       );
     case 'memo':

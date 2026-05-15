@@ -124,6 +124,7 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete }: KanbanCar
 
 interface KanbanViewProps {
   links: LinkData[]; categories: string[]; favorites: Set<string>;
+  selected?: string;
   onToggleFavorite: (id: string) => void; onDelete: (id: string) => void; onUpdateCategory: (id: string, cat: string) => void;
 }
 
@@ -207,12 +208,18 @@ function KanbanColumn({ col, color, favorites, categories, onToggleFavorite, onD
   );
 }
 
-export function KanbanView({ links, categories, favorites, onToggleFavorite, onDelete, onUpdateCategory }: KanbanViewProps) {
-  const columns = [
+export function KanbanView({ links, categories, favorites, selected, onToggleFavorite, onDelete, onUpdateCategory }: KanbanViewProps) {
+  const selectedCat = selected?.startsWith('cat:') ? selected.slice(4) : null;
+
+  const allColumns = [
     { id: 'none', label: 'Unsorted', links: links.filter(l => !l.category || l.category === 'None') },
     ...categories.map(cat => ({ id: cat, label: cat, links: links.filter(l => l.category === cat) })),
     { id: 'archive', label: 'Archive', links: links.filter(l => l.category === 'Archive') },
-  ].filter(col => col.links.length > 0 || col.id === 'none');
+  ];
+
+  const columns = selectedCat
+    ? allColumns.filter(col => col.id === 'none' || col.id === selectedCat)
+    : allColumns.filter(col => col.links.length > 0 || col.id === 'none');
 
   return (
     <div className="flex gap-4 pb-6 overflow-x-auto" style={{ minHeight: 'calc(100vh - 200px)' }}>
