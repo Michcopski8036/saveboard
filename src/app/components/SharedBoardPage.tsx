@@ -41,6 +41,7 @@ export function SharedBoardPage() {
   const [user, setUser] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [skippedCount, setSkippedCount] = useState(0);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -85,20 +86,29 @@ export function SharedBoardPage() {
         await supabase.from('categories').insert({ name: catName, user_id: user.id });
       }
 
-      // Clone all links into the user's account
-      const newLinks = board!.links_snapshot.map(l => ({
-        id: crypto.randomUUID(),
-        user_id: user.id,
-        url: l.url,
-        title: l.title,
-        description: l.description || '',
-        image: l.image || '',
-        category: catName,
-        created_at: Date.now(),
-      }));
+      // Fetch existing URLs to avoid duplicates
+      const { data: existingLinks } = await supabase
+        .from('links')
+        .select('url')
+        .eq('user_id', user.id);
+      const existingUrls = new Set((existingLinks ?? []).map((l: any) => l.url));
 
-      await supabase.from('links').insert(newLinks);
+      const newLinks = board!.links_snapshot
+        .filter(l => !existingUrls.has(l.url))
+        .map(l => ({
+          id: crypto.randomUUID(),
+          user_id: user.id,
+          url: l.url,
+          title: l.title,
+          description: l.description || '',
+          image: l.image || '',
+          category: catName,
+          created_at: Date.now(),
+        }));
+
+      if (newLinks.length > 0) await supabase.from('links').insert(newLinks);
       setSaved(true);
+      setSkippedCount(board!.links_snapshot.length - newLinks.length);
     } catch (e) {
       console.error(e);
     } finally {
@@ -167,7 +177,7 @@ export function SharedBoardPage() {
           {saving ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
           ) : saved ? (
-            <><Check className="w-4 h-4" /> Saved!</>
+            <><Check className="w-4 h-4" /> {skippedCount > 0 ? `Saved! (${skippedCount} duplicate${skippedCount > 1 ? 's' : ''} skipped)` : 'Saved!'}</>
           ) : (
             <><BookmarkPlus className="w-4 h-4" /> Save Board</>
           )}

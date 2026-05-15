@@ -120,19 +120,25 @@ function AppContent() {
         setCategories(p => [...p, catName]);
       }
 
-      const newLinks = data.links_snapshot.map((l: any) => ({
-        id: crypto.randomUUID(),
-        user_id: user.id,
-        url: l.url,
-        title: l.title,
-        description: l.description || '',
-        image: l.image || '',
-        category: catName,
-        created_at: Date.now(),
-      }));
-      await supabase.from('links').insert(newLinks);
-      setLinks(p => [...newLinks.map((l: any) => ({ ...l, savedAt: new Date(l.created_at) })), ...p]);
-      alert(`"${catName}" board saved to your SaveBoard!`);
+      const existingUrls = new Set(links.map(l => l.url));
+      const newLinks = data.links_snapshot
+        .filter((l: any) => !existingUrls.has(l.url))
+        .map((l: any) => ({
+          id: crypto.randomUUID(),
+          user_id: user.id,
+          url: l.url,
+          title: l.title,
+          description: l.description || '',
+          image: l.image || '',
+          category: catName,
+          created_at: Date.now(),
+        }));
+      if (newLinks.length > 0) {
+        await supabase.from('links').insert(newLinks);
+        setLinks(p => [...newLinks.map((l: any) => ({ ...l, savedAt: new Date(l.created_at) })), ...p]);
+      }
+      const skipped = data.links_snapshot.length - newLinks.length;
+      alert(`"${catName}" board saved!${skipped > 0 ? ` (${skipped} duplicate${skipped > 1 ? 's' : ''} skipped)` : ''}`);
     } catch (e) { console.error(e); }
   };
 
