@@ -1,5 +1,5 @@
-// IndexedDB wrapper for LinkBoard data persistence
-const DB_NAME = 'LinkBoardDB';
+// IndexedDB wrapper for SaveBoard data persistence
+const DB_NAME = 'SaveBoardDB';
 const DB_VERSION = 1;
 const LINKS_STORE = 'links';
 const CATEGORIES_STORE = 'categories';
@@ -170,8 +170,8 @@ export async function getCategories(): Promise<string[]> {
 export async function migrateFromLocalStorage(): Promise<void> {
   try {
     // Check if data exists in localStorage
-    const localStorageLinks = localStorage.getItem('linkboard-links');
-    const localStorageCategories = localStorage.getItem('linkboard-categories');
+    const localStorageLinks = localStorage.getItem('saveboard-links');
+    const localStorageCategories = localStorage.getItem('saveboard-categories');
 
     if (localStorageLinks || localStorageCategories) {
       // Parse and migrate links
@@ -187,11 +187,11 @@ export async function migrateFromLocalStorage(): Promise<void> {
       }
 
       // Mark migration as complete
-      localStorage.setItem('linkboard-migrated', 'true');
+      localStorage.setItem('saveboard-migrated', 'true');
 
       // Optionally remove old data
-      // localStorage.removeItem('linkboard-links');
-      // localStorage.removeItem('linkboard-categories');
+      // localStorage.removeItem('saveboard-links');
+      // localStorage.removeItem('saveboard-categories');
     }
   } catch (error) {
     console.error('Migration from localStorage failed:', error);
@@ -201,6 +201,6 @@ export async function migrateFromLocalStorage(): Promise<void> {
 
 // Check if migration is needed
 export function needsMigration(): boolean {
-  return !localStorage.getItem('linkboard-migrated') &&
-         (!!localStorage.getItem('linkboard-links') || !!localStorage.getItem('linkboard-categories'));
+  return !localStorage.getItem('saveboard-migrated') &&
+         (!!localStorage.getItem('saveboard-links') || !!localStorage.getItem('saveboard-categories'));
 }

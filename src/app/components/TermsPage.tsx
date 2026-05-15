@@ -12,21 +12,21 @@ const SECTIONS: Section[] = [
   {
     title: '1. Acceptance of Terms',
     body: [
-      'By accessing or using LinkBoard (the "Service"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, you may not use the Service.',
+      'By accessing or using SaveBoard (the "Service"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, you may not use the Service.',
       'We reserve the right to update these Terms at any time. Continued use of the Service after changes are posted constitutes your acceptance of the revised Terms.',
     ],
   },
   {
     title: '2. Description of Service',
     body: [
-      'LinkBoard is a link-saving and bookmarking application that allows users to save, organise, and retrieve web links, notes, and embedded content. The Service is provided "as is" and is subject to change at any time.',
+      'SaveBoard is a link-saving and bookmarking application that allows users to save, organise, and retrieve web links, notes, and embedded content. The Service is provided "as is" and is subject to change at any time.',
       'Features available to you depend on your plan (Free or Pro). We reserve the right to modify, add, or remove features at any time with or without notice.',
     ],
   },
   {
     title: '3. User Accounts',
     body: [
-      'To use LinkBoard you must create an account. You are responsible for:',
+      'To use SaveBoard you must create an account. You are responsible for:',
       {
         list: [
           'Providing accurate and complete account information.',
@@ -41,7 +41,7 @@ const SECTIONS: Section[] = [
   {
     title: '4. Acceptable Use',
     body: [
-      'You agree not to use LinkBoard to:',
+      'You agree not to use SaveBoard to:',
       {
         list: [
           'Store, share, or link to content that is illegal, harmful, threatening, abusive, defamatory, obscene, or otherwise objectionable.',
@@ -58,7 +58,7 @@ const SECTIONS: Section[] = [
   {
     title: '5. Free and Pro Plans',
     body: [
-      'LinkBoard offers a Free plan and a paid Pro plan. The current limits are:',
+      'SaveBoard offers a Free plan and a paid Pro plan. The current limits are:',
       {
         list: [
           'Free plan: up to 30 links and 5 boards.',
@@ -72,7 +72,7 @@ const SECTIONS: Section[] = [
   {
     title: '6. Your Content',
     body: [
-      'You retain full ownership of all content you save to LinkBoard (links, notes, tags, board names, etc.).',
+      'You retain full ownership of all content you save to SaveBoard (links, notes, tags, board names, etc.).',
       'By using the Service, you grant us a limited, non-exclusive, royalty-free licence to store, process, and display your content solely for the purpose of providing the Service to you.',
       'We do not claim any ownership over your content and will never use it for advertising or share it with third parties without your consent.',
     ],
@@ -80,28 +80,28 @@ const SECTIONS: Section[] = [
   {
     title: '7. Intellectual Property',
     body: [
-      'The LinkBoard application, including its design, code, branding, and original content, is owned by us and protected by copyright and other intellectual property laws.',
+      'The SaveBoard application, including its design, code, branding, and original content, is owned by us and protected by copyright and other intellectual property laws.',
       'You may not copy, modify, distribute, sell, or lease any part of the Service or its content, or reverse-engineer any part of the software, without our express written permission.',
     ],
   },
   {
     title: '8. Privacy',
     body: [
-      'Your use of LinkBoard is also governed by our Privacy Policy, which is incorporated into these Terms by reference. Please review our Privacy Policy to understand our data practices.',
+      'Your use of SaveBoard is also governed by our Privacy Policy, which is incorporated into these Terms by reference. Please review our Privacy Policy to understand our data practices.',
     ],
   },
   {
     title: '9. Disclaimers',
     body: [
       'The Service is provided "as is" and "as available" without warranties of any kind, either express or implied, including but not limited to fitness for a particular purpose, merchantability, or non-infringement.',
-      'We do not guarantee that the Service will be uninterrupted, error-free, or free of viruses or other harmful components. We are not responsible for any content on third-party websites that you save to LinkBoard.',
+      'We do not guarantee that the Service will be uninterrupted, error-free, or free of viruses or other harmful components. We are not responsible for any content on third-party websites that you save to SaveBoard.',
     ],
   },
   {
     title: '10. Limitation of Liability',
     body: [
       'To the maximum extent permitted by applicable law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of data, revenue, or profits, arising out of or related to your use of the Service.',
-      'Our total liability for any claim arising from your use of LinkBoard shall not exceed the amount you paid us in the 12 months preceding the claim, or $10 USD, whichever is greater.',
+      'Our total liability for any claim arising from your use of SaveBoard shall not exceed the amount you paid us in the 12 months preceding the claim, or $10 USD, whichever is greater.',
     ],
   },
   {
@@ -163,7 +163,7 @@ export function TermsPage({ onClose }: TermsPageProps) {
             {/* Intro */}
             <div className="px-6 py-4 mx-6 mt-5 mb-1 rounded-2xl" style={{ background: 'rgba(37,99,235,0.06)', border: '1px solid rgba(37,99,235,0.14)' }}>
               <p className="text-[13px] text-gray-600 leading-relaxed">
-                These Terms and Conditions govern your use of LinkBoard. Please read them carefully before using the Service. These Terms constitute a legally binding agreement between you and LinkBoard.
+                These Terms and Conditions govern your use of SaveBoard. Please read them carefully before using the Service. These Terms constitute a legally binding agreement between you and SaveBoard.
               </p>
             </div>
 

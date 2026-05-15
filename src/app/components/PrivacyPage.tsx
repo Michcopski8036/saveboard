@@ -12,11 +12,11 @@ const SECTIONS: Section[] = [
   {
     title: '1. Information We Collect',
     body: [
-      'When you create an account and use LinkBoard, we collect the following information:',
+      'When you create an account and use SaveBoard, we collect the following information:',
       {
         list: [
           'Account information: your email address and profile data provided via your sign-in provider (e.g. Google OAuth).',
-          'Content you save: links, notes, embed codes, titles, descriptions, tags, board names, and any other content you add to LinkBoard.',
+          'Content you save: links, notes, embed codes, titles, descriptions, tags, board names, and any other content you add to SaveBoard.',
           'Usage data: how you interact with the app (views, sorts, feature usage) to help us improve the product.',
           'Device information: browser type, operating system, and IP address for security and analytics purposes.',
         ],
@@ -30,7 +30,7 @@ const SECTIONS: Section[] = [
       'We use the information we collect to:',
       {
         list: [
-          'Provide, operate, and maintain the LinkBoard service.',
+          'Provide, operate, and maintain the SaveBoard service.',
           'Sync your saved links and boards across devices.',
           'Fetch metadata (title, description, preview image) for URLs you save — this request is made from our server to the target website.',
           'Send transactional emails (e.g. password reset, account notifications).',
@@ -52,7 +52,7 @@ const SECTIONS: Section[] = [
   {
     title: '4. Third-Party Services',
     body: [
-      'LinkBoard uses the following third-party services, each subject to their own privacy policies:',
+      'SaveBoard uses the following third-party services, each subject to their own privacy policies:',
       {
         list: [
           'Supabase — database, authentication, and file storage.',
@@ -66,7 +66,7 @@ const SECTIONS: Section[] = [
   {
     title: '5. Cookies & Local Storage',
     body: [
-      'LinkBoard uses browser localStorage to remember your preferences (theme, language, session token). We do not use third-party advertising cookies.',
+      'SaveBoard uses browser localStorage to remember your preferences (theme, language, session token). We do not use third-party advertising cookies.',
       'Your authentication session token is stored securely and expires automatically after a period of inactivity.',
     ],
   },
@@ -94,14 +94,14 @@ const SECTIONS: Section[] = [
   {
     title: '8. Children\'s Privacy',
     body: [
-      'LinkBoard is not directed to children under the age of 13. We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us and we will delete it promptly.',
+      'SaveBoard is not directed to children under the age of 13. We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us and we will delete it promptly.',
     ],
   },
   {
     title: '9. Changes to This Policy',
     body: [
       'We may update this Privacy Policy from time to time. When we do, we will update the "Last updated" date at the top of this page. For significant changes, we will notify you via email or an in-app notice.',
-      'Continued use of LinkBoard after changes are posted constitutes your acceptance of the updated policy.',
+      'Continued use of SaveBoard after changes are posted constitutes your acceptance of the updated policy.',
     ],
   },
   {
@@ -149,7 +149,7 @@ export function PrivacyPage({ onClose }: PrivacyPageProps) {
             {/* Intro */}
             <div className="px-6 py-4 mx-6 mt-5 mb-1 rounded-2xl" style={{ background: 'rgba(5,150,105,0.06)', border: '1px solid rgba(5,150,105,0.14)' }}>
               <p className="text-[13px] text-gray-600 leading-relaxed">
-                LinkBoard ("we", "us", "our") is committed to protecting your privacy. This policy explains what data we collect, how we use it, and the choices you have. By using LinkBoard, you agree to the practices described here.
+                SaveBoard ("we", "us", "our") is committed to protecting your privacy. This policy explains what data we collect, how we use it, and the choices you have. By using SaveBoard, you agree to the practices described here.
               </p>
             </div>
 

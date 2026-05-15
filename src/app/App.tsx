@@ -290,7 +290,7 @@ function AppContent() {
   const handleExport = () => {
     const blob = new Blob([JSON.stringify({ links, categories, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob); const a = document.createElement('a');
-    a.href = url; a.download = `linkboard-${new Date().toISOString().split('T')[0]}.json`;
+    a.href = url; a.download = `saveboard-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
   };
   const handleImport = async (data: any) => {
@@ -570,7 +570,7 @@ function AppContent() {
             {/* Header */}
             <div className="flex items-start justify-between mb-5">
               <div>
-                <h3 className="text-[16px] font-bold" style={{ color: t.modalTitle }}>Add to LinkBoard</h3>
+                <h3 className="text-[16px] font-bold" style={{ color: t.modalTitle }}>Add to SaveBoard</h3>
                 <p className="text-[12px] mt-0.5" style={{ color: t.modalSubtitle }}>Paste a URL, embed code, or write a note</p>
               </div>
               <button onClick={closeModal} className="p-1.5 rounded-xl transition-colors mt-0.5"
@@ -782,6 +782,7 @@ function AppContent() {
         onFocusSearch={focusSearch}
         onOpenMore={() => setSidebarOpen(true)}
         favorites={favorites}
+        hidden={sidebarOpen}
       />
 
       {/* ── Upgrade page ──────────────────────────────────────────────── */}

@@ -86,12 +86,12 @@ export function SharedBoardPage() {
             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
               <Bookmark className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
             </div>
-            <span className="text-[14px] font-bold" style={{ background: 'linear-gradient(90deg,#7C3AED,#6366F1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>LinkBoard</span>
+            <span className="text-[14px] font-bold" style={{ background: 'linear-gradient(90deg,#7C3AED,#6366F1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>SaveBoard</span>
           </div>
           <a href="https://link-board-seven.vercel.app" target="_blank" rel="noopener noreferrer"
             className="text-[12px] px-3 py-1.5 rounded-lg font-medium text-white transition-opacity hover:opacity-90"
             style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-            Get LinkBoard
+            Get SaveBoard
           </a>
         </div>
       </header>

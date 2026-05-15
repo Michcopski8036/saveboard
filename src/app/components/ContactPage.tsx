@@ -29,7 +29,7 @@ export function ContactPage({ onClose, user }: ContactPageProps) {
   const handleSend = () => {
     if (!message.trim()) return;
     const body = `Name: ${name || 'Not provided'}\nEmail: ${email || 'Not provided'}\n\n${message}`;
-    const mailtoUrl = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`[LinkBoard] ${subject}`)}&body=${encodeURIComponent(body)}`;
+    const mailtoUrl = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`[SaveBoard] ${subject}`)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoUrl, '_blank');
     setSent(true);
   };

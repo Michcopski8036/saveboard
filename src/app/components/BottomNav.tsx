@@ -9,9 +9,10 @@ interface BottomNavProps {
   onFocusSearch: () => void;
   onOpenMore: () => void;
   favorites: Set<string>;
+  hidden?: boolean;
 }
 
-export function BottomNav({ selected, onSelect, onOpenAdd, onFocusSearch, onOpenMore, favorites }: BottomNavProps) {
+export function BottomNav({ selected, onSelect, onOpenAdd, onFocusSearch, onOpenMore, favorites, hidden }: BottomNavProps) {
   const { t } = useTheme();
   const accent = '#7C3AED';
 
@@ -24,6 +25,8 @@ export function BottomNav({ selected, onSelect, onOpenAdd, onFocusSearch, onOpen
         boxShadow: t.bottomNavShadow,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
+        transform: hidden ? 'translateY(100%)' : 'translateY(0)',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
       <div className="flex items-stretch h-16">
 

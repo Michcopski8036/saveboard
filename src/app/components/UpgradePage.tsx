@@ -61,7 +61,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
 
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Sparkles className="w-5 h-5 text-yellow-300" />
-                <span className="text-[11px] font-bold uppercase tracking-widest text-white/70">Upgrade LinkBoard</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-white/70">Upgrade SaveBoard</span>
               </div>
               <h1 className="text-[28px] font-bold text-white mb-2">Save more. Organize better.</h1>
               <p className="text-white/60 text-[14px]">15% cheaper than Raindrop · Cancel anytime</p>
@@ -154,7 +154,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
                 <button
                   className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-gray-700 transition-colors hover:bg-gray-50"
                   style={{ border: '1px solid #E5E7EB' }}
-                  onClick={() => window.open('mailto:michcopski@gmail.com?subject=LinkBoard Team Plan Enquiry', '_blank')}>
+                  onClick={() => window.open('mailto:michcopski@gmail.com?subject=SaveBoard Team Plan Enquiry', '_blank')}>
                   Contact us →
                 </button>
               </div>

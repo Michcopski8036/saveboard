@@ -31,14 +31,14 @@ const SECTIONS: Section[] = [
       steps: [
         'Paste a URL into the bar at the top of the screen.',
         'Press Enter or tap the Save button.',
-        'LinkBoard fetches the title, description, and preview image automatically.',
+        'SaveBoard fetches the title, description, and preview image automatically.',
         'You can also type a plain note (no URL needed) — it saves as a memo card.',
         'To upload a PDF or image file, tap the paperclip icon next to the input bar.',
       ],
     },
     faqs: [
-      { q: 'Can I save YouTube videos or tweets?', a: 'Yes — paste any URL and LinkBoard will fetch a preview. Embed codes (YouTube <iframe>, Twitter widget) are also supported.' },
-      { q: 'What happens if the link has no preview image?', a: 'LinkBoard shows a styled placeholder. You can always edit the title and description manually.' },
+      { q: 'Can I save YouTube videos or tweets?', a: 'Yes — paste any URL and SaveBoard will fetch a preview. Embed codes (YouTube <iframe>, Twitter widget) are also supported.' },
+      { q: 'What happens if the link has no preview image?', a: 'SaveBoard shows a styled placeholder. You can always edit the title and description manually.' },
       { q: 'Can I add a note without a link?', a: 'Yes. Just type any text in the input bar (no https://) and it saves as a memo card.' },
     ],
   },
@@ -71,7 +71,7 @@ const SECTIONS: Section[] = [
     guide: {
       title: 'Using tags to find things fast',
       steps: [
-        'LinkBoard auto-generates tags from your links (e.g. #video, #github, #design).',
+        'SaveBoard auto-generates tags from your links (e.g. #video, #github, #design).',
         'Tags appear in the sidebar — click one to filter all matching links instantly.',
         'To add your own tag: open a link card, tap Edit, and type in the Tags field.',
         'Press Enter after each tag to add it. Backspace removes the last tag.',
@@ -79,7 +79,7 @@ const SECTIONS: Section[] = [
       ],
     },
     faqs: [
-      { q: 'Where do the auto-tags come from?', a: 'LinkBoard analyses the link\'s URL, title, and description to suggest relevant tags like #video, #ai, #tutorial, #social, and more.' },
+      { q: 'Where do the auto-tags come from?', a: 'SaveBoard analyses the link\'s URL, title, and description to suggest relevant tags like #video, #ai, #tutorial, #social, and more.' },
       { q: 'Can I remove an auto-generated tag?', a: 'Auto-tags are derived on the fly and cannot be deleted, but you can filter them out by selecting a different collection.' },
       { q: 'Are tags case-sensitive?', a: 'No — "AI", "ai", and "Ai" all map to the same #ai tag.' },
     ],
@@ -115,7 +115,7 @@ const SECTIONS: Section[] = [
     title: 'Export & Import',
     faqs: [
       { q: 'How do I export my links?', a: 'Go to Settings → Export links. A JSON file containing all your links and boards is downloaded to your device.' },
-      { q: 'How do I import links?', a: 'Settings → Import links, then select a previously exported LinkBoard JSON file. Note: Import replaces your current data.' },
+      { q: 'How do I import links?', a: 'Settings → Import links, then select a previously exported SaveBoard JSON file. Note: Import replaces your current data.' },
       { q: 'Is import available on the free plan?', a: 'Import is a Pro feature. Export is available on all plans.' },
     ],
   },
@@ -168,7 +168,7 @@ export function HelpPage({ onClose, onShowContact }: HelpPageProps) {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-[18px] font-bold text-gray-900">Help & FAQ</h2>
-                  <p className="text-[12px] text-gray-400 mt-0.5">Guides and answers for LinkBoard</p>
+                  <p className="text-[12px] text-gray-400 mt-0.5">Guides and answers for SaveBoard</p>
                 </div>
                 <button onClick={onClose}
                   className="p-2 rounded-xl transition-colors"

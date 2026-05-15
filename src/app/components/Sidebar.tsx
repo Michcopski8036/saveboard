@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bookmark, Home, Clock, Heart, Inbox, Plus, Sparkles, Zap, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2 } from 'lucide-react';
+import { Bookmark, BookmarkCheck, Home, Clock, Heart, Inbox, Plus, Sparkles, Zap, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2 } from 'lucide-react';
 import { useDrop } from 'react-dnd';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -263,11 +263,11 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
         <div className="px-5 pt-5 pb-4 flex items-center gap-2.5 shrink-0" style={{ borderBottom: `1px solid ${t.logoDivider}` }}>
           <div className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
             style={{ background: t.logoIconBg, boxShadow: t.logoIconShadow }}>
-            <Bookmark className="w-4 h-4 text-white" strokeWidth={2.5} />
+            <BookmarkCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[15px] font-bold tracking-tight leading-none">
-              <span style={{ color: t.logoText }}>Link</span>
+              <span style={{ color: t.logoText }}>Save</span>
               <span style={{ background: t.logoTextGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Board</span>
             </p>
             <div className="flex items-center gap-1 mt-0.5">
@@ -421,7 +421,7 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
         {/* Logo mark */}
         <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
           style={{ background: t.logoIconBg, boxShadow: t.logoIconShadow }}>
-          <Bookmark className="w-4 h-4 text-white" strokeWidth={2.5} />
+          <BookmarkCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
         </div>
 
         {/* Expand button */}
