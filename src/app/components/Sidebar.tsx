@@ -69,6 +69,7 @@ function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isM
         background: isOver ? `${color}22` : active ? t.boardActiveBg : 'transparent',
         border: isOver ? `1.5px solid ${color}66` : active ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent',
         transform: isOver ? 'scale(1.02)' : 'scale(1)',
+        zIndex: isMenuOpen ? 50 : undefined,
       }}>
       <button onClick={() => onSelect(`cat:${cat}`)}
         className="flex-1 flex items-center gap-2.5 px-2.5 py-[9px] text-left min-w-0"
@@ -108,7 +109,7 @@ function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isM
               <MoreHorizontal className="w-3.5 h-3.5" />
             </button>
             {isMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 z-50 w-36 rounded-xl overflow-hidden"
+              <div className="absolute right-0 top-full mt-1 z-[200] w-36 rounded-xl overflow-hidden"
                 style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
                 <div className="p-1">
                   <button onClick={() => startRename(cat)}
