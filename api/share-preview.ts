@@ -66,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const links     = Array.isArray((board as any).links_snapshot) ? (board as any).links_snapshot : [];
   const count     = links.length;
 
-  const ogTitle = `${ownerName} wants to share their ${category} Board with you | SaveBoard`;
+  const ogTitle = `${ownerName} wants to share an ${category} Board with you | SaveBoard`;
   const ogDesc  = `Check out ${ownerName}'s ${category} Board — ${count} save${count !== 1 ? 's' : ''}, all in one place on SaveBoard.`;
 
   const linksHtml = (links as any[]).slice(0, 9).map(l => `
