@@ -981,7 +981,7 @@ function AppContent() {
       {shareCategory && user && (
         <ShareModal
           category={shareCategory}
-          userId={user.id}
+          user={user}
           links={links.filter(l => l.category === shareCategory)}
           onClose={() => setShareCategory(null)}
         />

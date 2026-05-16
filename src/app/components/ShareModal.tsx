@@ -3,17 +3,27 @@ import { X, Copy, Check, Link2, Loader2, Trash2, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabase';
 import { useTheme } from '../context/ThemeContext';
 import type { LinkData } from './LinkCard';
+import type { User } from '@supabase/supabase-js';
 
 interface ShareModalProps {
   category: string;
-  userId: string;
+  user: User;
   links: LinkData[];
   onClose: () => void;
 }
 
+function deriveOwnerName(user: User): string {
+  return (
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split('@')[0] ||
+    'Someone'
+  );
+}
+
 const BASE_URL = window.location.origin;
 
-async function pushSnapshot(links: LinkData[], token: string) {
+async function pushSnapshot(links: LinkData[], token: string, ownerName: string) {
   const snapshot = links.map(l => ({
     id: l.id,
     url: l.url,
@@ -27,14 +37,15 @@ async function pushSnapshot(links: LinkData[], token: string) {
 
   await supabase
     .from('shared_boards')
-    .update({ links_snapshot: snapshot, synced_at: new Date().toISOString() })
+    .update({ links_snapshot: snapshot, synced_at: new Date().toISOString(), owner_name: ownerName })
     .eq('token', token);
 
   return snapshot.length;
 }
 
-export function ShareModal({ category, userId, links, onClose }: ShareModalProps) {
+export function ShareModal({ category, user, links, onClose }: ShareModalProps) {
   const { t } = useTheme();
+  const ownerName = deriveOwnerName(user);
   const [token, setToken] = useState<string | null>(null);
   const [linkCount, setLinkCount] = useState(0);
   const [syncedAt, setSyncedAt] = useState<Date | null>(null);
@@ -50,7 +61,7 @@ export function ShareModal({ category, userId, links, onClose }: ShareModalProps
       const { data: existing } = await supabase
         .from('shared_boards')
         .select('token')
-        .eq('owner_id', userId)
+        .eq('owner_id', user.id)
         .eq('category', category)
         .maybeSingle();
 
@@ -59,19 +70,19 @@ export function ShareModal({ category, userId, links, onClose }: ShareModalProps
       } else {
         const { data: inserted } = await supabase
           .from('shared_boards')
-          .insert({ owner_id: userId, category, links_snapshot: [], synced_at: null })
+          .insert({ owner_id: user.id, category, links_snapshot: [], synced_at: null, owner_name: ownerName })
           .select('token')
           .single();
         tok = inserted?.token ?? '';
       }
 
       setToken(tok);
-      const count = await pushSnapshot(links, tok);
+      const count = await pushSnapshot(links, tok, ownerName);
       setLinkCount(count);
       setSyncedAt(new Date());
       setLoading(false);
     })();
-  }, [category, userId]);
+  }, [category, user.id]);
 
   const shareUrl = token ? `${BASE_URL}/share/${token}` : '';
 
@@ -85,7 +96,7 @@ export function ShareModal({ category, userId, links, onClose }: ShareModalProps
   const handleSync = async () => {
     if (!token) return;
     setSyncing(true);
-    const count = await pushSnapshot(links, token);
+    const count = await pushSnapshot(links, token, ownerName);
     setLinkCount(count);
     setSyncedAt(new Date());
     setSyncing(false);
@@ -103,13 +114,13 @@ export function ShareModal({ category, userId, links, onClose }: ShareModalProps
     setLoading(true);
     const { data } = await supabase
       .from('shared_boards')
-      .insert({ owner_id: userId, category, links_snapshot: [] })
+      .insert({ owner_id: user.id, category, links_snapshot: [], owner_name: ownerName })
       .select('token')
       .single();
     const tok = data?.token ?? null;
     setToken(tok);
     if (tok) {
-      const count = await pushSnapshot(links, tok);
+      const count = await pushSnapshot(links, tok, ownerName);
       setLinkCount(count);
       setSyncedAt(new Date());
     }
