@@ -54,23 +54,116 @@ export const TAG_COLORS: Record<string, { bg: string; border: string; color: str
   design:   { bg: 'rgba(219,39,119,0.10)', border: 'rgba(219,39,119,0.22)', color: '#DB2777' },
   tutorial: { bg: 'rgba(217,119,6,0.10)',  border: 'rgba(217,119,6,0.22)',  color: '#D97706' },
   ai:       { bg: 'rgba(99,102,241,0.10)', border: 'rgba(99,102,241,0.22)', color: '#6366F1' },
+  tool:     { bg: 'rgba(20,184,166,0.10)', border: 'rgba(20,184,166,0.22)', color: '#0D9488' },
+  audio:    { bg: 'rgba(239,68,68,0.10)',  border: 'rgba(239,68,68,0.22)',  color: '#EF4444' },
+  product:  { bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.22)', color: '#F59E0B' },
+  research: { bg: 'rgba(139,92,246,0.10)', border: 'rgba(139,92,246,0.22)', color: '#7C3AED' },
+  food:     { bg: 'rgba(249,115,22,0.10)', border: 'rgba(249,115,22,0.22)', color: '#F97316' },
+  travel:   { bg: 'rgba(14,165,233,0.10)', border: 'rgba(14,165,233,0.22)', color: '#0EA5E9' },
+  finance:  { bg: 'rgba(34,197,94,0.10)',  border: 'rgba(34,197,94,0.22)',  color: '#16A34A' },
+  health:   { bg: 'rgba(168,85,247,0.10)', border: 'rgba(168,85,247,0.22)', color: '#A855F7' },
+  news:     { bg: 'rgba(100,116,139,0.10)',border: 'rgba(100,116,139,0.22)',color: '#475569' },
   user:     { bg: 'rgba(20,184,166,0.10)', border: 'rgba(20,184,166,0.22)', color: '#0D9488' },
   default:  { bg: 'rgba(107,114,128,0.10)',border: 'rgba(107,114,128,0.22)',color: '#6B7280' },
 };
 
 export function deriveAiTags(link: LinkData, domain: string): TagItem[] {
   const tags: TagItem[] = [];
+
   if (link.category && link.category !== 'None' && link.category !== 'Archive')
     tags.push({ label: link.category, type: 'category' });
-  if (domain.includes('github') || domain.includes('gitlab'))                   tags.push({ label: 'code', type: 'code' });
-  if (domain.includes('medium') || domain.includes('substack') || domain.includes('dev.to')) tags.push({ label: 'article', type: 'article' });
-  if (domain.includes('youtube') || domain.includes('vimeo'))                   tags.push({ label: 'video', type: 'video' });
-  if (domain.includes('twitter') || domain.includes('x.com') || domain.includes('instagram')) tags.push({ label: 'social', type: 'social' });
-  if (domain.includes('figma') || domain.includes('dribbble') || domain.includes('behance')) tags.push({ label: 'design', type: 'design' });
-  const tl = link.title.toLowerCase();
-  if (tl.includes('tutorial') || tl.includes('how to') || tl.includes('guide')) tags.push({ label: 'tutorial', type: 'tutorial' });
-  if (tl.includes(' ai ') || tl.includes('gpt') || tl.includes('machine learning')) tags.push({ label: 'ai', type: 'ai' });
-  return tags.slice(0, 3);
+
+  const tl   = link.title.toLowerCase();
+  const dl   = (link.description ?? '').toLowerCase();
+  const text = `${tl} ${dl}`;
+
+  // ── Domain-based ────────────────────────────────────────────────────────────
+  if (domain.includes('github') || domain.includes('gitlab') || domain.includes('bitbucket') ||
+      domain.includes('stackoverflow') || domain.includes('codepen') || domain.includes('codesandbox') ||
+      domain.includes('replit') || domain.includes('npmjs') || domain.includes('pypi'))
+    tags.push({ label: 'code', type: 'code' });
+
+  if (domain.includes('youtube') || domain.includes('vimeo') || domain.includes('dailymotion') ||
+      domain.includes('twitch') || domain.includes('tiktok') || domain.includes('loom'))
+    tags.push({ label: 'video', type: 'video' });
+
+  if (domain.includes('twitter') || domain.includes('x.com') || domain.includes('instagram') ||
+      domain.includes('reddit') || domain.includes('linkedin') || domain.includes('threads') ||
+      domain.includes('facebook') || domain.includes('mastodon') || domain.includes('bsky'))
+    tags.push({ label: 'social', type: 'social' });
+
+  if (domain.includes('medium') || domain.includes('substack') || domain.includes('dev.to') ||
+      domain.includes('hashnode') || domain.includes('beehiiv') || domain.includes('ghost.io') ||
+      domain.includes('wordpress') || domain.includes('blogger') || domain.includes('hubspot'))
+    tags.push({ label: 'article', type: 'article' });
+
+  if (domain.includes('figma') || domain.includes('dribbble') || domain.includes('behance') ||
+      domain.includes('canva') || domain.includes('adobe') || domain.includes('framer') ||
+      domain.includes('sketch'))
+    tags.push({ label: 'design', type: 'design' });
+
+  if (domain.includes('spotify') || domain.includes('podcasts.apple') || domain.includes('soundcloud') ||
+      domain.includes('anchor.fm') || domain.includes('overcast') || domain.includes('podcastaddict'))
+    tags.push({ label: 'audio', type: 'audio' });
+
+  if (domain.includes('notion') || domain.includes('airtable') || domain.includes('linear.app') ||
+      domain.includes('trello') || domain.includes('asana') || domain.includes('clickup') ||
+      domain.includes('monday.com') || domain.includes('vercel') || domain.includes('netlify') ||
+      domain.includes('zapier') || domain.includes('make.com'))
+    tags.push({ label: 'tool', type: 'tool' });
+
+  if (domain.includes('amazon') || domain.includes('ebay') || domain.includes('etsy') ||
+      domain.includes('producthunt') || domain.includes('shopify') || domain.includes('aliexpress') ||
+      domain.includes('walmart'))
+    tags.push({ label: 'product', type: 'product' });
+
+  if (domain.includes('arxiv') || domain.includes('scholar.google') || domain.includes('researchgate') ||
+      domain.includes('pubmed') || domain.includes('jstor') || domain.includes('semanticscholar'))
+    tags.push({ label: 'research', type: 'research' });
+
+  if (domain.includes('bbc') || domain.includes('cnn') || domain.includes('nytimes') ||
+      domain.includes('theguardian') || domain.includes('techcrunch') || domain.includes('wired') ||
+      domain.includes('theverge') || domain.includes('reuters') || domain.includes('apnews') ||
+      domain.includes('bloomberg') || domain.includes('wsj') || domain.includes('ft.com') ||
+      domain.includes('hacker') || domain.includes('ycombinator'))
+    tags.push({ label: 'news', type: 'news' });
+
+  // ── Title + description keyword-based ────────────────────────────────────────
+  if (tl.includes('tutorial') || tl.includes('how to') || tl.includes('how-to') ||
+      tl.includes('guide') || tl.includes('course') || tl.includes('learn') ||
+      tl.includes('step by step') || tl.includes('beginner'))
+    tags.push({ label: 'tutorial', type: 'tutorial' });
+
+  if (/\bai\b/.test(tl) || /\bgpt\b/.test(tl) || tl.includes('machine learning') ||
+      tl.includes('chatgpt') || tl.includes('claude') || tl.includes('llm') ||
+      tl.includes('deep learning') || tl.includes('neural network') || tl.includes('generative'))
+    tags.push({ label: 'ai', type: 'ai' });
+
+  if (text.includes('recipe') || text.includes('ingredient') || text.includes('cook') ||
+      text.includes('meal') || text.includes('dish') || text.includes('bake') ||
+      text.includes('restaurant') || domain.includes('allrecipes') || domain.includes('tasty') ||
+      domain.includes('foodnetwork') || domain.includes('epicurious') || domain.includes('delish'))
+    tags.push({ label: 'food', type: 'food' });
+
+  if (text.includes('travel') || text.includes('hotel') || text.includes('flight') ||
+      text.includes('vacation') || text.includes('destination') || text.includes('itinerary') ||
+      text.includes('backpack') || domain.includes('tripadvisor') || domain.includes('booking') ||
+      domain.includes('airbnb') || domain.includes('expedia') || domain.includes('kayak'))
+    tags.push({ label: 'travel', type: 'travel' });
+
+  if (text.includes('invest') || text.includes('stock') || text.includes('crypto') ||
+      text.includes('bitcoin') || text.includes('finance') || text.includes('trading') ||
+      text.includes('portfolio') || text.includes('dividend') || text.includes('etf') ||
+      domain.includes('coinbase') || domain.includes('binance') || domain.includes('robinhood'))
+    tags.push({ label: 'finance', type: 'finance' });
+
+  if (text.includes('fitness') || text.includes('workout') || text.includes('exercise') ||
+      text.includes('nutrition') || text.includes('diet') || text.includes('yoga') ||
+      text.includes('mental health') || text.includes('meditation') || text.includes('wellness') ||
+      domain.includes('myfitnesspal') || domain.includes('strava') || domain.includes('healthline'))
+    tags.push({ label: 'health', type: 'health' });
+
+  return tags.slice(0, 4);
 }
 function getAiSummary(desc: string): string | null {
   if (!desc || desc.startsWith('Link saved from') || desc.length < 30) return null;
@@ -183,7 +276,7 @@ export function LinkCard({
   const vimeoId   = getVimeoVideoId(link.url);
   const isVimeo   = vimeoId !== null;
   const isVideo   = isYT || isVimeo || link.url.includes('dailymotion.com') || link.url.includes('twitch.tv') || link.category === 'Videos';
-  const domain    = isMemo ? 'Note' : isPdf ? 'PDF' : (() => { try { return new URL(link.url).hostname.replace('www.', ''); } catch { return ''; } })();
+  const domain    = isMemo ? 'Note' : isPdf ? 'PDF' : (() => { try { return new URL(link.url).hostname.toLowerCase().replace('www.', ''); } catch { return ''; } })();
   const aiTags    = deriveAiTags(link, domain);
   const aiSummary = getAiSummary(link.description);
   const readTime  = getReadTime(link.description);
