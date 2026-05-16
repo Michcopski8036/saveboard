@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { MoreVertical, Link2, Check, FileText, ChevronDown, Volume2, VolumeX, Heart, Tag, Trash2, Sparkles, Clock, Play, BookOpen, ExternalLink, Pencil, GripVertical } from 'lucide-react';
 import { useDrag, useDrop } from 'react-dnd';
 import { CategoryPopup } from './CategoryPopup';
-import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder } from './PlatformPlaceholder';
+import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
 import { useTheme } from '../context/ThemeContext';
 
 export const LINK_DRAG_TYPE = 'LINK_TO_BOARD';
@@ -252,6 +252,7 @@ export function LinkCard({
   const [editDesc, setEditDesc]     = useState(link.description);
   const [editTags, setEditTags]     = useState<string[]>(link.tags ?? []);
   const [tagInput, setTagInput]     = useState('');
+  const [listImgError, setListImgError] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const [{ isDragging }, dragRef] = useDrag({
@@ -461,9 +462,17 @@ export function LinkCard({
         {!isDefaultPlaceholder && (
           <a href={href} target={href ? '_blank' : undefined} rel={href ? 'noopener noreferrer' : undefined} className="shrink-0" onClick={handleSel}>
             {isPlaceholder(link.image)
-              ? <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} text={isMemo ? link.description : undefined} className="w-14 h-14 rounded-xl" />
-              : <img src={link.image} alt={link.title} className="w-14 h-14 rounded-xl object-cover"
-                  onError={e => { e.currentTarget.style.display = 'none'; }} />}
+              ? <PlatformPlaceholder
+                  platform={getPlatformFromPlaceholder(link.image)}
+                  className="w-14 h-14 rounded-xl"
+                />
+              : listImgError
+                ? <PlatformPlaceholder
+                    platform={detectPlatformFromUrl(link.url)}
+                    className="w-14 h-14 rounded-xl"
+                  />
+                : <img src={link.image} alt={link.title} className="w-14 h-14 rounded-xl object-cover"
+                    onError={() => setListImgError(true)} />}
           </a>
         )}
         <a href={href} target={href ? '_blank' : undefined} rel={href ? 'noopener noreferrer' : undefined} className="flex-1 min-w-0" onClick={handleSel}>

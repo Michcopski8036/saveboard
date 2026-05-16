@@ -74,7 +74,15 @@ const BrandLogo = ({ platform, text }: { platform: Platform; text?: string }) =>
         </svg>
       );
     case 'memo':
-      return null;
+      return (
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+          stroke="rgba(124,58,237,0.55)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="8" y1="13" x2="16" y2="13"/>
+          <line x1="8" y1="17" x2="12" y2="17"/>
+        </svg>
+      );
     case 'facebook':
       return (
         <svg style={shadow} width="64" height="64" viewBox="0 0 24 24" fill="white">
@@ -138,11 +146,15 @@ export function PlatformPlaceholder({ platform, domain, text, className = '' }: 
         style={{ background: `linear-gradient(to bottom, ${config.gloss}, transparent)` }}
       />
       {isMemo
-        ? (
+        ? text ? (
           <div style={{ padding: '20px', width: '100%' }}>
             <p style={{ fontSize: '15px', fontWeight: 600, lineHeight: '1.6', color: t.memoText, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif' }}>
-              {text || ''}
+              {text}
             </p>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center w-full h-full">
+            <BrandLogo platform="memo" />
           </div>
         )
         : <BrandLogo platform={platform} text={text} />
