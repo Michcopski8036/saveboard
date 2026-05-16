@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { data: board } = await supabase
     .from('shared_boards')
-    .select('category, owner_name, links_snapshot, synced_at')
+    .select('category, owner_name, owner_email, links_snapshot, synced_at')
     .eq('token', token)
     .single();
 
@@ -45,7 +45,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.send(html);
   }
 
-  const ownerName = (board as any).owner_name || 'Someone';
+  const ownerName = (board as any).owner_name
+    || (board as any).owner_email?.split('@')[0]
+    || 'Someone';
   const category  = (board as any).category  || 'Board';
   const links     = Array.isArray((board as any).links_snapshot) ? (board as any).links_snapshot : [];
   const count     = links.length;

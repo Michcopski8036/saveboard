@@ -23,7 +23,7 @@ function deriveOwnerName(user: User): string {
 
 const BASE_URL = window.location.origin;
 
-async function pushSnapshot(links: LinkData[], token: string, ownerName: string) {
+async function pushSnapshot(links: LinkData[], token: string, ownerName: string, ownerEmail: string) {
   const snapshot = links.map(l => ({
     id: l.id,
     url: l.url,
@@ -37,7 +37,7 @@ async function pushSnapshot(links: LinkData[], token: string, ownerName: string)
 
   await supabase
     .from('shared_boards')
-    .update({ links_snapshot: snapshot, synced_at: new Date().toISOString(), owner_name: ownerName })
+    .update({ links_snapshot: snapshot, synced_at: new Date().toISOString(), owner_name: ownerName, owner_email: ownerEmail })
     .eq('token', token);
 
   return snapshot.length;
@@ -45,7 +45,8 @@ async function pushSnapshot(links: LinkData[], token: string, ownerName: string)
 
 export function ShareModal({ category, user, links, onClose }: ShareModalProps) {
   const { t } = useTheme();
-  const ownerName = deriveOwnerName(user);
+  const ownerName  = deriveOwnerName(user);
+  const ownerEmail = user.email ?? '';
   const [token, setToken] = useState<string | null>(null);
   const [linkCount, setLinkCount] = useState(0);
   const [syncedAt, setSyncedAt] = useState<Date | null>(null);
@@ -70,14 +71,14 @@ export function ShareModal({ category, user, links, onClose }: ShareModalProps) 
       } else {
         const { data: inserted } = await supabase
           .from('shared_boards')
-          .insert({ owner_id: user.id, category, links_snapshot: [], synced_at: null, owner_name: ownerName })
+          .insert({ owner_id: user.id, category, links_snapshot: [], synced_at: null, owner_name: ownerName, owner_email: ownerEmail })
           .select('token')
           .single();
         tok = inserted?.token ?? '';
       }
 
       setToken(tok);
-      const count = await pushSnapshot(links, tok, ownerName);
+      const count = await pushSnapshot(links, tok, ownerName, ownerEmail);
       setLinkCount(count);
       setSyncedAt(new Date());
       setLoading(false);
@@ -96,7 +97,7 @@ export function ShareModal({ category, user, links, onClose }: ShareModalProps) 
   const handleSync = async () => {
     if (!token) return;
     setSyncing(true);
-    const count = await pushSnapshot(links, token, ownerName);
+    const count = await pushSnapshot(links, token, ownerName, ownerEmail);
     setLinkCount(count);
     setSyncedAt(new Date());
     setSyncing(false);
@@ -114,13 +115,13 @@ export function ShareModal({ category, user, links, onClose }: ShareModalProps) 
     setLoading(true);
     const { data } = await supabase
       .from('shared_boards')
-      .insert({ owner_id: user.id, category, links_snapshot: [], owner_name: ownerName })
+      .insert({ owner_id: user.id, category, links_snapshot: [], owner_name: ownerName, owner_email: ownerEmail })
       .select('token')
       .single();
     const tok = data?.token ?? null;
     setToken(tok);
     if (tok) {
-      const count = await pushSnapshot(links, tok, ownerName);
+      const count = await pushSnapshot(links, tok, ownerName, ownerEmail);
       setLinkCount(count);
       setSyncedAt(new Date());
     }
