@@ -66,8 +66,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const links     = Array.isArray((board as any).links_snapshot) ? (board as any).links_snapshot : [];
   const count     = links.length;
 
-  const ogTitle = `${ownerName}'s ${category} Board · SaveBoard`;
-  const ogDesc  = `${count} save${count !== 1 ? 's' : ''} · View ${ownerName}'s curated ${category} collection on SaveBoard`;
+  const ogTitle = `${ownerName} wants to share their ${category} Board with you | SaveBoard`;
+  const ogDesc  = `Check out ${ownerName}'s ${category} Board — ${count} save${count !== 1 ? 's' : ''}, all in one place on SaveBoard.`;
 
   const linksHtml = (links as any[]).slice(0, 9).map(l => `
     <a href="${esc(l.url)}" class="card" target="_blank" rel="noopener noreferrer">
@@ -147,8 +147,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   <div class="hero">
     <div class="hero-left">
       <p class="label">Shared Board</p>
-      <h1>${esc(category)}</h1>
-      <p class="meta">Shared by ${esc(ownerName)} &nbsp;·&nbsp; ${count} save${count !== 1 ? 's' : ''}</p>
+      <h1>${esc(ownerName)} wants to share their ${esc(category)} Board with you</h1>
+      <p class="meta">${count} save${count !== 1 ? 's' : ''} · curated by ${esc(ownerName)}</p>
     </div>
     <a class="save-btn" href="${SITE}">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
