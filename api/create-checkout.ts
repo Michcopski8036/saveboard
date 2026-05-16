@@ -8,13 +8,19 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const PRICES = {
-  pro_monthly: process.env.STRIPE_PRICE_PRO_MONTHLY!,
-  pro_yearly:  process.env.STRIPE_PRICE_PRO_YEARLY!,
-  team:        process.env.STRIPE_PRICE_TEAM!,
+const PRODUCTS = {
+  pro_monthly: 'prod_UWPfKiYsEWBtRy',
+  pro_yearly:  'prod_UWmdNuHEo9ySbj',
+  team:        'prod_UWlLz9NIlQCnsL',
 };
 
 const SITE = 'https://www.saveboard.app';
+
+async function getPriceId(productId: string): Promise<string> {
+  const prices = await stripe.prices.list({ product: productId, active: true, limit: 1 });
+  if (!prices.data.length) throw new Error(`No active price found for product ${productId}`);
+  return prices.data[0].id;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -48,9 +54,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       customerId = customer.id;
     }
 
-    const priceId =
-      plan === 'team' ? PRICES.team :
-      interval === 'yearly' ? PRICES.pro_yearly : PRICES.pro_monthly;
+    const productKey =
+      plan === 'team' ? 'team' :
+      interval === 'yearly' ? 'pro_yearly' : 'pro_monthly';
+    const priceId = await getPriceId(PRODUCTS[productKey]);
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
