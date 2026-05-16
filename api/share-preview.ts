@@ -18,15 +18,29 @@ function domain(url: string): string {
   try { return new URL(url).hostname.replace('www.', ''); } catch { return url; }
 }
 
+const BOT_UA = /bot|crawl|spider|facebookexternalhit|facebookcatalog|whatsapp|telegram|discord|slackbot|twitterbot|linkedinbot|pinterest|prerender|preview|iMessage|google|bing|yahoo|applebot/i;
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const token = typeof req.query.token === 'string' ? req.query.token.trim() : '';
   if (!token) return res.redirect('/');
 
-  const { data: board } = await supabase
-    .from('shared_boards')
-    .select('category, owner_name, owner_email, links_snapshot, synced_at')
-    .eq('token', token)
-    .single();
+  // Real browsers → redirect to the React SPA (which re-enters via ?app=1 → index.html)
+  const ua = String(req.headers['user-agent'] ?? '');
+  if (!BOT_UA.test(ua)) {
+    return res.redirect(302, `/share/${token}?app=1`);
+  }
+
+  let board: any = null;
+  try {
+    const { data } = await supabase
+      .from('shared_boards')
+      .select('category, owner_name, owner_email, links_snapshot, synced_at')
+      .eq('token', token)
+      .single();
+    board = data;
+  } catch {
+    // fall through to generic OG
+  }
 
   const SITE = 'https://www.saveboard.app';
   const shareUrl = `${SITE}/share/${token}`;

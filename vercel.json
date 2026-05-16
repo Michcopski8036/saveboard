@@ -1,6 +1,11 @@
 {
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
+    {
+      "source": "/share/:token",
+      "has": [{ "type": "query", "key": "app" }],
+      "destination": "/index.html"
+    },
     { "source": "/share/:token", "destination": "/api/share-preview?token=:token" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
