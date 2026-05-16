@@ -87,7 +87,7 @@ function AppContent() {
   const [showHelp, setShowHelp]         = useState(false);
   const [showPrivacy, setShowPrivacy]   = useState(false);
   const [showTerms, setShowTerms]       = useState(false);
-  const isPro = false; // Will be set from Stripe subscription status
+  const [isPro, setIsPro] = useState(false);
   const fileInputRef    = useRef<HTMLInputElement>(null);
   const searchRef       = useRef<HTMLDivElement>(null);
   const searchInputRef  = useRef<HTMLInputElement>(null);
@@ -101,6 +101,18 @@ function AppContent() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) { setIsPro(false); return; }
+    supabase
+      .from('subscriptions')
+      .select('status, plan')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setIsPro(data?.status === 'active' && (data?.plan === 'pro' || data?.plan === 'team'));
+      });
+  }, [user]);
 
   useEffect(() => {
     if (!user) { setLinks([]); setCategories([]); return; }
@@ -1012,6 +1024,8 @@ function AppContent() {
           onClose={() => setShowUpgrade(false)}
           currentLinks={links.length}
           currentBoards={categories.length}
+          userId={user?.id}
+          userEmail={user?.email}
         />
       )}
 

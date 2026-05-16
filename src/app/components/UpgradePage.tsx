@@ -1,9 +1,12 @@
-import { X, Check, Zap, Users, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { X, Check, Zap, Users, Sparkles, Loader2 } from 'lucide-react';
 
 interface UpgradePageProps {
   onClose: () => void;
   currentLinks: number;
   currentBoards: number;
+  userId?: string;
+  userEmail?: string;
 }
 
 export const FREE_LIMITS = { links: 30, boards: 5, fileSizeMb: 5, storageMb: 50 };
@@ -40,9 +43,28 @@ function Cell({ value, highlight }: { value: boolean | string; highlight?: boole
   );
 }
 
-export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePageProps) {
+async function startCheckout(plan: 'pro' | 'team', interval: 'monthly' | 'yearly', userId?: string, userEmail?: string) {
+  if (!userId || !userEmail) { alert('Please sign in first.'); return; }
+  const res = await fetch('/api/create-checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ plan, interval, userId, userEmail }),
+  });
+  const { url, error } = await res.json();
+  if (error) { alert(`Checkout error: ${error}`); return; }
+  window.location.href = url;
+}
+
+export function UpgradePage({ onClose, currentLinks, currentBoards, userId, userEmail }: UpgradePageProps) {
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const linkPct  = Math.min((currentLinks  / FREE_LIMITS.links)  * 100, 100);
   const boardPct = Math.min((currentBoards / FREE_LIMITS.boards) * 100, 100);
+
+  const handleCheckout = async (plan: 'pro' | 'team', interval: 'monthly' | 'yearly' = 'monthly') => {
+    setLoadingPlan(`${plan}-${interval}`);
+    await startCheckout(plan, interval, userId, userEmail);
+    setLoadingPlan(null);
+  };
 
   return (
     <>
@@ -130,12 +152,24 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
                     </li>
                   ))}
                 </ul>
-                <button
-                  className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
-                  onClick={() => alert('Stripe payments coming soon! We\'ll notify you when Pro is live.')}>
-                  Get Pro →
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
+                    style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
+                    disabled={!!loadingPlan}
+                    onClick={() => handleCheckout('pro', 'monthly')}>
+                    {loadingPlan === 'pro-monthly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                    Monthly
+                  </button>
+                  <button
+                    className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
+                    style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
+                    disabled={!!loadingPlan}
+                    onClick={() => handleCheckout('pro', 'yearly')}>
+                    {loadingPlan === 'pro-yearly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                    Yearly −43%
+                  </button>
+                </div>
               </div>
 
               {/* Team */}
@@ -154,10 +188,12 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
                   ))}
                 </ul>
                 <button
-                  className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                  className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-gray-700 transition-colors hover:bg-gray-50 flex items-center justify-center gap-1.5 disabled:opacity-60"
                   style={{ border: '1px solid #E5E7EB' }}
-                  onClick={() => window.open('mailto:michcopski@gmail.com?subject=SaveBoard Team Plan Enquiry', '_blank')}>
-                  Contact us →
+                  disabled={!!loadingPlan}
+                  onClick={() => handleCheckout('team', 'monthly')}>
+                  {loadingPlan === 'team-monthly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                  Get Team →
                 </button>
               </div>
             </div>
