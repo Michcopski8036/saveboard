@@ -138,8 +138,8 @@ export function PlatformPlaceholder({ platform, domain, text, className = '' }: 
 
   return (
     <div
-      className={`relative overflow-hidden ${isMemo ? '' : 'flex items-center justify-center'} ${className}`}
-      style={{ background: config.gradient, ...(isMemo ? { minHeight: '100px' } : {}) }}
+      className={`relative overflow-hidden ${isMemo && text ? '' : 'flex items-center justify-center'} ${className}`}
+      style={{ background: config.gradient, ...(isMemo && text ? { minHeight: '100px' } : {}) }}
     >
       <div
         className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
