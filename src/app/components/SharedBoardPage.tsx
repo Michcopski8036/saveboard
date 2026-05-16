@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { supabase } from '../lib/supabase';
-import { Bookmark, ExternalLink, Clock, Globe, BookmarkPlus, Check, Loader2 } from 'lucide-react';
+import { Bookmark, ExternalLink, Clock, BookmarkPlus, Check, Loader2 } from 'lucide-react';
+import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
 
 interface SharedLink {
   id: string;
@@ -197,42 +198,77 @@ export function SharedBoardPage() {
           <div className="text-center py-20 text-gray-400 text-[15px]">No saves in this board yet.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {links.map(link => (
-              <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer"
-                className="group rounded-2xl overflow-hidden flex flex-col border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                {link.image && link.image !== 'placeholder:memo' && link.image !== 'placeholder:pdf' && (
-                  <div className="w-full h-36 shrink-0 overflow-hidden bg-gray-50">
-                    <img
-                      src={link.image}
-                      alt={link.title}
-                      className="w-full h-full object-cover"
-                      onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
+            {links.map(link => {
+              const isMemo = link.image === 'placeholder:memo';
+              const isPdf  = link.image === 'placeholder:pdf';
+              const dom    = isMemo ? 'Note' : isPdf ? 'PDF' : domain(link.url);
+              const hasPlaceholder = isPlaceholder(link.image ?? '');
+              const platform = hasPlaceholder
+                ? getPlatformFromPlaceholder(link.image!)
+                : (!link.image ? detectPlatformFromUrl(link.url) : null);
+              const showPlaceholder = hasPlaceholder || !link.image;
+              const showImage = !showPlaceholder && !isMemo && !isPdf;
+
+              return (
+                <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer"
+                  className="group rounded-2xl overflow-hidden flex flex-col border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+
+                  {/* Thumbnail */}
+                  {showPlaceholder ? (
+                    <PlatformPlaceholder
+                      platform={platform!}
+                      domain={dom}
+                      className="w-full aspect-video"
                     />
-                  </div>
-                )}
-                <div className="flex flex-col flex-1 p-4 gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-semibold text-gray-900 line-clamp-2 leading-snug">{link.title}</p>
-                    {link.description && (
-                      <p className="text-[12px] text-gray-400 mt-1 line-clamp-2 leading-relaxed">{link.description}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between mt-auto pt-1">
+                  ) : showImage ? (
+                    <div className="w-full aspect-video shrink-0 overflow-hidden bg-gray-50">
+                      <img
+                        src={link.image!}
+                        alt={link.title}
+                        className="w-full h-full object-cover"
+                        onError={e => {
+                          const wrapper = e.currentTarget.closest('.aspect-video') as HTMLElement | null;
+                          if (wrapper) wrapper.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ) : null}
+
+                  {/* Info */}
+                  <div className="flex flex-col flex-1 px-3.5 pt-3 pb-3.5 gap-2">
+                    {/* Favicon + domain + time */}
                     <div className="flex items-center gap-1.5">
-                      <Globe className="w-3 h-3 text-gray-300 shrink-0" />
-                      <span className="text-[11px] text-gray-400 truncate">{domain(link.url)}</span>
+                      {!isMemo && !isPdf && (
+                        <img
+                          src={`https://www.google.com/s2/favicons?domain=${dom}&sz=32`}
+                          alt=""
+                          className="w-3.5 h-3.5 rounded-sm object-contain shrink-0 opacity-60"
+                          onError={e => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      )}
+                      <span className="text-[10px] text-gray-400 truncate flex-1">{dom}</span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Clock className="w-2.5 h-2.5 text-gray-300" />
+                        <span className="text-[10px] text-gray-400">{timeAgo(link.saved_at)}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-gray-300" />
-                      <span className="text-[11px] text-gray-400">{timeAgo(link.saved_at)}</span>
+
+                    {/* Title */}
+                    <p className="text-[13px] font-semibold text-gray-900 line-clamp-2 leading-snug">{link.title}</p>
+
+                    {/* Description */}
+                    {link.description && (
+                      <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed">{link.description}</p>
+                    )}
+
+                    {/* External link icon on hover */}
+                    <div className="flex justify-end mt-auto pt-1">
+                      <ExternalLink className="w-3.5 h-3.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
-                </div>
-                <div className="px-4 pb-3 flex justify-end">
-                  <ExternalLink className="w-3.5 h-3.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              </a>
-            ))}
+                </a>
+              );
+            })}
           </div>
         )}
       </div>
