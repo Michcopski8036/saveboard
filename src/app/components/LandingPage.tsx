@@ -89,24 +89,90 @@ export function LandingPage({ onGetStarted }: Props) {
                 </div>
                 {/* Cards grid */}
                 <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {[
-                    { type: 'link',    title: 'How to learn anything fast', domain: 'medium.com',       color: '#EDE9FE', icon: '📰' },
-                    { type: 'video',   title: 'The Best Morning Routine',   domain: 'youtube.com',      color: '#FEE2E2', icon: '▶️' },
-                    { type: 'recipe',  title: 'Creamy Pasta Carbonara',     domain: 'tasty.co',         color: '#DCFCE7', icon: '🍝' },
-                    { type: 'article', title: 'Design trends 2025',         domain: 'designmodo.com',   color: '#FEF9C3', icon: '🎨' },
-                    { type: 'note',    title: 'My workout plan',            domain: 'Note',             color: '#E0F2FE', icon: '📝' },
-                    { type: 'link',    title: 'Best hike trails in Japan',  domain: 'alltrails.com',    color: '#FCE7F3', icon: '🥾' },
-                  ].map((card) => (
-                    <div key={card.title} className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                      <div className="h-16 flex items-center justify-center text-2xl" style={{ background: card.color }}>
-                        {card.icon}
-                      </div>
-                      <div className="p-2">
-                        <p className="text-[10px] font-semibold text-gray-800 leading-tight line-clamp-2">{card.title}</p>
-                        <p className="text-[9px] text-gray-400 mt-0.5">{card.domain}</p>
-                      </div>
+                  {/* YouTube */}
+                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                    <div className="h-16 flex items-center justify-center" style={{ background: '#FF0000' }}>
+                      <svg viewBox="0 0 90 64" className="w-14 h-auto">
+                        <rect width="90" height="64" rx="16" fill="rgba(0,0,0,0.15)"/>
+                        <polygon points="35,18 63,32 35,46" fill="white"/>
+                      </svg>
                     </div>
-                  ))}
+                    <div className="p-2">
+                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">The Best Morning Routine</p>
+                      <p className="text-[9px] text-gray-400 mt-0.5">youtube.com</p>
+                    </div>
+                  </div>
+
+                  {/* Instagram */}
+                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                    <div className="h-16 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #feda77 0%, #f58529 25%, #dd2a7b 60%, #8134af 85%, #515bd4 100%)' }}>
+                      <svg viewBox="0 0 24 24" className="w-9 h-9" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="5"/>
+                        <circle cx="12" cy="12" r="5"/>
+                        <circle cx="17.5" cy="6.5" r="1.2" fill="white" stroke="none"/>
+                      </svg>
+                    </div>
+                    <div className="p-2">
+                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">Japan Travel Photos 🇯🇵</p>
+                      <p className="text-[9px] text-gray-400 mt-0.5">instagram.com</p>
+                    </div>
+                  </div>
+
+                  {/* X / Twitter */}
+                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                    <div className="h-16 flex items-center justify-center bg-black">
+                      <svg viewBox="0 0 24 24" className="w-9 h-9" fill="white">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.735-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      </svg>
+                    </div>
+                    <div className="p-2">
+                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">Thread: How to build in public</p>
+                      <p className="text-[9px] text-gray-400 mt-0.5">x.com</p>
+                    </div>
+                  </div>
+
+                  {/* TikTok */}
+                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                    <div className="h-16 flex items-center justify-center" style={{ background: '#010101' }}>
+                      <svg viewBox="0 0 24 24" className="w-9 h-9">
+                        <path fill="#69C9D0" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.35a8.16 8.16 0 0 0 4.79 1.53V7.44a4.85 4.85 0 0 1-1.02-.75z"/>
+                        <path fill="#EE1D52" d="M18.57 5.94a4.83 4.83 0 0 1-2.75-4.19V2h-.02a4.83 4.83 0 0 0 2.77 3.94z" opacity="0.8"/>
+                      </svg>
+                    </div>
+                    <div className="p-2">
+                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">Viral pasta carbonara recipe 🍝</p>
+                      <p className="text-[9px] text-gray-400 mt-0.5">tiktok.com</p>
+                    </div>
+                  </div>
+
+                  {/* Medium */}
+                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                    <div className="h-16 flex items-center justify-center bg-black">
+                      <svg viewBox="0 0 24 24" className="w-9 h-9" fill="white">
+                        <path d="M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 12a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/>
+                      </svg>
+                    </div>
+                    <div className="p-2">
+                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">How to learn anything fast</p>
+                      <p className="text-[9px] text-gray-400 mt-0.5">medium.com</p>
+                    </div>
+                  </div>
+
+                  {/* Note */}
+                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                    <div className="h-16 flex items-center justify-center" style={{ background: '#FFFBEB' }}>
+                      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="#D97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="8" y1="13" x2="16" y2="13"/>
+                        <line x1="8" y1="17" x2="12" y2="17"/>
+                      </svg>
+                    </div>
+                    <div className="p-2">
+                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">My workout plan for June</p>
+                      <p className="text-[9px] text-gray-400 mt-0.5">Note</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
