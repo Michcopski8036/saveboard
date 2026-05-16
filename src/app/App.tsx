@@ -106,11 +106,12 @@ function AppContent() {
     if (!user) { setIsPro(false); return; }
     supabase
       .from('subscriptions')
-      .select('status, plan')
+      .select('status, plan, saves_limit, boards_limit, file_size_limit')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
-        setIsPro(data?.status === 'active' && (data?.plan === 'pro' || data?.plan === 'team'));
+        const active = data?.status === 'active' && (data?.plan === 'pro' || data?.plan === 'team');
+        setIsPro(active);
       });
   }, [user]);
 

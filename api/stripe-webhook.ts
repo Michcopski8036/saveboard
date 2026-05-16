@@ -24,14 +24,38 @@ async function upsertSubscription(sub: Stripe.Subscription) {
   if (!userId) return;
 
   const item = sub.items.data[0];
-  const plan = item?.price?.metadata?.plan ?? 'pro';
-  const status = sub.status; // active, canceled, past_due, etc.
+
+  // Fetch product to read metadata (plan_type, billing_cycle, saves_limit, etc.)
+  let productMeta: Record<string, string> = {};
+  try {
+    const priceId = item?.price?.id;
+    if (priceId) {
+      const price = await stripe.prices.retrieve(priceId, { expand: ['product'] });
+      const product = price.product as Stripe.Product;
+      productMeta = product.metadata ?? {};
+    }
+  } catch { /* fall through to defaults */ }
+
+  const plan         = productMeta.plan_type     ?? 'pro';
+  const billingCycle = productMeta.billing_cycle ?? 'monthly';
+  const savesLimit   = productMeta.saves_limit   ?? '300';
+  const boardsLimit  = productMeta.boards_limit  ?? '30';
+  const fileSizeLimit = productMeta.file_size_limit ?? '20MB';
+  const storagLimit  = productMeta.storage_limit ?? '2GB';
+  const teamMembers  = productMeta.team_members  ?? '3';
+  const status       = sub.status;
 
   await supabase.from('subscriptions').upsert({
     user_id: userId,
     stripe_customer_id: sub.customer as string,
     stripe_subscription_id: sub.id,
     plan,
+    billing_cycle: billingCycle,
+    saves_limit: savesLimit,
+    boards_limit: boardsLimit,
+    file_size_limit: fileSizeLimit,
+    storage_limit: storagLimit,
+    team_members: teamMembers,
     status,
     current_period_end: new Date((sub as any).current_period_end * 1000).toISOString(),
     updated_at: new Date().toISOString(),
