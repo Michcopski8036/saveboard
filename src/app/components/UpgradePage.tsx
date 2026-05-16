@@ -6,11 +6,13 @@ interface UpgradePageProps {
   currentBoards: number;
 }
 
-export const FREE_LIMITS = { links: 30, boards: 5 };
+export const FREE_LIMITS = { links: 30, boards: 5, fileSizeMb: 5, storageMb: 50 };
 
 const comparisonRows: { feature: string; free: boolean | string; pro: boolean | string; team: boolean | string }[] = [
   { feature: 'Saves',            free: '30 max',     pro: '300',       team: 'Unlimited' },
   { feature: 'Boards',           free: '5 max',      pro: '30',        team: 'Unlimited' },
+  { feature: 'Storage',          free: '50MB',       pro: '2GB',       team: '10GB'      },
+  { feature: 'File size limit',  free: '5MB',        pro: '20MB',      team: '50MB'      },
   { feature: 'File uploads',     free: true,         pro: true,        team: true        },
   { feature: 'Notes on cards',   free: true,         pro: true,        team: true        },
   { feature: 'Favorites',        free: true,         pro: true,        team: true        },
@@ -98,7 +100,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
                 <p className="text-[32px] font-bold text-gray-900 leading-none mb-1">$0</p>
                 <p className="text-[12px] text-gray-400 mb-5">Forever free</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
-                  {['30 saves', '5 boards', 'All features included', 'Export saves'].map(f => (
+                  {['30 saves', '5 boards', '50MB storage', '5MB file size limit', 'All features included'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-500">
                       <Check className="w-3.5 h-3.5 text-gray-300 shrink-0" />{f}
                     </li>
@@ -122,7 +124,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
                 <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">$3.49<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                 <p className="text-[12px] font-semibold text-purple-600 mb-5">or $24/yr — save 43%</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
-                  {['300 saves','30 boards','All features included','Priority support','3 team members'].map(f => (
+                  {['300 saves','30 boards','2GB storage','20MB file size limit','All features included','Priority support','3 team members'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
                       <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
                     </li>
@@ -145,7 +147,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards }: UpgradePag
                 <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">$6<span className="text-[16px] font-normal text-gray-400">/seat/mo</span></p>
                 <p className="text-[12px] text-gray-400 mb-5">Min 3 seats · billed monthly</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
-                  {['Unlimited saves','Unlimited boards','All features included','Up to 5+ members','Admin dashboard'].map(f => (
+                  {['Unlimited saves','Unlimited boards','10GB storage','50MB file size limit','All features included','5+ team members','Admin dashboard'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
                       <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />{f}
                     </li>

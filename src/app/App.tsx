@@ -289,6 +289,14 @@ function AppContent() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     setErrorMessage(''); setSuccessMessage(''); setIsAdding(true);
+    const maxMb = isPro ? 20 : FREE_LIMITS.fileSizeMb;
+    if (file.size > maxMb * 1024 * 1024) {
+      setErrorMessage(`File too large. ${isPro ? 'Pro' : 'Free'} plan limit is ${maxMb}MB.`);
+      if (!isPro) setShowUpgrade(true);
+      setIsAdding(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
     try {
       const { generateId } = await import('./utils/metadataFetcher');
       const id = generateId();
