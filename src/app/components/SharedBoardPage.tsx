@@ -186,7 +186,7 @@ export function SharedBoardPage() {
           ) : saved ? (
             <><Check className="w-4 h-4" /> {skippedCount > 0 ? `Saved! (${skippedCount} skipped)` : 'Saved!'}</>
           ) : (
-            <><BookmarkPlus className="w-4 h-4" /> Save Board</>
+            <><BookmarkPlus className="w-4 h-4" /> Save to My Board</>
           )}
         </button>
       </div>
@@ -246,7 +246,7 @@ export function SharedBoardPage() {
               onClick={handleSaveBoard}
               className="w-full py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
               style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
-              Sign in &amp; Save Board
+              Sign in &amp; Save to My Board
             </button>
           </div>
         </div>
