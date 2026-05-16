@@ -17,6 +17,7 @@ interface SharedLink {
 interface SharedBoard {
   token: string;
   category: string;
+  owner_name?: string;
   links_snapshot: SharedLink[];
   synced_at: string | null;
 }
@@ -52,7 +53,7 @@ export function SharedBoardPage() {
     (async () => {
       const { data, error } = await supabase
         .from('shared_boards')
-        .select('token, category, links_snapshot, synced_at')
+        .select('token, category, owner_name, links_snapshot, synced_at')
         .eq('token', token)
         .single();
 
@@ -64,7 +65,6 @@ export function SharedBoardPage() {
 
   const handleSaveBoard = async () => {
     if (!user) {
-      // Store intent and redirect to main app (auth wall)
       localStorage.setItem('saveboard-pending-import', token!);
       window.location.href = window.location.origin;
       return;
@@ -74,7 +74,6 @@ export function SharedBoardPage() {
     try {
       const catName = board!.category;
 
-      // Create category if it doesn't exist
       const { data: existingCat } = await supabase
         .from('categories')
         .select('name')
@@ -86,7 +85,6 @@ export function SharedBoardPage() {
         await supabase.from('categories').insert({ name: catName, user_id: user.id });
       }
 
-      // Fetch existing URLs to avoid duplicates
       const { data: existingLinks } = await supabase
         .from('links')
         .select('url')
@@ -117,9 +115,9 @@ export function SharedBoardPage() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8F7FF' }}>
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="flex flex-col items-center gap-3">
-        <svg className="animate-spin h-8 w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg className="animate-spin h-8 w-8" style={{ color: '#A259FF' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
         </svg>
@@ -129,7 +127,7 @@ export function SharedBoardPage() {
   );
 
   if (notFound) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8F7FF' }}>
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">
         <p className="text-2xl font-bold text-gray-800 mb-2">Board not found</p>
         <p className="text-sm text-gray-400">This link may have been revoked or never existed.</p>
@@ -140,30 +138,39 @@ export function SharedBoardPage() {
   const links = board?.links_snapshot ?? [];
 
   return (
-    <div className="min-h-screen" style={{ background: '#F8F7FF' }}>
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b" style={{ background: 'rgba(248,247,255,0.92)', backdropFilter: 'blur(12px)', borderColor: '#E5E3F0' }}>
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-white font-sans">
+
+      {/* Nav */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-              <Bookmark className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+            <div className="p-1.5 rounded-[8px] bg-gradient-to-br from-[#1ABCFE] via-[#A259FF] to-[#F24E1E]">
+              <Bookmark className="w-4 h-4 text-white" />
             </div>
-            <span className="text-[14px] font-bold" style={{ background: 'linear-gradient(90deg,#7C3AED,#6366F1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>SaveBoard</span>
+            <span className="text-[15px] font-semibold text-gray-900">
+              Save<span className="bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">Board</span>
+            </span>
           </div>
-          <a href="https://www.saveboard.app" target="_blank" rel="noopener noreferrer"
-            className="text-[12px] px-3 py-1.5 rounded-lg font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+          <a
+            href="https://www.saveboard.app"
+            className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors"
+          >
             Get SaveBoard
           </a>
         </div>
-      </header>
+      </nav>
 
-      {/* Board title + Save button */}
-      <div className="max-w-5xl mx-auto px-4 pt-8 pb-4 flex items-start justify-between gap-4">
+      {/* Board header */}
+      <div className="max-w-5xl mx-auto px-5 pt-28 pb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(124,58,237,0.5)' }}>Shared Board</p>
-          <h1 className="text-[28px] font-bold text-gray-900">{board?.category}</h1>
-          <p className="text-[13px] text-gray-400 mt-1">
+          <p className="text-[11px] font-bold uppercase tracking-widest mb-2 text-purple-400">Shared Board</p>
+          <h1 className="text-[36px] font-extrabold text-gray-900 leading-tight tracking-tight">
+            {board?.category}
+            {board?.owner_name && (
+              <span className="text-gray-400 font-normal text-[22px] ml-3">by {board.owner_name}</span>
+            )}
+          </h1>
+          <p className="text-[14px] text-gray-400 mt-2">
             {links.length} save{links.length !== 1 ? 's' : ''}
             {board?.synced_at && <span> · shared {timeAgo(board.synced_at)}</span>}
           </p>
@@ -172,12 +179,12 @@ export function SharedBoardPage() {
         <button
           onClick={handleSaveBoard}
           disabled={saving || saved}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold text-white shrink-0 transition-all hover:opacity-90 disabled:opacity-70 mt-2"
-          style={{ background: saved ? '#10B981' : 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl text-[14px] font-semibold text-white shrink-0 mt-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 shadow-lg shadow-purple-200"
+          style={{ background: saved ? '#10B981' : 'linear-gradient(to right, #A259FF, #FF7262)' }}>
           {saving ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
           ) : saved ? (
-            <><Check className="w-4 h-4" /> {skippedCount > 0 ? `Saved! (${skippedCount} duplicate${skippedCount > 1 ? 's' : ''} skipped)` : 'Saved!'}</>
+            <><Check className="w-4 h-4" /> {skippedCount > 0 ? `Saved! (${skippedCount} skipped)` : 'Saved!'}</>
           ) : (
             <><BookmarkPlus className="w-4 h-4" /> Save Board</>
           )}
@@ -185,19 +192,16 @@ export function SharedBoardPage() {
       </div>
 
       {/* Links grid */}
-      <div className="max-w-5xl mx-auto px-4 pb-12">
+      <div className="max-w-5xl mx-auto px-5 pb-32">
         {links.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">No saves in this board yet.</div>
+          <div className="text-center py-20 text-gray-400 text-[15px]">No saves in this board yet.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {links.map(link => (
               <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer"
-                className="group rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5"
-                style={{ background: '#fff', border: '1px solid #EDE9FE', boxShadow: '0 1px 6px rgba(124,58,237,0.06)' }}
-                onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(124,58,237,0.13)'; e.currentTarget.style.borderColor = '#C4B5FD'; }}
-                onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 6px rgba(124,58,237,0.06)'; e.currentTarget.style.borderColor = '#EDE9FE'; }}>
+                className="group rounded-2xl overflow-hidden flex flex-col border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 {link.image && link.image !== 'placeholder:memo' && link.image !== 'placeholder:pdf' && (
-                  <div className="w-full h-36 rounded-xl overflow-hidden shrink-0">
+                  <div className="w-full h-36 shrink-0 overflow-hidden bg-gray-50">
                     <img
                       src={link.image}
                       alt={link.title}
@@ -206,39 +210,43 @@ export function SharedBoardPage() {
                     />
                   </div>
                 )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-semibold text-gray-900 line-clamp-2 leading-snug">{link.title}</p>
-                  {link.description && (
-                    <p className="text-[12px] text-gray-400 mt-1 line-clamp-2">{link.description}</p>
-                  )}
-                </div>
-                <div className="flex items-center justify-between mt-auto pt-1">
-                  <div className="flex items-center gap-1.5">
-                    <Globe className="w-3 h-3 text-gray-300 shrink-0" />
-                    <span className="text-[11px] text-gray-400 truncate">{domain(link.url)}</span>
+                <div className="flex flex-col flex-1 p-4 gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-semibold text-gray-900 line-clamp-2 leading-snug">{link.title}</p>
+                    {link.description && (
+                      <p className="text-[12px] text-gray-400 mt-1 line-clamp-2 leading-relaxed">{link.description}</p>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-gray-300" />
-                    <span className="text-[11px] text-gray-400">{timeAgo(link.saved_at)}</span>
+                  <div className="flex items-center justify-between mt-auto pt-1">
+                    <div className="flex items-center gap-1.5">
+                      <Globe className="w-3 h-3 text-gray-300 shrink-0" />
+                      <span className="text-[11px] text-gray-400 truncate">{domain(link.url)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-gray-300" />
+                      <span className="text-[11px] text-gray-400">{timeAgo(link.saved_at)}</span>
+                    </div>
                   </div>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity self-end -mt-1" />
+                <div className="px-4 pb-3 flex justify-end">
+                  <ExternalLink className="w-3.5 h-3.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </a>
             ))}
           </div>
         )}
       </div>
 
-      {/* Sign-in prompt for non-logged-in users */}
+      {/* Bottom CTA for guests */}
       {!user && (
-        <div className="fixed bottom-0 inset-x-0 p-4" style={{ background: 'rgba(248,247,255,0.95)', backdropFilter: 'blur(12px)', borderTop: '1px solid #E5E3F0' }}>
+        <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm border-t border-gray-100 p-4">
           <div className="max-w-sm mx-auto text-center">
             <p className="text-[13px] text-gray-500 mb-3">Sign in to save this board to your SaveBoard</p>
             <button
               onClick={handleSaveBoard}
-              className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-              Sign in & Save Board
+              className="w-full py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
+              style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
+              Sign in &amp; Save Board
             </button>
           </div>
         </div>
