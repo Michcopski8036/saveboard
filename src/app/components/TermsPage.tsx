@@ -1,7 +1,7 @@
 import { X, FileText } from 'lucide-react';
 
 const LAST_UPDATED = 'May 14, 2026';
-const CONTACT_EMAIL = 'creatorsloftperth@gmail.com';
+const CONTACT_EMAIL = 'hello@saveboard.app';
 
 interface Section {
   title: string;

@@ -3,7 +3,7 @@ import { X, Mail, Send, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-const CONTACT_EMAIL = 'creatorsloftperth@gmail.com';
+const CONTACT_EMAIL = 'hello@saveboard.app';
 
 const SUBJECTS = [
   'General Inquiry',
