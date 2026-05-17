@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import { Bookmark, Clock, Heart, Inbox, ArrowRight, Plus, Globe, Zap } from 'lucide-react';
+import { Clock, Heart, Inbox, ArrowRight, Plus, Zap } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import type { LinkData } from './LinkCard';
 import { isPlaceholder, PlatformPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
@@ -75,37 +74,38 @@ export function HomePage({ links, categories, favorites, userEmail, onSelect, on
               View all <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <ResponsiveMasonry columnsCountBreakPoints={{ 0: 1, 400: 2, 768: 3, 1280: 4, 1600: 5 }}>
-            <Masonry gutter="12px">
-              {recent.map(l => (
-                <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer"
-                  className="block rounded-2xl overflow-hidden transition-all hover:-translate-y-0.5"
-                  style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+          {/* Horizontal scroll row */}
+          <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 sm:-mx-6 sm:px-6"
+            style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+            {recent.map(l => (
+              <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer"
+                className="flex-none w-[148px] rounded-2xl overflow-hidden transition-all hover:-translate-y-0.5"
+                style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                {/* Fixed-height image */}
+                <div className="w-full h-[88px] overflow-hidden">
                   {l.image && !isPlaceholder(l.image) ? (
-                    <div className="w-full overflow-hidden" style={{ maxHeight: 180 }}>
-                      <img src={l.image} alt={l.title} className="w-full h-auto object-cover"
-                        onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
-                    </div>
+                    <img src={l.image} alt={l.title} className="w-full h-full object-cover"
+                      onError={e => { e.currentTarget.style.display = 'none'; }} />
                   ) : (
                     <PlatformPlaceholder
                       platform={isPlaceholder(l.image) ? (l.image.replace('placeholder:', '') as any) : detectPlatformFromUrl(l.url)}
-                      className="w-full h-24"
+                      className="w-full h-full"
                     />
                   )}
-                  <div className="p-3">
-                    <p className="text-[12px] font-semibold line-clamp-2 leading-snug" style={{ color: t.textPrimary }}>{l.title}</p>
-                    {l.description && (
-                      <p className="text-[11px] mt-1 line-clamp-2 leading-snug" style={{ color: t.textMuted }}>{l.description}</p>
-                    )}
-                    <div className="flex items-center gap-1 mt-2">
-                      <Globe className="w-3 h-3 shrink-0" style={{ color: t.textFaint }} />
-                      <p className="text-[10px] truncate" style={{ color: t.textFaint }}>{domain(l.url) || timeAgo(l.savedAt)}</p>
-                    </div>
+                </div>
+                {/* Content */}
+                <div className="p-2.5">
+                  <p className="text-[12px] font-semibold line-clamp-2 leading-snug mb-1.5" style={{ color: t.textPrimary }}>{l.title}</p>
+                  <div className="flex items-center gap-1">
+                    <img src={`https://www.google.com/s2/favicons?domain=${domain(l.url)}&sz=16`} alt=""
+                      className="w-3 h-3 rounded-sm flex-shrink-0"
+                      onError={e => { e.currentTarget.style.display = 'none'; }} />
+                    <p className="text-[10px] truncate" style={{ color: t.textFaint }}>{domain(l.url)}</p>
                   </div>
-                </a>
-              ))}
-            </Masonry>
-          </ResponsiveMasonry>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
       )}
 
