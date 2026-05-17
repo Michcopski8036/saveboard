@@ -1,4 +1,4 @@
-import { Bookmark, Link2, FileText, Play, StickyNote, Sparkles, Share2, ArrowRight, Check } from 'lucide-react';
+import { Bookmark, Link2, FileText, Play, StickyNote, Sparkles, Share2, ArrowRight, Check, Search, Zap, Lock, LayoutGrid, FolderOpen } from 'lucide-react';
 
 interface Props {
   onGetStarted: () => void;
@@ -161,24 +161,30 @@ export function LandingPage({ onGetStarted }: Props) {
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-16 px-5 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-[32px] font-bold text-center text-gray-900 mb-2">One place for all your links</h2>
-          <p className="text-gray-500 text-center mb-10 text-[16px]">No more searching through group chats. Find what you need in seconds.</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* Solution */}
+      <section className="py-20 px-5 bg-[#FAFAF8]">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-[12px] font-semibold tracking-widest uppercase text-amber-500 mb-5">The Solution</p>
+          <h2 className="text-[36px] sm:text-[52px] font-extrabold text-gray-900 leading-[1.1] mb-14">
+            One place for{' '}
+            <span className="italic bg-gradient-to-r from-[#A259FF] to-[#F24E1E] bg-clip-text text-transparent">all</span>{' '}
+            your links
+          </h2>
+          <div className="grid sm:grid-cols-3 gap-5">
             {[
-              { icon: Link2,    label: 'Visual Cards',  desc: 'Every link becomes a rich preview with image, title, and description.',          bg: '#EDE9FE', color: '#7C3AED' },
-              { icon: FileText, label: 'By Activity',   desc: 'Create boards for Basketball, Gymnastics, Tennis — each activity tidy and separate.',  bg: '#FEE2E2', color: '#DC2626' },
-              { icon: Play,     label: 'Find Fast',     desc: 'Search by title, notes, or tags. No more scrolling through hundreds of messages.',  bg: '#DCFCE7', color: '#16A34A' },
-              { icon: StickyNote, label: 'Add Notes',   desc: 'Add context like "Register by June 1st" so you never forget the details.',        bg: '#FEF9C3', color: '#CA8A04' },
+              { icon: LayoutGrid, label: 'Beautiful visual cards',   desc: 'Every link becomes a rich preview card with image, title, and description — pulled automatically.', bg: '#EDE9FE', color: '#7C3AED' },
+              { icon: FolderOpen, label: 'Organise by activity',     desc: 'Create collections for Basketball, Gymnastics, Tennis — keep each activity\'s links separate and tidy.', bg: '#CCFBF1', color: '#0D9488' },
+              { icon: Search,     label: 'Find in seconds',          desc: 'Search by title, notes, or tags. No more endless scrolling through hundreds of messages.', bg: '#FEF9C3', color: '#CA8A04' },
+              { icon: StickyNote, label: 'Add notes & reminders',    desc: 'Add context — "Register by June 1st" or "need to pay $50" — so you never forget the important details.', bg: '#FFE4E6', color: '#E11D48' },
+              { icon: Zap,        label: 'Save in seconds',          desc: 'Just paste a link and SaveBoard does the rest. Title, image, description — all fetched automatically.', bg: '#DBEAFE', color: '#2563EB' },
+              { icon: Lock,       label: 'Private & just yours',     desc: 'Your links are private. Safe login, secure storage — no one sees your board unless you choose to share.', bg: '#DCFCE7', color: '#16A34A' },
             ].map(({ icon: Icon, label, desc, bg, color }) => (
-              <div key={label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: bg }}>
-                  <Icon className="w-5 h-5" style={{ color }} />
+              <div key={label} className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:-translate-y-1 transition-transform">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5" style={{ background: bg }}>
+                  <Icon className="w-6 h-6" style={{ color }} />
                 </div>
-                <p className="font-semibold text-gray-900 text-[14px] mb-1">{label}</p>
-                <p className="text-[12px] text-gray-500 leading-snug">{desc}</p>
+                <p className="font-semibold text-gray-900 text-[17px] mb-2.5">{label}</p>
+                <p className="text-[14px] text-gray-500 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
