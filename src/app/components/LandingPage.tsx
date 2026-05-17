@@ -29,154 +29,110 @@ export function LandingPage({ onGetStarted }: Props) {
       </nav>
 
       {/* Hero */}
-      <section className="pt-32 pb-16 px-5 text-center">
-        <div className="max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-[12px] font-medium text-purple-600 mb-6">
-            <Sparkles className="w-3 h-3" />
-            😩 Sound familiar?
-          </div>
-          <h1 className="text-[48px] sm:text-[64px] font-extrabold text-gray-900 leading-[1.05] tracking-tight mb-5">
-            Stop scrolling.<br />
-            <span className="bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">
-              Find that link instantly.
-            </span>
-          </h1>
-          <p className="text-[18px] text-gray-500 leading-relaxed mb-8 max-w-md mx-auto">
-            Tired of digging through group chats to find a schedule link, registration form, or video someone shared weeks ago? SaveBoard keeps all your important links organised in one beautiful place.
-          </p>
-          <button
-            onClick={onGetStarted}
-            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
-          >
-            Get Started Free
-            <ArrowRight className="w-4 h-4" />
-          </button>
-          <p className="text-[12px] text-gray-400 mt-3">Free to start · No credit card required</p>
-        </div>
-      </section>
+      <section className="pt-28 pb-16 px-5">
+        <div className="max-w-5xl mx-auto grid sm:grid-cols-2 gap-12 items-center">
 
-      {/* App mockup */}
-      <section className="px-5 pb-20">
-        <div className="max-w-3xl mx-auto">
-          <div className="relative rounded-[28px] overflow-hidden shadow-2xl shadow-gray-200 border border-gray-100 bg-gray-50">
-            {/* Browser chrome */}
-            <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-2">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-gray-200" />
-                <div className="w-3 h-3 rounded-full bg-gray-200" />
-                <div className="w-3 h-3 rounded-full bg-gray-200" />
+          {/* Left — text */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 border border-amber-200 text-[13px] font-medium text-amber-800 mb-8">
+              😩 Sound familiar?
+            </div>
+            <h1 className="text-[44px] sm:text-[54px] font-extrabold text-gray-900 leading-[1.05] tracking-tight mb-6">
+              Stop scrolling.<br />
+              Find that link{' '}
+              <span className="italic bg-gradient-to-r from-[#A259FF] to-[#F24E1E] bg-clip-text text-transparent">
+                instantly.
+              </span>
+            </h1>
+            <p className="text-[17px] text-gray-500 leading-relaxed mb-10 max-w-md">
+              Tired of digging through group chats to find a schedule link, registration form, or video someone shared weeks ago? SaveBoard keeps all your important links organised in one beautiful place.
+            </p>
+            <div className="flex gap-3 flex-wrap mb-10">
+              <button
+                onClick={onGetStarted}
+                className="inline-flex items-center gap-2 px-6 py-3.5 bg-gray-900 text-white rounded-full font-semibold text-[15px] hover:bg-[#A259FF] transition-colors"
+              >
+                📲 Get Started Free
+              </button>
+              <a
+                href="#how"
+                className="inline-flex items-center px-6 py-3.5 border border-gray-200 bg-white text-gray-700 rounded-full font-medium text-[15px] hover:border-[#A259FF] hover:text-[#A259FF] transition-colors"
+              >
+                See how it works
+              </a>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex">
+                {['🧑‍🦰','👩','🧑','👩‍🦱'].map((e, i) => (
+                  <div key={i} className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[14px] -ml-2 first:ml-0"
+                    style={{ background: ['#FDE68A','#BBF7D0','#BFDBFE','#FCA5A5'][i] }}>
+                    {e}
+                  </div>
+                ))}
               </div>
-              <div className="flex-1 mx-3 bg-gray-100 rounded-md px-3 py-1 text-[12px] text-gray-400">
-                saveboard.app
+              <span className="text-[13px] text-gray-500">Join parents & busy people getting organised</span>
+            </div>
+          </div>
+
+          {/* Right — WhatsApp chat mockup */}
+          <div>
+            <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200 overflow-hidden max-w-[360px] ml-auto border border-gray-100">
+              {/* Chat header */}
+              <div className="bg-[#075E54] px-5 py-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center text-[18px]">🏀</div>
+                <div>
+                  <p className="text-white text-[15px] font-medium">Basketball Team 🏀</p>
+                  <p className="text-white/70 text-[12px]">12 members</p>
+                </div>
+              </div>
+              {/* Chat body */}
+              <div className="bg-[#ECE5DD] px-4 py-4 flex flex-col gap-2.5">
+                {/* Incoming message 1 */}
+                <div className="bg-white rounded-xl rounded-tl-sm px-3 py-2 max-w-[85%] text-[13px] text-gray-800">
+                  Here's the registration link for the tournament 👇
+                  <div className="mt-1.5 bg-gray-100 border-l-[3px] border-[#25D366] rounded px-2 py-1.5 text-[11px] text-[#128C7E] break-all">
+                    sports.com/tournament/registration/2026/season-b-u12...
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1 text-right">Mon 9:14 AM</p>
+                </div>
+                {/* Incoming message 2 */}
+                <div className="bg-white rounded-xl rounded-tl-sm px-3 py-2 max-w-[85%] text-[13px] text-gray-800">
+                  And the schedule PDF 📅
+                  <div className="mt-1.5 bg-gray-100 border-l-[3px] border-[#25D366] rounded px-2 py-1.5 text-[11px] text-[#128C7E] break-all">
+                    drive.google.com/file/d/1BxiMVs8pp3nZ3yPQh...
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1 text-right">Mon 9:15 AM</p>
+                </div>
+                {/* Outgoing message */}
+                <div className="bg-[#DCF8C6] rounded-xl rounded-tr-sm px-3 py-2 max-w-[85%] self-end text-[13px] text-gray-800">
+                  Thanks! 🙏
+                  <p className="text-[10px] text-gray-400 mt-1 text-right">9:20 AM</p>
+                </div>
+                {/* 3 weeks later callout */}
+                <div className="bg-amber-50 border-l-[3px] border-amber-400 rounded-xl px-3 py-2 max-w-[90%] text-[12px] text-amber-800">
+                  😩 <em>3 weeks later...</em><br />"Where was that registration link again??"
+                  <p className="text-[10px] text-amber-500 mt-1 text-right">3 weeks later</p>
+                </div>
               </div>
             </div>
-            {/* App UI preview */}
-            <div className="bg-[#F9FAFB] p-4 min-h-[320px]">
-              <div className="flex gap-3">
-                {/* Sidebar */}
-                <div className="hidden sm:block w-[140px] shrink-0">
-                  <div className="flex items-center gap-1.5 mb-4 px-1">
-                    <div className="p-1 rounded-[6px] bg-gradient-to-br from-[#1ABCFE] via-[#A259FF] to-[#F24E1E]">
-                      <Bookmark className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-[12px] font-bold text-gray-900">SaveBoard</span>
-                  </div>
-                  {['All Saves','Basketball','Gymnastics','Tennis'].map((label, i) => (
-                    <div key={label} className={`px-2.5 py-1.5 rounded-lg mb-1 text-[11px] font-medium ${i === 0 ? 'bg-purple-100 text-purple-700' : 'text-gray-500'}`}>
-                      {label}
-                    </div>
-                  ))}
-                </div>
-                {/* Cards grid */}
-                <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {/* YouTube */}
-                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                    <div className="h-16 flex items-center justify-center" style={{ background: '#FF0000' }}>
-                      <svg viewBox="0 0 90 64" className="w-14 h-auto">
-                        <rect width="90" height="64" rx="16" fill="rgba(0,0,0,0.15)"/>
-                        <polygon points="35,18 63,32 35,46" fill="white"/>
-                      </svg>
-                    </div>
-                    <div className="p-2">
-                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">The Best Morning Routine</p>
-                      <p className="text-[9px] text-gray-400 mt-0.5">youtube.com</p>
-                    </div>
-                  </div>
 
-                  {/* Instagram */}
-                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                    <div className="h-16 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #feda77 0%, #f58529 25%, #dd2a7b 60%, #8134af 85%, #515bd4 100%)' }}>
-                      <svg viewBox="0 0 24 24" className="w-9 h-9" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="2" width="20" height="20" rx="5"/>
-                        <circle cx="12" cy="12" r="5"/>
-                        <circle cx="17.5" cy="6.5" r="1.2" fill="white" stroke="none"/>
-                      </svg>
-                    </div>
-                    <div className="p-2">
-                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">Japan Travel Photos 🇯🇵</p>
-                      <p className="text-[9px] text-gray-400 mt-0.5">instagram.com</p>
-                    </div>
-                  </div>
-
-                  {/* X / Twitter */}
-                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                    <div className="h-16 flex items-center justify-center bg-black">
-                      <svg viewBox="0 0 24 24" className="w-9 h-9" fill="white">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.735-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                      </svg>
-                    </div>
-                    <div className="p-2">
-                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">Thread: How to build in public</p>
-                      <p className="text-[9px] text-gray-400 mt-0.5">x.com</p>
-                    </div>
-                  </div>
-
-                  {/* TikTok */}
-                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                    <div className="h-16 flex items-center justify-center" style={{ background: '#010101' }}>
-                      <svg viewBox="0 0 24 24" className="w-9 h-9">
-                        <path fill="#69C9D0" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.35a8.16 8.16 0 0 0 4.79 1.53V7.44a4.85 4.85 0 0 1-1.02-.75z"/>
-                        <path fill="#EE1D52" d="M18.57 5.94a4.83 4.83 0 0 1-2.75-4.19V2h-.02a4.83 4.83 0 0 0 2.77 3.94z" opacity="0.8"/>
-                      </svg>
-                    </div>
-                    <div className="p-2">
-                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">Viral pasta carbonara recipe 🍝</p>
-                      <p className="text-[9px] text-gray-400 mt-0.5">tiktok.com</p>
-                    </div>
-                  </div>
-
-                  {/* Medium */}
-                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                    <div className="h-16 flex items-center justify-center bg-black">
-                      <svg viewBox="0 0 24 24" className="w-9 h-9" fill="white">
-                        <path d="M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 12a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/>
-                      </svg>
-                    </div>
-                    <div className="p-2">
-                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">How to learn anything fast</p>
-                      <p className="text-[9px] text-gray-400 mt-0.5">medium.com</p>
-                    </div>
-                  </div>
-
-                  {/* Note */}
-                  <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                    <div className="h-16 flex items-center justify-center" style={{ background: '#FFFBEB' }}>
-                      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="#D97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="8" y1="13" x2="16" y2="13"/>
-                        <line x1="8" y1="17" x2="12" y2="17"/>
-                      </svg>
-                    </div>
-                    <div className="p-2">
-                      <p className="text-[10px] font-semibold text-gray-800 leading-tight">My workout plan for June</p>
-                      <p className="text-[9px] text-gray-400 mt-0.5">Note</p>
-                    </div>
-                  </div>
+            {/* Transform arrow + SaveBoard card */}
+            <div className="flex items-center gap-4 mt-5 max-w-[360px] ml-auto">
+              <div className="flex flex-col items-center gap-1 shrink-0">
+                <div className="w-11 h-11 rounded-full bg-[#A259FF] flex items-center justify-center text-white text-[20px]">→</div>
+                <span className="text-[11px] text-gray-400">SaveBoard</span>
+              </div>
+              <div className="flex-1 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-md">
+                <div className="h-[68px] bg-gradient-to-br from-[#A259FF] to-[#F24E1E] flex items-center justify-center text-[26px]">🏀</div>
+                <div className="p-3">
+                  <span className="text-[10px] font-medium text-[#7C3AED] bg-purple-50 px-2 py-0.5 rounded-full">Basketball</span>
+                  <p className="text-[13px] font-semibold text-gray-900 mt-1.5">Tournament Registration 2026</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">sports.com/tournament/registration...</p>
                 </div>
               </div>
             </div>
           </div>
+
         </div>
       </section>
 
@@ -205,7 +161,7 @@ export function LandingPage({ onGetStarted }: Props) {
       </section>
 
       {/* How it works */}
-      <section className="py-20 px-5">
+      <section id="how" className="py-20 px-5">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-[32px] font-bold text-center text-gray-900 mb-2">How it works</h2>
           <p className="text-gray-500 text-center mb-12 text-[16px]">Three steps. Two minutes. Zero lost links.</p>
