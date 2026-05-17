@@ -87,32 +87,32 @@ export function LandingPage({ onGetStarted }: Props) {
                 </div>
               </div>
               {/* Chat body */}
-              <div className="bg-[#ECE5DD] px-4 py-4 flex flex-col gap-2.5">
+              <div className="bg-[#ECE5DD] px-3 py-3 flex flex-col gap-1.5">
                 {/* Incoming message 1 */}
-                <div className="bg-white rounded-xl rounded-tl-sm px-3 py-2 max-w-[85%] text-[13px] text-gray-800">
+                <div className="bg-white rounded-lg rounded-tl-sm px-2.5 py-1.5 max-w-[85%] text-[11px] text-gray-800">
                   Here's the registration link for the tournament 👇
-                  <div className="mt-1.5 bg-gray-100 border-l-[3px] border-[#25D366] rounded px-2 py-1.5 text-[11px] text-[#128C7E] break-all">
+                  <div className="mt-1 bg-gray-100 border-l-[3px] border-[#25D366] rounded px-1.5 py-1 text-[10px] text-[#128C7E] break-all">
                     sports.com/tournament/registration/2026/season-b-u12...
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-1 text-right">Mon 9:14 AM</p>
+                  <p className="text-[9px] text-gray-400 mt-0.5 text-right">Mon 9:14 AM</p>
                 </div>
                 {/* Incoming message 2 */}
-                <div className="bg-white rounded-xl rounded-tl-sm px-3 py-2 max-w-[85%] text-[13px] text-gray-800">
+                <div className="bg-white rounded-lg rounded-tl-sm px-2.5 py-1.5 max-w-[85%] text-[11px] text-gray-800">
                   And the schedule PDF 📅
-                  <div className="mt-1.5 bg-gray-100 border-l-[3px] border-[#25D366] rounded px-2 py-1.5 text-[11px] text-[#128C7E] break-all">
+                  <div className="mt-1 bg-gray-100 border-l-[3px] border-[#25D366] rounded px-1.5 py-1 text-[10px] text-[#128C7E] break-all">
                     drive.google.com/file/d/1BxiMVs8pp3nZ3yPQh...
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-1 text-right">Mon 9:15 AM</p>
+                  <p className="text-[9px] text-gray-400 mt-0.5 text-right">Mon 9:15 AM</p>
                 </div>
                 {/* Outgoing message */}
-                <div className="bg-[#DCF8C6] rounded-xl rounded-tr-sm px-3 py-2 max-w-[85%] self-end text-[13px] text-gray-800">
+                <div className="bg-[#DCF8C6] rounded-lg rounded-tr-sm px-2.5 py-1.5 max-w-[85%] self-end text-[11px] text-gray-800">
                   Thanks! 🙏
-                  <p className="text-[10px] text-gray-400 mt-1 text-right">9:20 AM</p>
+                  <p className="text-[9px] text-gray-400 mt-0.5 text-right">9:20 AM</p>
                 </div>
                 {/* 3 weeks later callout */}
-                <div className="bg-amber-50 border-l-[3px] border-amber-400 rounded-xl px-3 py-2 max-w-[90%] text-[12px] text-amber-800">
+                <div className="bg-amber-50 border-l-[3px] border-amber-400 rounded-lg px-2.5 py-1.5 max-w-[90%] text-[10px] text-amber-800">
                   😩 <em>3 weeks later...</em><br />"Where was that registration link again??"
-                  <p className="text-[10px] text-amber-500 mt-1 text-right">3 weeks later</p>
+                  <p className="text-[9px] text-amber-500 mt-0.5 text-right">3 weeks later</p>
                 </div>
               </div>
             </div>
