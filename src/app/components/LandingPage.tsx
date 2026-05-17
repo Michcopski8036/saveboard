@@ -136,6 +136,31 @@ export function LandingPage({ onGetStarted }: Props) {
         </div>
       </section>
 
+      {/* Problem */}
+      <section className="py-20 px-5 bg-[#1C1917]">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-[12px] font-semibold tracking-widest uppercase text-amber-400 mb-5">The Problem</p>
+          <h2 className="text-[36px] sm:text-[52px] font-extrabold text-white leading-[1.1] mb-16 max-w-2xl">
+            Important links get{' '}
+            <span className="italic text-[#F43F5E]">lost</span>{' '}
+            in the scroll
+          </h2>
+          <div className="grid sm:grid-cols-3 gap-5">
+            {[
+              { emoji: '📱', title: 'Buried in group chats', desc: 'Schedule links, registration forms, and videos get buried under hundreds of messages. Finding them again takes forever.' },
+              { emoji: '🗂️', title: 'Different types, scattered everywhere', desc: 'Some links are PDFs, some are websites, some are videos — scattered across WhatsApp, email, and texts.' },
+              { emoji: '🔄', title: '"Can you send that link again?"', desc: "Nobody wants to ask — or answer — that question for the fifth time. It's embarrassing and annoying for everyone." },
+            ].map(({ emoji, title, desc }) => (
+              <div key={title} className="rounded-2xl p-8 border" style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.08)' }}>
+                <div className="text-[32px] mb-4">{emoji}</div>
+                <p className="font-semibold text-white text-[17px] mb-2.5">{title}</p>
+                <p className="text-[14px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section className="py-16 px-5 bg-gray-50">
         <div className="max-w-4xl mx-auto">
