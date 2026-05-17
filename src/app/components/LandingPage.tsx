@@ -285,8 +285,8 @@ export function LandingPage({ onGetStarted }: Props) {
       {/* Founder story */}
       <section className="py-16 px-5 bg-amber-50 border-y border-amber-100">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-[20px] sm:text-[24px] font-normal text-gray-900 leading-relaxed mb-6"
-            style={{ fontFamily: "'Fraunces', serif", fontStyle: 'italic' }}>
+          <p className="text-[20px] sm:text-[24px] text-gray-900 leading-relaxed mb-6"
+            style={{ fontFamily: "'Fraunces', serif", fontStyle: 'italic', fontWeight: 300 }}>
             "Three kids, three group chats, hundreds of messages — and I was spending more time scrolling than actually parenting. Every time I needed a schedule link, I had to scroll forever. I built SaveBoard so nobody has to do that anymore."
           </p>
           <div className="flex items-center justify-center gap-3">
