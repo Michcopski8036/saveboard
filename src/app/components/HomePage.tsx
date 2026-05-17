@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Clock, Heart, Inbox, ArrowRight, Plus, Zap } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Clock, Heart, Inbox, ArrowRight, Plus, Zap, Link2, Check, Share2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import type { LinkData } from './LinkCard';
 import { isPlaceholder, PlatformPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
@@ -19,17 +19,27 @@ function timeAgo(d: Date) {
   return `${Math.floor(s/86400)}d ago`;
 }
 
+interface SharedBoard { token: string; category: string; synced_at: string | null; count: number; }
+
 interface HomePageProps {
   links: LinkData[];
   categories: string[];
   favorites: Set<string>;
   userEmail?: string;
+  sharedBoards?: SharedBoard[];
   onSelect: (id: string) => void;
   onAddLink: () => void;
 }
 
-export function HomePage({ links, categories, favorites, userEmail, onSelect, onAddLink }: HomePageProps) {
+export function HomePage({ links, categories, favorites, userEmail, sharedBoards = [], onSelect, onAddLink }: HomePageProps) {
   const { t } = useTheme();
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+
+  const copyShareLink = async (token: string) => {
+    await navigator.clipboard.writeText(`${window.location.origin}/share/${token}`);
+    setCopiedToken(token);
+    setTimeout(() => setCopiedToken(null), 2000);
+  };
 
   const now = Date.now();
   const weekMs = 7 * 24 * 60 * 60 * 1000;
@@ -104,6 +114,40 @@ export function HomePage({ links, categories, favorites, userEmail, onSelect, on
                   </div>
                 </div>
               </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Shared Boards ────────────────────────────────────────────── */}
+      {sharedBoards.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Share2 className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
+            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>Shared Boards</p>
+          </div>
+          <div className="space-y-2">
+            {sharedBoards.map(board => (
+              <div key={board.token} className="flex items-center justify-between p-3.5 rounded-2xl"
+                style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: dotColor(board.category), boxShadow: `0 0 8px ${dotColor(board.category)}60` }} />
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{board.category}</p>
+                    <p className="text-[11px]" style={{ color: t.textMuted }}>
+                      {board.count} link{board.count !== 1 ? 's' : ''} · {board.synced_at ? timeAgo(new Date(board.synced_at)) : 'not synced'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => copyShareLink(board.token)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold shrink-0 ml-3 transition-colors"
+                  style={{ background: copiedToken === board.token ? 'rgba(34,197,94,0.10)' : 'rgba(124,58,237,0.08)', color: copiedToken === board.token ? '#16A34A' : '#7C3AED' }}>
+                  {copiedToken === board.token
+                    ? <><Check className="w-3 h-3" /> Copied!</>
+                    : <><Link2 className="w-3 h-3" /> Copy link</>}
+                </button>
+              </div>
             ))}
           </div>
         </div>

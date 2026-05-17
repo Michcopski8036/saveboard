@@ -93,6 +93,7 @@ function AppContent() {
   const [subData, setSubData] = useState<{ plan: string; status: string; billing_cycle: string; current_period_end: string; saves_limit: string; boards_limit: string; storage_limit: string } | null>(null);
   const [showBilling, setShowBilling] = useState(false);
   const [currentStorageMb, setCurrentStorageMb] = useState(0);
+  const [sharedBoards, setSharedBoards] = useState<{ token: string; category: string; synced_at: string | null; count: number }[]>([]);
   const fileInputRef    = useRef<HTMLInputElement>(null);
   const searchRef       = useRef<HTMLDivElement>(null);
   const searchInputRef  = useRef<HTMLInputElement>(null);
@@ -128,6 +129,24 @@ function AppContent() {
       const totalBytes = data.reduce((sum, f) => sum + (f.metadata?.size ?? 0), 0);
       setCurrentStorageMb(Math.round((totalBytes / (1024 * 1024)) * 10) / 10);
     });
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) { setSharedBoards([]); return; }
+    supabase
+      .from('shared_boards')
+      .select('token, category, synced_at, links_snapshot')
+      .eq('owner_id', user.id)
+      .order('synced_at', { ascending: false })
+      .then(({ data }) => {
+        if (!data) return;
+        setSharedBoards(data.map((b: any) => ({
+          token: b.token,
+          category: b.category,
+          synced_at: b.synced_at,
+          count: Array.isArray(b.links_snapshot) ? b.links_snapshot.length : 0,
+        })));
+      });
   }, [user]);
 
   useEffect(() => {
@@ -682,6 +701,7 @@ function AppContent() {
               categories={categories}
               favorites={favorites}
               userEmail={user?.email}
+              sharedBoards={sharedBoards}
               onSelect={(id) => { setSelected(id); setSidebarOpen(false); }}
               onAddLink={() => setShowAddModal(true)}
             />
