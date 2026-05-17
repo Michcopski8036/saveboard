@@ -1,4 +1,4 @@
-import { Bookmark, Link2, FileText, Play, StickyNote, Sparkles, Share2, ArrowRight, Check, Search, Zap, Lock, LayoutGrid, FolderOpen } from 'lucide-react';
+import { Bookmark, Link2, FileText, Play, StickyNote, Sparkles, Share2, ArrowRight, Check, Search, Shield } from 'lucide-react';
 
 interface Props {
   onGetStarted: () => void;
@@ -172,12 +172,12 @@ export function LandingPage({ onGetStarted }: Props) {
           </h2>
           <div className="grid sm:grid-cols-3 gap-5">
             {[
-              { icon: LayoutGrid, label: 'Beautiful visual cards',   desc: 'Every link becomes a rich preview card with image, title, and description — pulled automatically.', bg: '#EDE9FE', color: '#7C3AED' },
-              { icon: FolderOpen, label: 'Organise by activity',     desc: 'Create collections for Basketball, Gymnastics, Tennis — keep each activity\'s links separate and tidy.', bg: '#CCFBF1', color: '#0D9488' },
+              { icon: Link2,      label: 'Beautiful visual cards',   desc: 'Every link becomes a rich preview card with image, title, and description — pulled automatically.', bg: '#EDE9FE', color: '#7C3AED' },
+              { icon: FileText,   label: 'Organise by activity',     desc: 'Create collections for Basketball, Gymnastics, Tennis — keep each activity\'s links separate and tidy.', bg: '#CCFBF1', color: '#0D9488' },
               { icon: Search,     label: 'Find in seconds',          desc: 'Search by title, notes, or tags. No more endless scrolling through hundreds of messages.', bg: '#FEF9C3', color: '#CA8A04' },
               { icon: StickyNote, label: 'Add notes & reminders',    desc: 'Add context — "Register by June 1st" or "need to pay $50" — so you never forget the important details.', bg: '#FFE4E6', color: '#E11D48' },
-              { icon: Zap,        label: 'Save in seconds',          desc: 'Just paste a link and SaveBoard does the rest. Title, image, description — all fetched automatically.', bg: '#DBEAFE', color: '#2563EB' },
-              { icon: Lock,       label: 'Private & just yours',     desc: 'Your links are private. Safe login, secure storage — no one sees your board unless you choose to share.', bg: '#DCFCE7', color: '#16A34A' },
+              { icon: Play,       label: 'Save in seconds',          desc: 'Just paste a link and SaveBoard does the rest. Title, image, description — all fetched automatically.', bg: '#DBEAFE', color: '#2563EB' },
+              { icon: Shield,     label: 'Private & just yours',     desc: 'Your links are private. Safe login, secure storage — no one sees your board unless you choose to share.', bg: '#DCFCE7', color: '#16A34A' },
             ].map(({ icon: Icon, label, desc, bg, color }) => (
               <div key={label} className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:-translate-y-1 transition-transform">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5" style={{ background: bg }}>
