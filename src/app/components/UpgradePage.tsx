@@ -27,7 +27,6 @@ const comparisonRows: { feature: string; free: boolean | string; pro: boolean | 
   { feature: 'Kanban view',      free: true,         pro: true,        team: true        },
   { feature: 'Export saves',     free: true,         pro: true,        team: true        },
   { feature: 'Shared boards',    free: true,         pro: true,        team: true        },
-  { feature: 'Team members',     free: '1',          pro: '3',         team: '5+'        },
 ];
 
 function Cell({ value, highlight }: { value: boolean | string; highlight?: boolean }) {
@@ -162,7 +161,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.proMo}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                 <p className="text-[12px] font-semibold text-purple-600 mb-5">or A${AUD.proYr}/yr — save 47%</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
-                  {['300 saves','30 boards','2GB storage','20MB file size limit','All features included','Priority support','3 team members'].map(f => (
+                  {['300 saves','30 boards','2GB storage','20MB file size limit','All features included','Priority support'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
                       <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
                     </li>
@@ -203,7 +202,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.teamSeat}<span className="text-[16px] font-normal text-gray-400">/seat/mo</span></p>
                 <p className="text-[12px] text-gray-400 mb-5">Min 3 seats · billed monthly</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
-                  {['Unlimited saves','Unlimited boards','10GB storage','50MB file size limit','All features included','5+ team members','Admin dashboard'].map(f => (
+                  {['Unlimited saves','Unlimited boards','10GB storage','50MB file size limit','All features included','Admin dashboard'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
                       <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />{f}
                     </li>
