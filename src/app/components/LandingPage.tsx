@@ -34,7 +34,7 @@ export function LandingPage({ onGetStarted }: Props) {
 
           {/* Left — text */}
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-[12px] font-medium text-amber-700 mb-6">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-[12px] font-medium text-purple-600 mb-6">
               😩 Sound familiar?
             </div>
             <h1 className="text-[44px] sm:text-[54px] font-extrabold text-gray-900 leading-[1.05] tracking-tight mb-6">
@@ -77,7 +77,7 @@ export function LandingPage({ onGetStarted }: Props) {
 
           {/* Right — WhatsApp chat mockup */}
           <div>
-            <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200 overflow-hidden border border-gray-100 max-w-[460px] mx-auto">
+            <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200 overflow-hidden border border-gray-100 max-w-[360px] mx-auto">
               {/* Chat header */}
               <div className="bg-[#075E54] px-5 py-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center text-[18px]">🏀</div>
@@ -87,38 +87,38 @@ export function LandingPage({ onGetStarted }: Props) {
                 </div>
               </div>
               {/* Chat body */}
-              <div className="bg-[#ECE5DD] px-3 py-3 flex flex-col gap-1.5">
+              <div className="bg-[#ECE5DD] px-4 py-4 flex flex-col gap-2.5">
                 {/* Incoming message 1 */}
-                <div className="bg-white rounded-lg rounded-tl-sm px-2.5 py-1.5 max-w-[85%] text-[11px] text-gray-800">
+                <div className="bg-white rounded-xl rounded-tl-sm px-3 py-2 max-w-[85%] text-[13px] text-gray-800">
                   Here's the registration link for the tournament 👇
-                  <div className="mt-1 bg-gray-100 border-l-[3px] border-[#25D366] rounded px-1.5 py-1 text-[10px] text-[#128C7E] break-all">
+                  <div className="mt-1.5 bg-gray-100 border-l-[3px] border-[#25D366] rounded px-2 py-1.5 text-[11px] text-[#128C7E] break-all">
                     sports.com/tournament/registration/2026/season-b-u12...
                   </div>
-                  <p className="text-[9px] text-gray-400 mt-0.5 text-right">Mon 9:14 AM</p>
+                  <p className="text-[10px] text-gray-400 mt-1 text-right">Mon 9:14 AM</p>
                 </div>
                 {/* Incoming message 2 */}
-                <div className="bg-white rounded-lg rounded-tl-sm px-2.5 py-1.5 max-w-[85%] text-[11px] text-gray-800">
+                <div className="bg-white rounded-xl rounded-tl-sm px-3 py-2 max-w-[85%] text-[13px] text-gray-800">
                   And the schedule PDF 📅
-                  <div className="mt-1 bg-gray-100 border-l-[3px] border-[#25D366] rounded px-1.5 py-1 text-[10px] text-[#128C7E] break-all">
+                  <div className="mt-1.5 bg-gray-100 border-l-[3px] border-[#25D366] rounded px-2 py-1.5 text-[11px] text-[#128C7E] break-all">
                     drive.google.com/file/d/1BxiMVs8pp3nZ3yPQh...
                   </div>
-                  <p className="text-[9px] text-gray-400 mt-0.5 text-right">Mon 9:15 AM</p>
+                  <p className="text-[10px] text-gray-400 mt-1 text-right">Mon 9:15 AM</p>
                 </div>
                 {/* Outgoing message */}
-                <div className="bg-[#DCF8C6] rounded-lg rounded-tr-sm px-2.5 py-1.5 max-w-[85%] self-end text-[11px] text-gray-800">
+                <div className="bg-[#DCF8C6] rounded-xl rounded-tr-sm px-3 py-2 max-w-[85%] self-end text-[13px] text-gray-800">
                   Thanks! 🙏
-                  <p className="text-[9px] text-gray-400 mt-0.5 text-right">9:20 AM</p>
+                  <p className="text-[10px] text-gray-400 mt-1 text-right">9:20 AM</p>
                 </div>
                 {/* 3 weeks later callout */}
-                <div className="bg-amber-50 border-l-[3px] border-amber-400 rounded-lg px-2.5 py-1.5 max-w-[90%] text-[10px] text-amber-800">
+                <div className="bg-amber-50 border-l-[3px] border-amber-400 rounded-xl px-3 py-2 max-w-[90%] text-[12px] text-amber-800">
                   😩 <em>3 weeks later...</em><br />"Where was that registration link again??"
-                  <p className="text-[9px] text-amber-500 mt-0.5 text-right">3 weeks later</p>
+                  <p className="text-[10px] text-amber-500 mt-1 text-right">3 weeks later</p>
                 </div>
               </div>
             </div>
 
             {/* Transform arrow + SaveBoard card */}
-            <div className="flex items-center gap-4 mt-5 max-w-[460px] mx-auto">
+            <div className="flex items-center gap-4 mt-5 max-w-[360px] mx-auto">
               <div className="flex flex-col items-center gap-1 shrink-0">
                 <div className="w-11 h-11 rounded-full bg-[#A259FF] flex items-center justify-center text-white text-[20px]">→</div>
                 <span className="text-[11px] text-gray-400">SaveBoard</span>
