@@ -50,13 +50,14 @@ export function LandingPage({ onGetStarted }: Props) {
             <div className="flex gap-3 flex-wrap mb-10">
               <button
                 onClick={onGetStarted}
-                className="inline-flex items-center gap-2 px-6 py-3.5 bg-gray-900 text-white rounded-full font-semibold text-[15px] hover:bg-[#A259FF] transition-colors"
+                className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
               >
-                📲 Get Started Free
+                Get Started Free
+                <ArrowRight className="w-4 h-4" />
               </button>
               <a
                 href="#how"
-                className="inline-flex items-center px-6 py-3.5 border border-gray-200 bg-white text-gray-700 rounded-full font-medium text-[15px] hover:border-[#A259FF] hover:text-[#A259FF] transition-colors"
+                className="inline-flex items-center gap-2 px-7 py-3.5 border border-gray-200 bg-white text-gray-600 rounded-2xl font-medium text-[15px] hover:border-[#A259FF] hover:text-[#A259FF] transition-colors"
               >
                 See how it works
               </a>
