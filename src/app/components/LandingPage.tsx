@@ -285,8 +285,9 @@ export function LandingPage({ onGetStarted }: Props) {
       {/* Founder story */}
       <section className="py-16 px-5 bg-amber-50 border-y border-amber-100">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-[20px] sm:text-[24px] font-bold text-gray-900 leading-relaxed italic mb-6">
-            "I have three kids — gymnastics, basketball, and tennis. Every group chat is full of schedule links, registration forms, and event videos. I built SaveBoard because I was so tired of never being able to find the link I needed."
+          <p className="text-[20px] sm:text-[24px] font-normal text-gray-900 leading-relaxed mb-6"
+            style={{ fontFamily: "'Fraunces', serif", fontStyle: 'italic' }}>
+            "Three kids, three group chats, hundreds of messages — and I was spending more time scrolling than actually parenting. Every time I needed a schedule link, I had to scroll forever. I built SaveBoard so nobody has to do that anymore."
           </p>
           <div className="flex items-center justify-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#A259FF] to-[#F24E1E] flex items-center justify-center text-xl">👩</div>
