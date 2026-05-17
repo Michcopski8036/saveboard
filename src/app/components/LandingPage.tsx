@@ -269,7 +269,7 @@ export function LandingPage({ onGetStarted }: Props) {
             <div className="bg-gradient-to-br from-[#A259FF] to-[#F24E1E] rounded-2xl p-px shadow-xl w-full max-w-[260px]">
               <div className="bg-white rounded-[15px] p-5">
                 <p className="text-[11px] text-gray-400 mb-1 font-medium">Shared board</p>
-                <p className="text-[14px] font-bold text-gray-900 mb-3">My Japan Trip 🇯🇵</p>
+                <p className="text-[14px] font-bold text-gray-900 mb-3">My Korea Trip 🇰🇷</p>
                 <div className="bg-gray-50 rounded-lg px-3 py-2 text-[11px] text-gray-500 font-mono break-all">
                   saveboard.app/s/abc123
                 </div>
