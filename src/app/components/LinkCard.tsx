@@ -543,7 +543,7 @@ export function LinkCard({
       onMouseEnter={handleCardEnter} onMouseLeave={handleCardLeave}>
 
       {/* Thumbnail */}
-      {<a href={selectMode || isMemo ? undefined : link.url}
+      <a href={selectMode || isMemo ? undefined : link.url}
         target={selectMode || isMemo ? undefined : '_blank'}
         rel={selectMode || isMemo ? undefined : 'noopener noreferrer'}
         className={`block relative overflow-hidden rounded-t-2xl${compact ? ' h-36 shrink-0' : ''}`}

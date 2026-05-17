@@ -36,6 +36,7 @@ import { HelpPage } from './components/HelpPage';
 import { PrivacyPage } from './components/PrivacyPage';
 import { TermsPage } from './components/TermsPage';
 import { deriveAiTags } from './components/LinkCard';
+import { HomePage } from './components/HomePage';
 
 type ViewMode   = 'masonry' | 'grid' | 'gallery' | 'list' | 'kanban';
 type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a' | 'custom';
@@ -577,8 +578,8 @@ function AppContent() {
             <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
           </div>
 
-          {/* Sub-header: title + sort */}
-          <div className="px-4 sm:px-6 pb-3.5 flex items-center justify-between gap-4">
+          {/* Sub-header: title + sort — hidden on home dashboard */}
+          {selected !== 'all' && <div className="px-4 sm:px-6 pb-3.5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-1.5">
               {/* Mobile collection arrows */}
               {(() => {
@@ -670,12 +671,21 @@ function AppContent() {
                 <option key={opt} value={opt}>{sortLabels[opt]}</option>
               ))}
             </select>
-          </div>
+          </div>}
         </header>
 
         {/* ── Content ────────────────────────────────────────────────── */}
-        <main className={`flex-1 pb-24 md:pb-5 ${viewMode === 'gallery' ? 'flex flex-col overflow-hidden px-4 sm:px-6 py-4' : 'px-4 sm:px-6 py-5'}`}>
-          {isLoading ? (
+        <main className={`flex-1 pb-24 md:pb-5 ${selected === 'all' ? 'px-4 sm:px-6 py-5' : viewMode === 'gallery' ? 'flex flex-col overflow-hidden px-4 sm:px-6 py-4' : 'px-4 sm:px-6 py-5'}`}>
+          {selected === 'all' ? (
+            <HomePage
+              links={links}
+              categories={categories}
+              favorites={favorites}
+              userEmail={user?.email}
+              onSelect={(id) => { setSelected(id); setSidebarOpen(false); }}
+              onAddLink={() => setShowAddModal(true)}
+            />
+          ) : isLoading ? (
             <div className="flex justify-center pt-24">
               <svg className="animate-spin h-8 w-8" style={{ color: '#7C3AED' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
