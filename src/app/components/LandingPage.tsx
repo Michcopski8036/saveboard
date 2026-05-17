@@ -200,7 +200,7 @@ export function LandingPage({ onGetStarted }: Props) {
           <div className="grid sm:grid-cols-3 gap-8">
             {[
               { step: '1', title: 'Save a link', desc: 'Paste any URL or share from your phone. SaveBoard automatically fetches the title, image and description.', color: '#A259FF' },
-              { step: '2', title: 'Organise in boards', desc: 'Create boards for each activity — Basketball, Gymnastics, Tennis. Keep every link exactly where you need it.', color: '#FF7262' },
+              { step: '2', title: 'Curate your boards', desc: 'Create boards for each activity — Basketball, Gymnastics, Tennis. Keep every link exactly where you need it.', color: '#FF7262' },
               { step: '3', title: 'Find it instantly', desc: 'Search in seconds. No more "Can you send that link again?" — it\'s always right there when you need it.', color: '#F24E1E' },
             ].map(({ step, title, desc, color }) => (
               <div key={step} className="text-center">
