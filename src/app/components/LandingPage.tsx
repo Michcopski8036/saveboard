@@ -76,7 +76,7 @@ export function LandingPage({ onGetStarted }: Props) {
 
           {/* Right — WhatsApp chat mockup */}
           <div>
-            <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200 overflow-hidden border border-gray-100">
+            <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200 overflow-hidden border border-gray-100 max-w-[360px] mx-auto">
               {/* Chat header */}
               <div className="bg-[#075E54] px-5 py-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center text-[18px]">🏀</div>
@@ -117,7 +117,7 @@ export function LandingPage({ onGetStarted }: Props) {
             </div>
 
             {/* Transform arrow + SaveBoard card */}
-            <div className="flex items-center gap-4 mt-5">
+            <div className="flex items-center gap-4 mt-5 max-w-[360px] mx-auto">
               <div className="flex flex-col items-center gap-1 shrink-0">
                 <div className="w-11 h-11 rounded-full bg-[#A259FF] flex items-center justify-center text-white text-[20px]">→</div>
                 <span className="text-[11px] text-gray-400">SaveBoard</span>
