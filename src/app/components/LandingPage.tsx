@@ -137,10 +137,10 @@ export function LandingPage({ onGetStarted }: Props) {
       </section>
 
       {/* Problem */}
-      <section className="py-20 px-5 bg-[#1C1917]">
+      <section className="py-20 px-5 bg-gradient-to-br from-[#F5F3FF] to-[#FFF7ED]">
         <div className="max-w-5xl mx-auto">
-          <p className="text-[12px] font-semibold tracking-widest uppercase text-[#1ABCFE] mb-5">The Problem</p>
-          <h2 className="text-[36px] sm:text-[52px] font-extrabold text-white leading-[1.1] mb-16 max-w-2xl">
+          <p className="text-[12px] font-semibold tracking-widest uppercase text-purple-500 mb-5">The Problem</p>
+          <h2 className="text-[36px] sm:text-[52px] font-extrabold text-gray-900 leading-[1.1] mb-16 max-w-2xl">
             Important links get{' '}
             <span className="italic bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">lost</span>{' '}
             in the scroll
@@ -151,10 +151,10 @@ export function LandingPage({ onGetStarted }: Props) {
               { emoji: '🗂️', title: 'Different types, scattered everywhere', desc: 'Some links are PDFs, some are websites, some are videos — scattered across WhatsApp, email, and texts.' },
               { emoji: '🔄', title: '"Can you send that link again?"', desc: "Nobody wants to ask — or answer — that question for the fifth time. It's embarrassing and annoying for everyone." },
             ].map(({ emoji, title, desc }) => (
-              <div key={title} className="rounded-2xl p-8 border" style={{ background: 'rgba(162,89,255,0.08)', borderColor: 'rgba(162,89,255,0.2)' }}>
+              <div key={title} className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
                 <div className="text-[32px] mb-4">{emoji}</div>
-                <p className="font-semibold text-white text-[17px] mb-2.5">{title}</p>
-                <p className="text-[14px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{desc}</p>
+                <p className="font-semibold text-gray-900 text-[17px] mb-2.5">{title}</p>
+                <p className="text-[14px] text-gray-500 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
