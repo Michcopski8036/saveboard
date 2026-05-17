@@ -28,6 +28,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ShareModal } from './components/ShareModal';
 import { UpgradePage, FREE_LIMITS } from './components/UpgradePage';
+import { BillingPage } from './components/BillingPage';
 import { SettingsPage } from './components/SettingsPage';
 import { LanguagePage } from './components/LanguagePage';
 import { ContactPage } from './components/ContactPage';
@@ -88,6 +89,9 @@ function AppContent() {
   const [showPrivacy, setShowPrivacy]   = useState(false);
   const [showTerms, setShowTerms]       = useState(false);
   const [isPro, setIsPro] = useState(false);
+  const [subData, setSubData] = useState<{ plan: string; status: string; billing_cycle: string; current_period_end: string; saves_limit: string; boards_limit: string; storage_limit: string } | null>(null);
+  const [showBilling, setShowBilling] = useState(false);
+  const [currentStorageMb, setCurrentStorageMb] = useState(0);
   const fileInputRef    = useRef<HTMLInputElement>(null);
   const searchRef       = useRef<HTMLDivElement>(null);
   const searchInputRef  = useRef<HTMLInputElement>(null);
@@ -103,16 +107,26 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    if (!user) { setIsPro(false); return; }
+    if (!user) { setIsPro(false); setSubData(null); return; }
     supabase
       .from('subscriptions')
-      .select('status, plan, saves_limit, boards_limit, file_size_limit')
+      .select('status, plan, billing_cycle, current_period_end, saves_limit, boards_limit, file_size_limit, storage_limit')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
         const active = data?.status === 'active' && (data?.plan === 'pro' || data?.plan === 'team');
         setIsPro(active);
+        setSubData(data ?? null);
       });
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) { setCurrentStorageMb(0); return; }
+    supabase.storage.from('pdfs').list(user.id, { limit: 1000 }).then(({ data }) => {
+      if (!data) return;
+      const totalBytes = data.reduce((sum, f) => sum + (f.metadata?.size ?? 0), 0);
+      setCurrentStorageMb(Math.round((totalBytes / (1024 * 1024)) * 10) / 10);
+    });
   }, [user]);
 
   useEffect(() => {
@@ -558,7 +572,7 @@ function AppContent() {
             </button>
 
             {/* Avatar */}
-            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} user={user} isPro={isPro} />
+            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
           </div>
 
           {/* Sub-header: title + sort */}
@@ -1025,8 +1039,22 @@ function AppContent() {
           onClose={() => setShowUpgrade(false)}
           currentLinks={links.length}
           currentBoards={categories.length}
+          currentStorageMb={currentStorageMb}
           userId={user?.id}
           userEmail={user?.email}
+          isPro={isPro}
+        />
+      )}
+
+      {showBilling && (
+        <BillingPage
+          onClose={() => setShowBilling(false)}
+          onShowUpgrade={() => { setShowBilling(false); setShowUpgrade(true); }}
+          userId={user?.id}
+          currentLinks={links.length}
+          currentBoards={categories.length}
+          currentStorageMb={currentStorageMb}
+          subData={subData}
         />
       )}
 

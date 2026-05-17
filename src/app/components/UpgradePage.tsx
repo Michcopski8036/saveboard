@@ -1,12 +1,47 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { X, Check, Zap, Users, Sparkles, Loader2 } from 'lucide-react';
+
+const CURRENCY_MAP: Record<string, { code: string; symbol: string; proMo: number; proYr: number; teamSeat: number }> = {
+  AU: { code: 'AUD', symbol: 'A$', proMo: 3.49,  proYr: 24,    teamSeat: 6   },
+  US: { code: 'USD', symbol: '$',  proMo: 2.29,  proYr: 15.99, teamSeat: 3.99 },
+  KR: { code: 'KRW', symbol: '₩',  proMo: 3200,  proYr: 22000, teamSeat: 5500 },
+  JP: { code: 'JPY', symbol: '¥',  proMo: 340,   proYr: 2380,  teamSeat: 600  },
+  GB: { code: 'GBP', symbol: '£',  proMo: 1.79,  proYr: 12.49, teamSeat: 3.19 },
+  DE: { code: 'EUR', symbol: '€',  proMo: 2.09,  proYr: 14.49, teamSeat: 3.69 },
+  FR: { code: 'EUR', symbol: '€',  proMo: 2.09,  proYr: 14.49, teamSeat: 3.69 },
+  CA: { code: 'CAD', symbol: 'CA$',proMo: 3.19,  proYr: 21.99, teamSeat: 5.49 },
+  IN: { code: 'INR', symbol: '₹',  proMo: 189,   proYr: 1299,  teamSeat: 329  },
+  SG: { code: 'SGD', symbol: 'S$', proMo: 3.09,  proYr: 21.49, teamSeat: 5.29 },
+};
+
+function detectCurrency() {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone ?? '';
+    if (tz.startsWith('Australia'))  return CURRENCY_MAP['AU'];
+    if (tz.startsWith('Asia/Seoul')) return CURRENCY_MAP['KR'];
+    if (tz.startsWith('Asia/Tokyo')) return CURRENCY_MAP['JP'];
+    if (tz.startsWith('Asia/Kolkata') || tz.startsWith('Asia/Calcutta')) return CURRENCY_MAP['IN'];
+    if (tz.startsWith('Asia/Singapore')) return CURRENCY_MAP['SG'];
+    if (tz.startsWith('Europe/London')) return CURRENCY_MAP['GB'];
+    if (tz.startsWith('Europe/')) return CURRENCY_MAP['DE'];
+    if (tz.startsWith('America/Toronto') || tz.startsWith('America/Vancouver')) return CURRENCY_MAP['CA'];
+  } catch { /* ignore */ }
+  return CURRENCY_MAP['US'];
+}
+
+function fmtPrice(symbol: string, amount: number, isKrw: boolean) {
+  if (isKrw) return `${symbol}${amount.toLocaleString()}`;
+  return `${symbol}${amount.toFixed(2).replace('.00', '')}`;
+}
 
 interface UpgradePageProps {
   onClose: () => void;
   currentLinks: number;
   currentBoards: number;
+  currentStorageMb?: number;
   userId?: string;
   userEmail?: string;
+  isPro?: boolean;
 }
 
 export const FREE_LIMITS = { links: 30, boards: 5, fileSizeMb: 5, storageMb: 50 };
@@ -55,10 +90,15 @@ async function startCheckout(plan: 'pro' | 'team', interval: 'monthly' | 'yearly
   window.location.href = url;
 }
 
-export function UpgradePage({ onClose, currentLinks, currentBoards, userId, userEmail }: UpgradePageProps) {
+export function UpgradePage({ onClose, currentLinks, currentBoards, currentStorageMb = 0, userId, userEmail, isPro = false }: UpgradePageProps) {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const linkPct  = Math.min((currentLinks  / FREE_LIMITS.links)  * 100, 100);
-  const boardPct = Math.min((currentBoards / FREE_LIMITS.boards) * 100, 100);
+  const linkPct    = Math.min((currentLinks    / FREE_LIMITS.links)    * 100, 100);
+  const boardPct   = Math.min((currentBoards   / FREE_LIMITS.boards)   * 100, 100);
+  const storagePct = Math.min((currentStorageMb / FREE_LIMITS.storageMb) * 100, 100);
+  const currency   = useMemo(() => detectCurrency(), []);
+  const isKrw      = currency.code === 'KRW' || currency.code === 'JPY' || currency.code === 'INR';
+
+  const fmtStorage = (mb: number) => mb >= 1000 ? `${(mb / 1024).toFixed(1)}GB` : `${mb}MB`;
 
   const handleCheckout = async (plan: 'pro' | 'team', interval: 'monthly' | 'yearly' = 'monthly') => {
     setLoadingPlan(`${plan}-${interval}`);
@@ -88,16 +128,16 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, userId, user
                 <span className="text-[11px] font-bold uppercase tracking-widest text-white/70">Upgrade SaveBoard</span>
               </div>
               <h1 className="text-[28px] font-bold text-white mb-2">Save more. Organize better.</h1>
-              <p className="text-white/60 text-[14px]">15% cheaper than Raindrop · Cancel anytime</p>
+              <p className="text-white/60 text-[14px]">Save everything worth keeping · Cancel anytime</p>
 
               {/* Usage indicators */}
-              <div className="mt-6 inline-flex gap-8 bg-white/10 rounded-2xl px-8 py-4">
+              <div className="mt-6 inline-flex gap-6 bg-white/10 rounded-2xl px-7 py-4">
                 <div className="text-left">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-white/60 text-[11px]">Saves</p>
                     <p className="text-white text-[12px] font-semibold">{currentLinks}/{FREE_LIMITS.links}</p>
                   </div>
-                  <div className="w-28 h-1.5 rounded-full bg-white/20">
+                  <div className="w-24 h-1.5 rounded-full bg-white/20">
                     <div className="h-full rounded-full transition-all" style={{ width: `${linkPct}%`, background: linkPct >= 90 ? '#F87171' : '#A78BFA' }} />
                   </div>
                 </div>
@@ -106,8 +146,17 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, userId, user
                     <p className="text-white/60 text-[11px]">Boards</p>
                     <p className="text-white text-[12px] font-semibold">{currentBoards}/{FREE_LIMITS.boards}</p>
                   </div>
-                  <div className="w-28 h-1.5 rounded-full bg-white/20">
+                  <div className="w-24 h-1.5 rounded-full bg-white/20">
                     <div className="h-full rounded-full transition-all" style={{ width: `${boardPct}%`, background: boardPct >= 90 ? '#F87171' : '#A78BFA' }} />
+                  </div>
+                </div>
+                <div className="text-left">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-white/60 text-[11px]">Storage</p>
+                    <p className="text-white text-[12px] font-semibold">{fmtStorage(currentStorageMb)}/{fmtStorage(FREE_LIMITS.storageMb)}</p>
+                  </div>
+                  <div className="w-24 h-1.5 rounded-full bg-white/20">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${storagePct}%`, background: storagePct >= 90 ? '#F87171' : '#A78BFA' }} />
                   </div>
                 </div>
               </div>
@@ -143,8 +192,8 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, userId, user
                   <Zap className="w-3.5 h-3.5 text-purple-600" />
                   <p className="text-[10px] font-bold uppercase tracking-widest text-purple-600">Pro</p>
                 </div>
-                <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">$3.49<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
-                <p className="text-[12px] font-semibold text-purple-600 mb-5">or $24/yr — save 43%</p>
+                <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">{fmtPrice(currency.symbol, currency.proMo, isKrw)}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
+                <p className="text-[12px] font-semibold text-purple-600 mb-5">or {fmtPrice(currency.symbol, currency.proYr, isKrw)}/yr — save 43%</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
                   {['300 saves','30 boards','2GB storage','20MB file size limit','All features included','Priority support','3 team members'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
@@ -152,24 +201,30 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, userId, user
                     </li>
                   ))}
                 </ul>
-                <div className="flex gap-2">
-                  <button
-                    className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
-                    style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
-                    disabled={!!loadingPlan}
-                    onClick={() => handleCheckout('pro', 'monthly')}>
-                    {loadingPlan === 'pro-monthly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                    Monthly
+                {isPro ? (
+                  <button disabled className="w-full py-2.5 rounded-xl text-[13px] font-semibold cursor-default flex items-center justify-center gap-1.5" style={{ background: 'rgba(124,58,237,0.10)', color: '#7C3AED' }}>
+                    ✓ Current Plan
                   </button>
-                  <button
-                    className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
-                    style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
-                    disabled={!!loadingPlan}
-                    onClick={() => handleCheckout('pro', 'yearly')}>
-                    {loadingPlan === 'pro-yearly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                    Yearly −43%
-                  </button>
-                </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
+                      style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
+                      disabled={!!loadingPlan}
+                      onClick={() => handleCheckout('pro', 'monthly')}>
+                      {loadingPlan === 'pro-monthly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                      Monthly
+                    </button>
+                    <button
+                      className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
+                      style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
+                      disabled={!!loadingPlan}
+                      onClick={() => handleCheckout('pro', 'yearly')}>
+                      {loadingPlan === 'pro-yearly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                      Yearly −43%
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Team */}
@@ -178,7 +233,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, userId, user
                   <Users className="w-3.5 h-3.5 text-gray-500" />
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Team</p>
                 </div>
-                <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">$6<span className="text-[16px] font-normal text-gray-400">/seat/mo</span></p>
+                <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">{fmtPrice(currency.symbol, currency.teamSeat, isKrw)}<span className="text-[16px] font-normal text-gray-400">/seat/mo</span></p>
                 <p className="text-[12px] text-gray-400 mb-5">Min 3 seats · billed monthly</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
                   {['Unlimited saves','Unlimited boards','10GB storage','50MB file size limit','All features included','5+ team members','Admin dashboard'].map(f => (

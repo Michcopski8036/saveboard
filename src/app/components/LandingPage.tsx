@@ -33,16 +33,16 @@ export function LandingPage({ onGetStarted }: Props) {
         <div className="max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-[12px] font-medium text-purple-600 mb-6">
             <Sparkles className="w-3 h-3" />
-            AI-powered saving
+            😩 Sound familiar?
           </div>
           <h1 className="text-[48px] sm:text-[64px] font-extrabold text-gray-900 leading-[1.05] tracking-tight mb-5">
-            Save everything<br />
+            Stop scrolling.<br />
             <span className="bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">
-              that matters
+              Find that link instantly.
             </span>
           </h1>
           <p className="text-[18px] text-gray-500 leading-relaxed mb-8 max-w-md mx-auto">
-            Collect links, articles, videos and notes — organised in beautiful boards you can share.
+            Tired of digging through group chats to find a schedule link, registration form, or video someone shared weeks ago? SaveBoard keeps all your important links organised in one beautiful place.
           </p>
           <button
             onClick={onGetStarted}
@@ -51,7 +51,7 @@ export function LandingPage({ onGetStarted }: Props) {
             Get Started Free
             <ArrowRight className="w-4 h-4" />
           </button>
-          <p className="text-[12px] text-gray-400 mt-3">No credit card required</p>
+          <p className="text-[12px] text-gray-400 mt-3">Free to start · No credit card required</p>
         </div>
       </section>
 
@@ -81,7 +81,7 @@ export function LandingPage({ onGetStarted }: Props) {
                     </div>
                     <span className="text-[12px] font-bold text-gray-900">SaveBoard</span>
                   </div>
-                  {['All Saves','Events','Recipes','Fitness'].map((label, i) => (
+                  {['All Saves','Basketball','Gymnastics','Tennis'].map((label, i) => (
                     <div key={label} className={`px-2.5 py-1.5 rounded-lg mb-1 text-[11px] font-medium ${i === 0 ? 'bg-purple-100 text-purple-700' : 'text-gray-500'}`}>
                       {label}
                     </div>
@@ -183,14 +183,14 @@ export function LandingPage({ onGetStarted }: Props) {
       {/* Features */}
       <section className="py-16 px-5 bg-gray-50">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-[32px] font-bold text-center text-gray-900 mb-2">Save anything, anywhere</h2>
-          <p className="text-gray-500 text-center mb-10 text-[16px]">One place for all the content you want to keep.</p>
+          <h2 className="text-[32px] font-bold text-center text-gray-900 mb-2">One place for all your links</h2>
+          <p className="text-gray-500 text-center mb-10 text-[16px]">No more searching through group chats. Find what you need in seconds.</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { icon: Link2,    label: 'Links',    desc: 'Any URL from the web',          bg: '#EDE9FE', color: '#7C3AED' },
-              { icon: FileText, label: 'Articles', desc: 'Read-later with auto-preview',  bg: '#FEE2E2', color: '#DC2626' },
-              { icon: Play,     label: 'Videos',   desc: 'YouTube, Vimeo & more',         bg: '#DCFCE7', color: '#16A34A' },
-              { icon: StickyNote, label: 'Notes',  desc: 'Quick thoughts & memos',        bg: '#FEF9C3', color: '#CA8A04' },
+              { icon: Link2,    label: 'Visual Cards',  desc: 'Every link becomes a rich preview with image, title, and description.',          bg: '#EDE9FE', color: '#7C3AED' },
+              { icon: FileText, label: 'By Activity',   desc: 'Create boards for Basketball, Gymnastics, Tennis — each activity tidy and separate.',  bg: '#FEE2E2', color: '#DC2626' },
+              { icon: Play,     label: 'Find Fast',     desc: 'Search by title, notes, or tags. No more scrolling through hundreds of messages.',  bg: '#DCFCE7', color: '#16A34A' },
+              { icon: StickyNote, label: 'Add Notes',   desc: 'Add context like "Register by June 1st" so you never forget the details.',        bg: '#FEF9C3', color: '#CA8A04' },
             ].map(({ icon: Icon, label, desc, bg, color }) => (
               <div key={label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: bg }}>
@@ -208,12 +208,12 @@ export function LandingPage({ onGetStarted }: Props) {
       <section className="py-20 px-5">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-[32px] font-bold text-center text-gray-900 mb-2">How it works</h2>
-          <p className="text-gray-500 text-center mb-12 text-[16px]">Three simple steps to stay organised.</p>
+          <p className="text-gray-500 text-center mb-12 text-[16px]">Three steps. Two minutes. Zero lost links.</p>
           <div className="grid sm:grid-cols-3 gap-8">
             {[
-              { step: '1', title: 'Save a link', desc: 'Paste any URL. SaveBoard automatically fetches the title, image and description.', color: '#A259FF' },
-              { step: '2', title: 'Organise in boards', desc: 'Create boards like Recipes, Travel or Work. Tag and sort everything your way.', color: '#FF7262' },
-              { step: '3', title: 'Access anywhere', desc: 'Your saves sync instantly across all your devices. Share boards with anyone.', color: '#F24E1E' },
+              { step: '1', title: 'Save a link', desc: 'Paste any URL or share from your phone. SaveBoard automatically fetches the title, image and description.', color: '#A259FF' },
+              { step: '2', title: 'Organise in boards', desc: 'Create boards for each activity — Basketball, Gymnastics, Tennis. Keep every link exactly where you need it.', color: '#FF7262' },
+              { step: '3', title: 'Find it instantly', desc: 'Search in seconds. No more "Can you send that link again?" — it\'s always right there when you need it.', color: '#F24E1E' },
             ].map(({ step, title, desc, color }) => (
               <div key={step} className="text-center">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-[18px] mx-auto mb-4 shadow-lg"
@@ -236,9 +236,9 @@ export function LandingPage({ onGetStarted }: Props) {
               <Sparkles className="w-3 h-3" />
               AI-powered
             </div>
-            <h2 className="text-[28px] font-bold text-gray-900 mb-3">Smart tags, automatically</h2>
+            <h2 className="text-[28px] font-bold text-gray-900 mb-3">Find anything instantly</h2>
             <p className="text-[15px] text-gray-500 leading-relaxed mb-5">
-              SaveBoard analyses every link you save and suggests relevant tags — so you can find anything fast without ever typing a tag yourself.
+              SaveBoard automatically tags every link you save — so whether it's a registration form, schedule PDF, or a tournament video, you can find it in seconds without scrolling anywhere.
             </p>
             {['Auto-generated tags', 'Full-text search', 'Smart filtering'].map(item => (
               <div key={item} className="flex items-center gap-2 mb-2">
@@ -272,9 +272,9 @@ export function LandingPage({ onGetStarted }: Props) {
               <Share2 className="w-3 h-3" />
               Sharing
             </div>
-            <h2 className="text-[28px] font-bold text-gray-900 mb-3">Share boards with anyone</h2>
+            <h2 className="text-[28px] font-bold text-gray-900 mb-3">Share with the whole team</h2>
             <p className="text-[15px] text-gray-500 leading-relaxed">
-              Made a great collection of recipes or travel spots? Share your board with a link — no account needed to view it.
+              Share your Basketball or Gymnastics board with other parents — just send a link. No account needed to view it.
             </p>
           </div>
           <div className="flex-1 flex items-center justify-center">
@@ -294,16 +294,32 @@ export function LandingPage({ onGetStarted }: Props) {
         </div>
       </section>
 
+      {/* Founder story */}
+      <section className="py-16 px-5 bg-amber-50 border-y border-amber-100">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-[20px] sm:text-[24px] font-bold text-gray-900 leading-relaxed italic mb-6">
+            "I have three kids — gymnastics, basketball, and tennis. Every group chat is full of schedule links, registration forms, and event videos. I built SaveBoard because I was so tired of never being able to find the link I needed."
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#A259FF] to-[#F24E1E] flex items-center justify-center text-xl">👩</div>
+            <div className="text-left">
+              <p className="font-semibold text-gray-900 text-[15px]">Mihee</p>
+              <p className="text-[13px] text-gray-500">Founder of SaveBoard · Mum of 3</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="py-20 px-5 text-center bg-gray-50">
         <div className="max-w-xl mx-auto">
           <h2 className="text-[36px] font-extrabold text-gray-900 mb-4 leading-tight">
-            Start saving what<br />
+            Never lose a link<br />
             <span className="bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">
-              you love today
+              again
             </span>
           </h2>
-          <p className="text-gray-500 mb-8 text-[16px]">Free to use. No credit card. Takes 10 seconds to get started.</p>
+          <p className="text-gray-500 mb-8 text-[16px]">SaveBoard is free to start. No scrolling required ever again.</p>
           <button
             onClick={onGetStarted}
             className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[16px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
@@ -325,7 +341,7 @@ export function LandingPage({ onGetStarted }: Props) {
               Save<span className="bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">Board</span>
             </span>
           </div>
-          <p className="text-[12px] text-gray-400">© 2025 SaveBoard. All rights reserved.</p>
+          <p className="text-[12px] text-gray-400">© 2026 SaveBoard. All rights reserved.</p>
         </div>
       </footer>
 

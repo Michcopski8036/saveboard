@@ -96,7 +96,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.CheckoutSession;
+        const session = event.data.object as Stripe.Checkout.Session;
         if (session.subscription) {
           const sub = await stripe.subscriptions.retrieve(session.subscription as string);
           if (!sub.metadata?.supabase_user_id && session.metadata?.supabase_user_id) {

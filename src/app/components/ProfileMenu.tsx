@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, LogOut, Download, Upload, Settings, Globe, HelpCircle, Zap } from 'lucide-react';
+import { ChevronDown, LogOut, Download, Upload, Settings, Globe, HelpCircle, Zap, CreditCard } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { useTheme, type ThemeMode } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -13,11 +13,15 @@ interface ProfileMenuProps {
   onShowSettings?: () => void;
   onShowLanguage?: () => void;
   onShowHelp?: () => void;
+  onShowBilling?: () => void;
   user?: SupabaseUser | null;
   isPro?: boolean;
+  currentLinks?: number;
+  currentBoards?: number;
+  currentStorageMb?: number;
 }
 
-export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onShowSettings, onShowLanguage, onShowHelp, user, isPro }: ProfileMenuProps) {
+export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onShowBilling, onShowSettings, onShowLanguage, onShowHelp, user, isPro, currentLinks = 0, currentBoards = 0, currentStorageMb = 0 }: ProfileMenuProps) {
   const { theme, setTheme } = useTheme();
   const { tr } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
@@ -77,8 +81,37 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
               {email && (
                 <div className="px-3 py-2">
                   <p className="text-xs text-gray-400 truncate">{email}</p>
+                  {isPro && (
+                    <span className="inline-block mt-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ color: '#7C3AED', background: 'rgba(124,58,237,0.10)' }}>PRO</span>
+                  )}
                 </div>
               )}
+              {/* Usage stats */}
+              <div className="mx-3 mb-2 p-2.5 rounded-xl" style={{ background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                {[
+                  { label: 'Saves', used: currentLinks, limit: isPro ? 300 : 30 },
+                  { label: 'Boards', used: currentBoards, limit: isPro ? 30 : 5 },
+                  { label: 'Storage', used: currentStorageMb, limit: isPro ? 2048 : 50, isStorage: true },
+                ].map(({ label, used, limit, isStorage }) => {
+                  const pct = Math.min((used / limit) * 100, 100);
+                  const over = pct >= 100;
+                  const warn = pct >= 80;
+                  const fmtMb = (mb: number) => mb >= 1024 ? `${(mb / 1024).toFixed(1)}GB` : `${mb}MB`;
+                  const usedStr = isStorage ? fmtMb(used) : used;
+                  const limitStr = isStorage ? fmtMb(limit) : limit;
+                  return (
+                    <div key={label} className="mb-2 last:mb-0">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] text-gray-400">{label}</span>
+                        <span className="text-[10px] font-semibold" style={{ color: over ? '#EF4444' : '#374151' }}>{usedStr}/{limitStr}</span>
+                      </div>
+                      <div className="h-1 rounded-full bg-gray-200">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: over ? '#EF4444' : warn ? '#F97316' : '#A78BFA' }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
               <div className="border-t border-gray-200 my-1" />
               <button onClick={() => { onShowSettings?.(); setShowMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
                 <Settings className="w-4 h-4 text-gray-500" />
@@ -110,6 +143,12 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
                 </button>
               ))}
               <div className="border-t border-gray-200 my-1" />
+              {isPro && (
+                <button onClick={() => { onShowBilling?.(); setShowMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
+                  <CreditCard className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm text-gray-700">Billing</span>
+                </button>
+              )}
               <button onClick={handleExport} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
                 <Download className="w-4 h-4 text-gray-500" />
                 <span className="text-sm text-gray-700">{tr('exportLinks')}</span>
@@ -120,14 +159,12 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
                 {!isPro && <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ color: '#7C3AED', background: 'rgba(124,58,237,0.10)' }}>PRO</span>}
               </button>
               <div className="border-t border-gray-200 my-1" />
-              {!isPro && (
-                <button onClick={() => { onShowUpgrade?.(); setShowMenu(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-[10px] transition-colors"
-                  style={{ background: 'linear-gradient(135deg,rgba(124,58,237,0.08),rgba(99,102,241,0.08))' }}>
-                  <Zap className="w-4 h-4" style={{ color: '#7C3AED' }} />
-                  <span className="text-sm font-semibold" style={{ color: '#7C3AED' }}>{tr('upgradeToPro')}</span>
-                </button>
-              )}
+              <button onClick={() => { onShowUpgrade?.(); setShowMenu(false); }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-[10px] transition-colors"
+                style={{ background: 'linear-gradient(135deg,rgba(124,58,237,0.08),rgba(99,102,241,0.08))' }}>
+                <Zap className="w-4 h-4" style={{ color: '#7C3AED' }} />
+                <span className="text-sm font-semibold" style={{ color: '#7C3AED' }}>{isPro ? 'View Plans' : tr('upgradeToPro')}</span>
+              </button>
               <div className="border-t border-gray-200 my-1" />
               <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors text-red-500">
                 <LogOut className="w-4 h-4" />
