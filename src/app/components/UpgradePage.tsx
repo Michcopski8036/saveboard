@@ -1,38 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { X, Check, Zap, Users, Sparkles, Loader2 } from 'lucide-react';
 
-const CURRENCY_MAP: Record<string, { code: string; symbol: string; proMo: number; proYr: number; teamSeat: number }> = {
-  AU: { code: 'AUD', symbol: 'A$', proMo: 3.49,  proYr: 24,    teamSeat: 6   },
-  US: { code: 'USD', symbol: '$',  proMo: 2.29,  proYr: 15.99, teamSeat: 3.99 },
-  KR: { code: 'KRW', symbol: '₩',  proMo: 3200,  proYr: 22000, teamSeat: 5500 },
-  JP: { code: 'JPY', symbol: '¥',  proMo: 340,   proYr: 2380,  teamSeat: 600  },
-  GB: { code: 'GBP', symbol: '£',  proMo: 1.79,  proYr: 12.49, teamSeat: 3.19 },
-  DE: { code: 'EUR', symbol: '€',  proMo: 2.09,  proYr: 14.49, teamSeat: 3.69 },
-  FR: { code: 'EUR', symbol: '€',  proMo: 2.09,  proYr: 14.49, teamSeat: 3.69 },
-  CA: { code: 'CAD', symbol: 'CA$',proMo: 3.19,  proYr: 21.99, teamSeat: 5.49 },
-  IN: { code: 'INR', symbol: '₹',  proMo: 189,   proYr: 1299,  teamSeat: 329  },
-  SG: { code: 'SGD', symbol: 'S$', proMo: 3.09,  proYr: 21.49, teamSeat: 5.29 },
-};
-
-function detectCurrency() {
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone ?? '';
-    if (tz.startsWith('Australia'))  return CURRENCY_MAP['AU'];
-    if (tz.startsWith('Asia/Seoul')) return CURRENCY_MAP['KR'];
-    if (tz.startsWith('Asia/Tokyo')) return CURRENCY_MAP['JP'];
-    if (tz.startsWith('Asia/Kolkata') || tz.startsWith('Asia/Calcutta')) return CURRENCY_MAP['IN'];
-    if (tz.startsWith('Asia/Singapore')) return CURRENCY_MAP['SG'];
-    if (tz.startsWith('Europe/London')) return CURRENCY_MAP['GB'];
-    if (tz.startsWith('Europe/')) return CURRENCY_MAP['DE'];
-    if (tz.startsWith('America/Toronto') || tz.startsWith('America/Vancouver')) return CURRENCY_MAP['CA'];
-  } catch { /* ignore */ }
-  return CURRENCY_MAP['US'];
-}
-
-function fmtPrice(symbol: string, amount: number, isKrw: boolean) {
-  if (isKrw) return `${symbol}${amount.toLocaleString()}`;
-  return `${symbol}${amount.toFixed(2).replace('.00', '')}`;
-}
+const AUD = { proMo: 5.49, proYr: 34.99, teamSeat: 9.49 };
 
 interface UpgradePageProps {
   onClose: () => void;
@@ -95,8 +64,6 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
   const linkPct    = Math.min((currentLinks    / FREE_LIMITS.links)    * 100, 100);
   const boardPct   = Math.min((currentBoards   / FREE_LIMITS.boards)   * 100, 100);
   const storagePct = Math.min((currentStorageMb / FREE_LIMITS.storageMb) * 100, 100);
-  const currency   = useMemo(() => detectCurrency(), []);
-  const isKrw      = currency.code === 'KRW' || currency.code === 'JPY' || currency.code === 'INR';
 
   const fmtStorage = (mb: number) => mb >= 1000 ? `${(mb / 1024).toFixed(1)}GB` : `${mb}MB`;
 
@@ -192,8 +159,8 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                   <Zap className="w-3.5 h-3.5 text-purple-600" />
                   <p className="text-[10px] font-bold uppercase tracking-widest text-purple-600">Pro</p>
                 </div>
-                <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">{fmtPrice(currency.symbol, currency.proMo, isKrw)}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
-                <p className="text-[12px] font-semibold text-purple-600 mb-5">or {fmtPrice(currency.symbol, currency.proYr, isKrw)}/yr — save 43%</p>
+                <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.proMo}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
+                <p className="text-[12px] font-semibold text-purple-600 mb-5">or A${AUD.proYr}/yr — save 47%</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
                   {['300 saves','30 boards','2GB storage','20MB file size limit','All features included','Priority support','3 team members'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
@@ -233,7 +200,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                   <Users className="w-3.5 h-3.5 text-gray-500" />
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Team</p>
                 </div>
-                <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">{fmtPrice(currency.symbol, currency.teamSeat, isKrw)}<span className="text-[16px] font-normal text-gray-400">/seat/mo</span></p>
+                <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.teamSeat}<span className="text-[16px] font-normal text-gray-400">/seat/mo</span></p>
                 <p className="text-[12px] text-gray-400 mb-5">Min 3 seats · billed monthly</p>
                 <ul className="space-y-2.5 mb-6 flex-1">
                   {['Unlimited saves','Unlimited boards','10GB storage','50MB file size limit','All features included','5+ team members','Admin dashboard'].map(f => (
@@ -279,8 +246,11 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
               </div>
             </div>
 
-            <p className="text-center text-[11px] text-gray-400 pb-6">
+            <p className="text-center text-[11px] text-gray-400 pb-2">
               No credit card required for free plan · Secure payments via Stripe · Cancel anytime
+            </p>
+            <p className="text-center text-[11px] text-gray-400 pb-6">
+              Prices in AUD · Your bank converts automatically
             </p>
           </div>
         </div>
