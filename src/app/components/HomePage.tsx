@@ -3,6 +3,7 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { Bookmark, Clock, Heart, Inbox, ArrowRight, Plus, Globe, Zap } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import type { LinkData } from './LinkCard';
+import { isPlaceholder, PlatformPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
 
 const PALETTE = ['#8B5CF6','#6366F1','#3B82F6','#0EA5E9','#10B981','#F59E0B','#EF4444','#EC4899'];
 function dotColor(n: string) { return PALETTE[[...n].reduce((a,c) => a+c.charCodeAt(0),0) % PALETTE.length]; }
@@ -47,7 +48,7 @@ export function HomePage({ links, categories, favorites, userEmail, onSelect, on
   const name = userEmail?.split('@')[0] ?? '';
 
   return (
-    <div className="space-y-8 pb-48">
+    <div className="space-y-8 pb-4">
 
       {/* ── Greeting ─────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
@@ -74,22 +75,22 @@ export function HomePage({ links, categories, favorites, userEmail, onSelect, on
               View all <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <ResponsiveMasonry columnsCountBreakPoints={{ 0: 2, 360: 2, 768: 3, 1280: 4, 1600: 5 }}>
+          <ResponsiveMasonry columnsCountBreakPoints={{ 0: 1, 400: 2, 768: 3, 1280: 4, 1600: 5 }}>
             <Masonry gutter="12px">
               {recent.map(l => (
                 <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer"
                   className="block rounded-2xl overflow-hidden transition-all hover:-translate-y-0.5"
                   style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  {l.image && l.image !== 'placeholder:memo' && l.image !== 'placeholder:pdf' ? (
-                    <div className="w-full overflow-hidden">
+                  {l.image && !isPlaceholder(l.image) ? (
+                    <div className="w-full overflow-hidden" style={{ maxHeight: 180 }}>
                       <img src={l.image} alt={l.title} className="w-full h-auto object-cover"
                         onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
                     </div>
                   ) : (
-                    <div className="w-full h-28 flex items-center justify-center"
-                      style={{ background: `rgba(${hexToRgb(dotColor(l.category || 'x'))},0.08)` }}>
-                      <Bookmark className="w-7 h-7" style={{ color: dotColor(l.category || 'x'), opacity: 0.35 }} />
-                    </div>
+                    <PlatformPlaceholder
+                      platform={isPlaceholder(l.image) ? (l.image.replace('placeholder:', '') as any) : detectPlatformFromUrl(l.url)}
+                      className="w-full h-24"
+                    />
                   )}
                   <div className="p-3">
                     <p className="text-[12px] font-semibold line-clamp-2 leading-snug" style={{ color: t.textPrimary }}>{l.title}</p>
