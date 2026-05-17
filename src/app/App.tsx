@@ -316,9 +316,11 @@ function AppContent() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     setErrorMessage(''); setSuccessMessage(''); setIsAdding(true);
-    const maxMb = isPro ? 20 : FREE_LIMITS.fileSizeMb;
+    const isTeam = subData?.plan === 'team';
+    const maxMb = isTeam ? 50 : isPro ? 20 : FREE_LIMITS.fileSizeMb;
+    const planLabel = isTeam ? 'Team' : isPro ? 'Pro' : 'Free';
     if (file.size > maxMb * 1024 * 1024) {
-      setErrorMessage(`File too large. ${isPro ? 'Pro' : 'Free'} plan limit is ${maxMb}MB.`);
+      setErrorMessage(`File too large. ${planLabel} plan limit is ${maxMb}MB.`);
       if (!isPro) setShowUpgrade(true);
       setIsAdding(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
