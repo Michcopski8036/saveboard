@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Clock, Heart, Inbox, ArrowRight, Plus, Zap, Link2, Check, Share2 } from 'lucide-react';
+import { Bookmark, Clock, Heart, Inbox, ArrowRight, Plus, Zap, Link2, Check, Share2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import type { LinkData } from './LinkCard';
 import { isPlaceholder, PlatformPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
