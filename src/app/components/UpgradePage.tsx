@@ -76,11 +76,11 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
     <>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" style={{ zIndex: 9990 }} onClick={onClose} />
       <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 9991 }}>
-        <div className="min-h-full flex items-center justify-center p-4 py-10">
+        <div className="min-h-full flex items-center justify-center p-2 py-4 sm:p-4 sm:py-10">
           <div className="relative w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden bg-white">
 
             {/* Header */}
-            <div className="relative px-8 pt-10 pb-8 text-center" style={{ background: 'linear-gradient(135deg,#7C3AED 0%,#6366F1 60%,#4F46E5 100%)' }}>
+            <div className="relative px-5 pt-8 pb-6 sm:px-8 sm:pt-10 sm:pb-8 text-center" style={{ background: 'linear-gradient(135deg,#7C3AED 0%,#6366F1 60%,#4F46E5 100%)' }}>
               <button onClick={onClose}
                 className="absolute top-4 right-4 p-2 rounded-xl transition-colors"
                 style={{ color: 'rgba(255,255,255,0.6)' }}
@@ -97,31 +97,31 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
               <p className="text-white/60 text-[14px]">Save everything worth keeping · Cancel anytime</p>
 
               {/* Usage indicators */}
-              <div className="mt-6 inline-flex gap-6 bg-white/10 rounded-2xl px-7 py-4">
+              <div className="mt-5 grid grid-cols-3 gap-3 sm:gap-6 bg-white/10 rounded-2xl px-4 sm:px-7 py-4">
                 <div className="text-left">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-white/60 text-[11px]">Saves</p>
-                    <p className="text-white text-[12px] font-semibold">{currentLinks}/{FREE_LIMITS.links}</p>
+                  <div className="flex items-center justify-between mb-1 gap-1">
+                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">Saves</p>
+                    <p className="text-white text-[11px] sm:text-[12px] font-semibold">{currentLinks}/{FREE_LIMITS.links}</p>
                   </div>
-                  <div className="w-24 h-1.5 rounded-full bg-white/20">
+                  <div className="w-full h-1.5 rounded-full bg-white/20">
                     <div className="h-full rounded-full transition-all" style={{ width: `${linkPct}%`, background: linkPct >= 90 ? '#F87171' : '#A78BFA' }} />
                   </div>
                 </div>
                 <div className="text-left">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-white/60 text-[11px]">Boards</p>
-                    <p className="text-white text-[12px] font-semibold">{currentBoards}/{FREE_LIMITS.boards}</p>
+                  <div className="flex items-center justify-between mb-1 gap-1">
+                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">Boards</p>
+                    <p className="text-white text-[11px] sm:text-[12px] font-semibold">{currentBoards}/{FREE_LIMITS.boards}</p>
                   </div>
-                  <div className="w-24 h-1.5 rounded-full bg-white/20">
+                  <div className="w-full h-1.5 rounded-full bg-white/20">
                     <div className="h-full rounded-full transition-all" style={{ width: `${boardPct}%`, background: boardPct >= 90 ? '#F87171' : '#A78BFA' }} />
                   </div>
                 </div>
                 <div className="text-left">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-white/60 text-[11px]">Storage</p>
-                    <p className="text-white text-[12px] font-semibold">{fmtStorage(currentStorageMb)}/{fmtStorage(FREE_LIMITS.storageMb)}</p>
+                  <div className="flex items-center justify-between mb-1 gap-1">
+                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">Storage</p>
+                    <p className="text-white text-[11px] sm:text-[12px] font-semibold">{fmtStorage(currentStorageMb)}/{fmtStorage(FREE_LIMITS.storageMb)}</p>
                   </div>
-                  <div className="w-24 h-1.5 rounded-full bg-white/20">
+                  <div className="w-full h-1.5 rounded-full bg-white/20">
                     <div className="h-full rounded-full transition-all" style={{ width: `${storagePct}%`, background: storagePct >= 90 ? '#F87171' : '#A78BFA' }} />
                   </div>
                 </div>
@@ -129,10 +129,10 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
             </div>
 
             {/* Pricing cards */}
-            <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="p-4 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
 
               {/* Free */}
-              <div className="rounded-2xl p-6 flex flex-col" style={{ border: '1px solid #E5E7EB' }}>
+              <div className="rounded-2xl p-4 sm:p-6 flex flex-col" style={{ border: '1px solid #E5E7EB' }}>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Free</p>
                 <p className="text-[32px] font-bold text-gray-900 leading-none mb-1">$0</p>
                 <p className="text-[12px] text-gray-400 mb-5">Forever free</p>
@@ -149,7 +149,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
               </div>
 
               {/* Pro */}
-              <div className="rounded-2xl p-6 relative flex flex-col" style={{ border: '2px solid #7C3AED', background: 'linear-gradient(135deg,rgba(124,58,237,0.04),rgba(99,102,241,0.04))' }}>
+              <div className="rounded-2xl p-4 sm:p-6 relative flex flex-col" style={{ border: '2px solid #7C3AED', background: 'linear-gradient(135deg,rgba(124,58,237,0.04),rgba(99,102,241,0.04))' }}>
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-bold text-white tracking-widest uppercase"
                   style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
                   Most Popular
@@ -220,7 +220,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
             </div>
 
             {/* Comparison table */}
-            <div className="px-8 pb-8">
+            <div className="px-4 pb-6 sm:px-8 sm:pb-8 overflow-x-auto">
               <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid #E5E7EB' }}>
                 <table className="w-full border-collapse">
                   <thead>
@@ -245,10 +245,10 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
               </div>
             </div>
 
-            <p className="text-center text-[11px] text-gray-400 pb-2">
+            <p className="text-center text-[10px] sm:text-[11px] text-gray-400 px-4 pb-2">
               No credit card required for free plan · Secure payments via Stripe · Cancel anytime
             </p>
-            <p className="text-center text-[11px] text-gray-400 pb-6">
+            <p className="text-center text-[10px] sm:text-[11px] text-gray-400 pb-4 sm:pb-6">
               Prices in AUD · Your bank converts automatically
             </p>
           </div>
