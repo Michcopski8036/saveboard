@@ -45,7 +45,7 @@ export function LandingPage({ onGetStarted }: Props) {
               </span>
             </h1>
             <p className="text-[17px] text-gray-500 leading-relaxed mb-10 max-w-md">
-              Tired of digging through group chats to find a schedule link, registration form, or video someone shared weeks ago? SaveBoard keeps all your important links organised in one beautiful place.
+              Tired of digging through group chats to find a schedule link, registration form, or video someone shared weeks ago? SaveBoard keeps all your important links organised in one beautiful place — for parents, coaches, and group leaders.
             </p>
             <div className="flex gap-3 flex-wrap mb-10">
               <button
@@ -71,7 +71,7 @@ export function LandingPage({ onGetStarted }: Props) {
                   </div>
                 ))}
               </div>
-              <span className="text-[13px] text-gray-500">Join parents & busy people getting organised</span>
+              <span className="text-[13px] text-gray-500">Join parents, coaches & group leaders getting organised</span>
             </div>
           </div>
 
@@ -145,7 +145,7 @@ export function LandingPage({ onGetStarted }: Props) {
             <span className="italic bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">lost</span>{' '}
             in the scroll
           </h2>
-          <p className="text-gray-500 text-center mb-10 text-[16px]">Three problems every busy parent knows too well.</p>
+          <p className="text-gray-500 text-center mb-10 text-[16px]">Every busy parent, coach, and group leader knows this pain.</p>
           <div className="grid sm:grid-cols-3 gap-4">
             {[
               { emoji: '📱', title: 'Buried in group chats', desc: 'Schedule links, registration forms, and videos get buried under hundreds of messages. Finding them again takes forever.' },
