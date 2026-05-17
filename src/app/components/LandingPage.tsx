@@ -34,7 +34,7 @@ export function LandingPage({ onGetStarted }: Props) {
 
           {/* Left — text */}
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 border border-amber-200 text-[13px] font-medium text-amber-800 mb-8">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-[12px] font-medium text-amber-700 mb-6">
               😩 Sound familiar?
             </div>
             <h1 className="text-[44px] sm:text-[54px] font-extrabold text-gray-900 leading-[1.05] tracking-tight mb-6">
