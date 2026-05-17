@@ -287,7 +287,7 @@ export function LandingPage({ onGetStarted }: Props) {
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-[20px] sm:text-[24px] text-gray-900 leading-relaxed mb-6"
             style={{ fontFamily: "'Fraunces', serif", fontStyle: 'italic', fontWeight: 300 }}>
-            "Three kids, three group chats, hundreds of messages — and I was spending more time scrolling than actually parenting. Every time I needed a schedule link, I had to scroll forever. I built SaveBoard so nobody has to do that anymore."
+            "Three kids, so many group chats, hundreds of messages — and I was spending more time scrolling than actually parenting. Every time I needed a schedule link, I had to scroll forever. I built SaveBoard so nobody has to do that anymore."
           </p>
           <div className="flex items-center justify-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#A259FF] to-[#F24E1E] flex items-center justify-center text-xl">👩</div>
