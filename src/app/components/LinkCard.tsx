@@ -301,8 +301,8 @@ export function LinkCard({
   const notesPortal = showNotesModal ? createPortal(
     <>
       <div className="fixed inset-0 backdrop-blur-sm" style={{ zIndex: 9998, background: t.modalBackdrop }} onClick={() => setShowNotesModal(false)} />
-      <div className="fixed w-[500px] max-w-[90vw] p-6 rounded-2xl"
-        style={{ zIndex: 9999, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
+      <div className="fixed w-[500px] max-w-[90vw] p-6 rounded-2xl overflow-y-auto"
+        style={{ zIndex: 9999, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', maxHeight: '85dvh', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
         onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-2 mb-1">
           <Sparkles className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
@@ -330,8 +330,8 @@ export function LinkCard({
   const editPortal = showEditModal ? createPortal(
     <>
       <div className="fixed inset-0 backdrop-blur-sm" style={{ zIndex: 9998, background: t.modalBackdrop }} onClick={() => setShowEditModal(false)} />
-      <div className="fixed w-[500px] max-w-[90vw] p-6 rounded-2xl"
-        style={{ zIndex: 9999, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
+      <div className="fixed w-[500px] max-w-[90vw] p-6 rounded-2xl overflow-y-auto"
+        style={{ zIndex: 9999, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', maxHeight: '85dvh', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
         onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-2 mb-1">
           <Pencil className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />

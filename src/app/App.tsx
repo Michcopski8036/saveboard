@@ -863,7 +863,7 @@ function AppContent() {
       )}
 
       {/* Hidden PDF input */}
-      <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+      <input ref={fileInputRef} type="file" className="hidden" accept="image/*,application/pdf,.pdf,.doc,.docx,.txt" onChange={handleFileUpload} />
 
       {/* ── Floating Action Button (tablet+) ──────────────────────────── */}
       {!selectMode && (
