@@ -206,6 +206,7 @@ export function SharedBoardPage() {
               style={{ background: '#6ECA97', boxShadow: '0 8px 24px rgba(110,202,151,0.30)' }}>
               <Check className="w-4 h-4" />
               Saved!{skippedCount > 0 ? ` (${skippedCount} skipped)` : ''}
+            </a>
           ) : (
             <button
               onClick={handleSaveBoard}
