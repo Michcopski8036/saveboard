@@ -261,20 +261,22 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
 
         {/* Logo */}
         <div className="px-5 pt-5 pb-4 flex items-center gap-2.5 shrink-0" style={{ borderBottom: `1px solid ${t.logoDivider}` }}>
-          <div className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
-            style={{ background: t.logoIconBg, boxShadow: t.logoIconShadow }}>
-            <Bookmark className="w-4 h-4 text-white" strokeWidth={2.5} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-bold tracking-tight leading-none">
-              <span style={{ color: t.logoText }}>Save</span>
-              <span style={{ background: t.logoTextGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Board</span>
-            </p>
-            <div className="flex items-center gap-1 mt-0.5">
-              <Sparkles className="w-2.5 h-2.5" style={{ color: '#7C3AED' }} />
-              <p className="text-[9px] font-medium tracking-widest" style={{ color: 'rgba(124,58,237,0.55)' }}>AI POWERED</p>
+          <button onClick={() => onSelect('all')} className="flex items-center gap-2.5 min-w-0 flex-1 text-left">
+            <div className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
+              style={{ background: t.logoIconBg, boxShadow: t.logoIconShadow }}>
+              <Bookmark className="w-4 h-4 text-white" strokeWidth={2.5} />
             </div>
-          </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-bold tracking-tight leading-none">
+                <span style={{ color: t.logoText }}>Save</span>
+                <span style={{ background: t.logoTextGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Board</span>
+              </p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Sparkles className="w-2.5 h-2.5" style={{ color: '#7C3AED' }} />
+                <p className="text-[9px] font-medium tracking-widest" style={{ color: 'rgba(124,58,237,0.55)' }}>AI POWERED</p>
+              </div>
+            </div>
+          </button>
           {/* Collapse button — shown when in drawer/expanded overlay mode (not permanent desktop) */}
           {sidebarOpen && (
             <button
