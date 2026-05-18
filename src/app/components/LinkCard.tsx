@@ -680,6 +680,10 @@ export function LinkCard({
           </div>
         )}
 
+        {!compact && !isArticle && link.description && link.description.length > 0 && !link.description.startsWith('Link saved from') && (
+          <p className="text-[11px] leading-relaxed line-clamp-2 mb-2" style={{ color: t.textMuted }}>{link.description}</p>
+        )}
+
         {!compact && isArticle && aiSummary && (
           <div className="flex items-center gap-1.5 mb-2.5 flex-wrap">
             <BookOpen className="w-2.5 h-2.5 shrink-0" style={{ color: '#60A5FA', opacity: 0.7 }} />
