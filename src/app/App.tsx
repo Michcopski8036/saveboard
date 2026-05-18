@@ -93,7 +93,7 @@ function AppContent() {
   const [subData, setSubData] = useState<{ plan: string; status: string; billing_cycle: string; current_period_end: string; saves_limit: string; boards_limit: string; storage_limit: string } | null>(null);
   const [showBilling, setShowBilling] = useState(false);
   const [currentStorageMb, setCurrentStorageMb] = useState(0);
-  const [sharedBoards, setSharedBoards] = useState<{ token: string; category: string; synced_at: string | null; count: number }[]>([]);
+  const [sharedBoards, setSharedBoards] = useState<{ token: string; category: string; synced_at: string | null; count: number; views: number }[]>([]);
   const fileInputRef    = useRef<HTMLInputElement>(null);
   const searchRef       = useRef<HTMLDivElement>(null);
   const searchInputRef  = useRef<HTMLInputElement>(null);
@@ -135,9 +135,9 @@ function AppContent() {
     if (!user) { setSharedBoards([]); return; }
     supabase
       .from('shared_boards')
-      .select('token, category, synced_at, links_snapshot')
+      .select('token, category, synced_at, links_snapshot, view_count')
       .eq('owner_id', user.id)
-      .order('synced_at', { ascending: false })
+      .order('view_count', { ascending: false })
       .then(({ data }) => {
         if (!data) return;
         setSharedBoards(data.map((b: any) => ({
@@ -145,6 +145,7 @@ function AppContent() {
           category: b.category,
           synced_at: b.synced_at,
           count: Array.isArray(b.links_snapshot) ? b.links_snapshot.length : 0,
+          views: b.view_count ?? 0,
         })));
       });
   }, [user]);

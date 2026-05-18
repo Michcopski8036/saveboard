@@ -54,13 +54,20 @@ export function SharedBoardPage() {
     (async () => {
       const { data, error } = await supabase
         .from('shared_boards')
-        .select('token, category, owner_name, links_snapshot, synced_at')
+        .select('token, category, owner_name, links_snapshot, synced_at, view_count')
         .eq('token', token)
         .single();
 
       if (error || !data) { setNotFound(true); setLoading(false); return; }
       setBoard(data);
       setLoading(false);
+
+      // Increment view count (fire and forget)
+      supabase
+        .from('shared_boards')
+        .update({ view_count: (data.view_count ?? 0) + 1 })
+        .eq('token', token)
+        .then(() => {});
     })();
   }, [token]);
 
