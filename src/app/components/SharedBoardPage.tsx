@@ -62,7 +62,14 @@ export function SharedBoardPage() {
       setBoard(data);
       setLoading(false);
 
-      // Increment view count (fire and forget)
+      // Record view with viewer info (fire and forget)
+      const { data: { user: viewer } } = await supabase.auth.getUser();
+      supabase.from('shared_board_views').insert({
+        token,
+        viewer_id: viewer?.id ?? null,
+        viewer_email: viewer?.email ?? null,
+      }).then(() => {});
+
       supabase
         .from('shared_boards')
         .update({ view_count: (data.view_count ?? 0) + 1 })

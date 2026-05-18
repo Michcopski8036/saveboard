@@ -93,7 +93,7 @@ function AppContent() {
   const [subData, setSubData] = useState<{ plan: string; status: string; billing_cycle: string; current_period_end: string; saves_limit: string; boards_limit: string; storage_limit: string } | null>(null);
   const [showBilling, setShowBilling] = useState(false);
   const [currentStorageMb, setCurrentStorageMb] = useState(0);
-  const [sharedBoards, setSharedBoards] = useState<{ token: string; category: string; synced_at: string | null; count: number; views: number }[]>([]);
+  const [sharedBoards, setSharedBoards] = useState<{ token: string; category: string; synced_at: string | null; count: number; views: number; viewers: { email: string | null; viewed_at: string }[] }[]>([]);
   const fileInputRef    = useRef<HTMLInputElement>(null);
   const searchRef       = useRef<HTMLDivElement>(null);
   const searchInputRef  = useRef<HTMLInputElement>(null);
@@ -138,14 +138,33 @@ function AppContent() {
       .select('token, category, synced_at, links_snapshot, view_count')
       .eq('owner_id', user.id)
       .order('view_count', { ascending: false })
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (!data) return;
+        const tokens = data.map((b: any) => b.token);
+        const { data: viewData } = await supabase
+          .from('shared_board_views')
+          .select('token, viewer_email, viewed_at')
+          .in('token', tokens)
+          .order('viewed_at', { ascending: false });
+
+        // Deduplicate by email per token
+        const viewsByToken: Record<string, { email: string | null; viewed_at: string }[]> = {};
+        (viewData ?? []).forEach((v: any) => {
+          if (!viewsByToken[v.token]) viewsByToken[v.token] = [];
+          const seen = viewsByToken[v.token];
+          const key = v.viewer_email ?? '__anon__';
+          if (!seen.some(x => (x.email ?? '__anon__') === key)) {
+            seen.push({ email: v.viewer_email, viewed_at: v.viewed_at });
+          }
+        });
+
         setSharedBoards(data.map((b: any) => ({
           token: b.token,
           category: b.category,
           synced_at: b.synced_at,
           count: Array.isArray(b.links_snapshot) ? b.links_snapshot.length : 0,
           views: b.view_count ?? 0,
+          viewers: viewsByToken[b.token] ?? [],
         })));
       });
   }, [user]);

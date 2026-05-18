@@ -19,7 +19,7 @@ function timeAgo(d: Date) {
   return `${Math.floor(s/86400)}d ago`;
 }
 
-interface SharedBoard { token: string; category: string; synced_at: string | null; count: number; views: number; }
+interface SharedBoard { token: string; category: string; synced_at: string | null; count: number; views: number; viewers: { email: string | null; viewed_at: string }[]; }
 
 interface HomePageProps {
   links: LinkData[];
@@ -146,12 +146,27 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
                       {board.count} link{board.count !== 1 ? 's' : ''}
                     </p>
                     {/* View count */}
-                    <div className="flex items-center gap-1 mb-2.5">
+                    <div className="flex items-center gap-1 mb-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
                       <p className="text-[10px] font-semibold" style={{ color: t.textPrimary }}>
                         {board.views} view{board.views !== 1 ? 's' : ''}
                       </p>
                     </div>
+                    {/* Viewer avatars */}
+                    {board.viewers.length > 0 && (
+                      <div className="flex items-center gap-1 mb-2 flex-wrap">
+                        {board.viewers.slice(0, 4).map((v, i) => (
+                          <div key={i} title={v.email ?? 'Anonymous'}
+                            className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0"
+                            style={{ background: v.email ? dotColor(v.email) : '#9CA3AF' }}>
+                            {v.email ? v.email[0].toUpperCase() : '?'}
+                          </div>
+                        ))}
+                        {board.viewers.length > 4 && (
+                          <span className="text-[9px] font-medium" style={{ color: t.textFaint }}>+{board.viewers.length - 4}</span>
+                        )}
+                      </div>
+                    )}
                     {/* Copy button */}
                     <button
                       onClick={() => copyShareLink(board.token)}
