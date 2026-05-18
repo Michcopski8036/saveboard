@@ -617,7 +617,7 @@ export function LinkCard({
       {/* Drag handle — always rendered so dragging works even without a thumbnail */}
       {!selectMode && (
         <div ref={dragRef}
-          className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-grab active:cursor-grabbing z-10 touch-none"
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-grab active:cursor-grabbing z-10 touch-none"
           onClick={e => e.preventDefault()}
           title="Drag to reorder or move to a board">
           <div className="flex items-center gap-1 px-1.5 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.50)', backdropFilter: 'blur(8px)' }}>
