@@ -209,7 +209,8 @@ function AppContent() {
         setCategories(p => [...p, catName]);
       }
 
-      const existingUrls = new Set(links.map(l => l.url));
+      const { data: existingLinksData } = await supabase.from('links').select('url').eq('user_id', user!.id);
+      const existingUrls = new Set((existingLinksData ?? []).map((l: any) => l.url));
       const newLinks = data.links_snapshot
         .filter((l: any) => !existingUrls.has(l.url))
         .map((l: any) => ({

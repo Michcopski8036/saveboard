@@ -121,8 +121,13 @@ export function SharedBoardPage() {
         }));
 
       if (newLinks.length > 0) await supabase.from('links').insert(newLinks);
+      const skipped = board!.links_snapshot.length - newLinks.length;
       setSaved(true);
-      setSkippedCount(board!.links_snapshot.length - newLinks.length);
+      setSkippedCount(skipped);
+      // Auto-redirect to the board in the app
+      setTimeout(() => {
+        window.location.href = `${window.location.origin}?board=${encodeURIComponent(catName)}`;
+      }, 1200);
     } catch (e) {
       console.error(e);
     } finally {
