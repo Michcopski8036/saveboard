@@ -82,7 +82,7 @@ export function SharedBoardPage() {
   const handleSaveBoard = async () => {
     if (!user) {
       localStorage.setItem('saveboard-pending-import', token!);
-      window.location.href = window.location.origin;
+      window.location.href = `${window.location.origin}?auth=1`;
       return;
     }
 

@@ -54,7 +54,7 @@ function AppContent() {
   const { tr } = useLanguage();
   const [user, setUser]                 = useState<User | null>(null);
   const [authLoading, setAuthLoading]   = useState(true);
-  const [showAuth, setShowAuth]         = useState(false);
+  const [showAuth, setShowAuth]         = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [links, setLinks]               = useState<LinkData[]>([]);
   const [categories, setCategories]     = useState<string[]>([]);
   const [isLoading, setIsLoading]       = useState(false);
