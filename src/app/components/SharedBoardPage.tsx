@@ -166,12 +166,6 @@ export function SharedBoardPage() {
               Save<span className="bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">Board</span>
             </span>
           </div>
-          <a
-            href="https://www.saveboard.app"
-            className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            Get SaveBoard
-          </a>
         </div>
       </nav>
 
@@ -191,19 +185,21 @@ export function SharedBoardPage() {
           </p>
         </div>
 
-        <button
-          onClick={handleSaveBoard}
-          disabled={saving || saved}
-          className="flex items-center gap-2 px-5 py-3 rounded-2xl text-[14px] font-semibold text-white shrink-0 mt-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 shadow-lg shadow-purple-200"
-          style={{ background: saved ? '#10B981' : 'linear-gradient(to right, #A259FF, #FF7262)' }}>
-          {saving ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
-          ) : saved ? (
-            <><Check className="w-4 h-4" /> {skippedCount > 0 ? `Saved! (${skippedCount} skipped)` : 'Saved!'}</>
-          ) : (
-            <><BookmarkPlus className="w-4 h-4" /> Save to My Board</>
-          )}
-        </button>
+        {user && (
+          <button
+            onClick={handleSaveBoard}
+            disabled={saving || saved}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl text-[14px] font-semibold text-white shrink-0 mt-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 shadow-lg shadow-purple-200"
+            style={{ background: saved ? '#10B981' : 'linear-gradient(to right, #A259FF, #FF7262)' }}>
+            {saving ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
+            ) : saved ? (
+              <><Check className="w-4 h-4" /> {skippedCount > 0 ? `Saved! (${skippedCount} skipped)` : 'Saved!'}</>
+            ) : (
+              <><BookmarkPlus className="w-4 h-4" /> Save to My Board</>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Links grid */}
@@ -289,13 +285,13 @@ export function SharedBoardPage() {
 
       {/* Bottom CTA for guests */}
       {!user && (
-        <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm border-t border-gray-100 p-4">
-          <div className="max-w-sm mx-auto text-center">
-            <p className="text-[13px] text-gray-500 mb-3">Sign in to save this board to your SaveBoard</p>
+        <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm border-t border-gray-100 px-4 py-3">
+          <div className="max-w-sm mx-auto">
             <button
               onClick={handleSaveBoard}
-              className="w-full py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
               style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
+              <BookmarkPlus className="w-4 h-4" />
               Sign in &amp; Save to My Board
             </button>
           </div>
