@@ -227,8 +227,7 @@ function AppContent() {
         await supabase.from('links').insert(newLinks);
         setLinks(p => [...newLinks.map((l: any) => ({ ...l, savedAt: new Date(l.created_at) })), ...p]);
       }
-      // Redirect back to the shared board page so the user can see it
-      window.location.href = `${window.location.origin}/share/${token}`;
+      window.location.href = `${window.location.origin}?board=${encodeURIComponent(catName)}`;
     } catch (e) { console.error(e); }
   };
 
