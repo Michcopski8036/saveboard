@@ -211,8 +211,8 @@ function AppContent() {
         await supabase.from('links').insert(newLinks);
         setLinks(p => [...newLinks.map((l: any) => ({ ...l, savedAt: new Date(l.created_at) })), ...p]);
       }
-      const skipped = data.links_snapshot.length - newLinks.length;
-      alert(`"${catName}" board saved!${skipped > 0 ? ` (${skipped} duplicate${skipped > 1 ? 's' : ''} skipped)` : ''}`);
+      // Redirect back to the shared board page so the user can see it
+      window.location.href = `${window.location.origin}/share/${token}`;
     } catch (e) { console.error(e); }
   };
 
