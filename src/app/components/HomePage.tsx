@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Bookmark, Clock, Heart, Inbox, ArrowRight, Plus, Zap, Link2, Check, Share2 } from 'lucide-react';
+import { Bookmark, Clock, Heart, Inbox, ArrowRight, Zap, Link2, Check, Share2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import type { LinkData } from './LinkCard';
 import { isPlaceholder, PlatformPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
@@ -60,17 +60,9 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
     <div className="space-y-8 pb-4">
 
       {/* ── Greeting ─────────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[13px] font-medium mb-0.5" style={{ color: t.textMuted }}>{greeting}{name ? `, ${name}` : ''}!</p>
-          <h1 className="text-[24px] font-bold leading-tight" style={{ color: t.textPrimary }}>Your SaveBoard</h1>
-        </div>
-        <button onClick={onAddLink}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold text-white shrink-0 transition-opacity hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-          <Plus className="w-4 h-4" />
-          Add Link
-        </button>
+      <div>
+        <p className="text-[13px] font-medium mb-0.5" style={{ color: t.textMuted }}>{greeting}{name ? `, ${name}` : ''}!</p>
+        <h1 className="text-[24px] font-bold leading-tight" style={{ color: t.textPrimary }}>Your SaveBoard</h1>
       </div>
 
       {/* ── Recently Saved ───────────────────────────────────────────── */}
