@@ -296,7 +296,7 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
 
           <section>
             <p className="text-[9px] font-bold uppercase tracking-[0.18em] px-2 mb-2" style={{ color: t.navSectionLabel }}>{tr('collections')}</p>
-            {SMART.map(({ id, label, Icon }) => <NavBtn key={id} id={id} label={label} Icon={Icon} count={counts[id]} />)}
+            {SMART.map(({ id, label, Icon }) => <NavBtn key={id} id={id} label={label} Icon={Icon} count={id === 'all' ? undefined : counts[id]} />)}
           </section>
 
           <section>
