@@ -138,10 +138,10 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
             {sharedBoards.map(board => {
               const color = dotColor(board.category);
               return (
-                <div key={board.token} className="flex-none w-[128px] rounded-xl overflow-hidden"
+                <div key={board.token} className="flex-none w-[148px] rounded-2xl overflow-hidden"
                   style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
                   <div className="p-2.5">
-                    <p className="text-[11px] font-bold truncate mb-0.5" style={{ color: t.textPrimary }}>{board.category}</p>
+                    <p className="text-[12px] font-semibold truncate mb-0.5" style={{ color: t.textPrimary }}>{board.category}</p>
                     <p className="text-[10px] mb-1.5" style={{ color: t.textMuted }}>
                       {board.count} link{board.count !== 1 ? 's' : ''}
                     </p>
