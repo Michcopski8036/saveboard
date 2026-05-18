@@ -138,30 +138,24 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
             {sharedBoards.map(board => {
               const color = dotColor(board.category);
               return (
-                <div key={board.token} className="flex-none w-[160px] rounded-2xl overflow-hidden"
+                <div key={board.token} className="flex-none w-[128px] rounded-xl overflow-hidden"
                   style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  {/* Colored header */}
-                  <div className="w-full h-[72px] flex items-center justify-center relative"
-                    style={{ background: `linear-gradient(135deg, ${color}22, ${color}44)` }}>
-                    <div className="w-3 h-3 rounded-full" style={{ background: color, boxShadow: `0 0 12px ${color}80` }} />
-                  </div>
-                  {/* Content */}
-                  <div className="p-3">
-                    <p className="text-[12px] font-bold truncate mb-1" style={{ color: t.textPrimary }}>{board.category}</p>
-                    <p className="text-[10px] mb-2" style={{ color: t.textMuted }}>
+                  <div className="p-2.5">
+                    <p className="text-[11px] font-bold truncate mb-0.5" style={{ color: t.textPrimary }}>{board.category}</p>
+                    <p className="text-[10px] mb-1.5" style={{ color: t.textMuted }}>
                       {board.count} link{board.count !== 1 ? 's' : ''}
                     </p>
                     {/* View count */}
-                    <div className="flex items-center gap-1 mb-3">
+                    <div className="flex items-center gap-1 mb-2.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                      <p className="text-[11px] font-semibold" style={{ color: t.textPrimary }}>
+                      <p className="text-[10px] font-semibold" style={{ color: t.textPrimary }}>
                         {board.views} view{board.views !== 1 ? 's' : ''}
                       </p>
                     </div>
                     {/* Copy button */}
                     <button
                       onClick={() => copyShareLink(board.token)}
-                      className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] font-semibold transition-colors"
+                      className="w-full flex items-center justify-center gap-1 py-1 rounded-lg text-[10px] font-semibold transition-colors"
                       style={{ background: copiedToken === board.token ? 'rgba(34,197,94,0.10)' : `${color}15`, color: copiedToken === board.token ? '#16A34A' : color }}>
                       {copiedToken === board.token
                         ? <><Check className="w-3 h-3" />Copied!</>
