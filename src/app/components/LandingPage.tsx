@@ -271,7 +271,7 @@ export function LandingPage({ onGetStarted }: Props) {
                 <p className="text-[11px] text-gray-400 mb-1 font-medium">Shared board</p>
                 <p className="text-[14px] font-bold text-gray-900 mb-3">My Korea Trip 🇰🇷</p>
                 <div className="bg-gray-50 rounded-lg px-3 py-2 text-[11px] text-gray-500 font-mono break-all">
-                  saveboard.app/s/abc123
+                  saveboard.app/share/abc123
                 </div>
                 <button className="mt-3 w-full py-2 rounded-xl bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white text-[12px] font-semibold">
                   Copy link
