@@ -201,7 +201,7 @@ export function SharedBoardPage() {
         {user && (
           saved ? (
             <a
-              href={window.location.origin}
+              href={`${window.location.origin}?board=${encodeURIComponent(board!.category)}`}
               className="flex items-center gap-2 px-5 py-3 rounded-2xl text-[14px] font-semibold text-white shrink-0 mt-2 hover:opacity-90 active:scale-95 transition-all shadow-lg"
               style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)', boxShadow: '0 8px 24px rgba(162,89,255,0.25)' }}>
               <Check className="w-4 h-4" />
@@ -310,7 +310,7 @@ export function SharedBoardPage() {
           <div className="max-w-sm mx-auto">
             {saved ? (
               <a
-                href={window.location.origin}
+                href={`${window.location.origin}?board=${encodeURIComponent(board!.category)}`}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all shadow-lg"
                 style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
                 <Check className="w-4 h-4" />

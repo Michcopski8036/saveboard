@@ -178,7 +178,15 @@ function AppContent() {
 
   useEffect(() => {
     if (!user) { setLinks([]); setCategories([]); return; }
-    loadData().then(() => handlePendingImport());
+    loadData().then(() => {
+      handlePendingImport();
+      const params = new URLSearchParams(window.location.search);
+      const board = params.get('board');
+      if (board) {
+        setSelected(`cat:${board}`);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    });
   }, [user]);
 
   const handlePendingImport = async () => {
