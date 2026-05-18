@@ -28,7 +28,6 @@ interface SidebarProps {
 
 const SMART_IDS = [
   { id: 'all',       key: 'home'         as const, Icon: Home    },
-  { id: 'recent',    key: 'recentlySaved' as const, Icon: Clock   },
   { id: 'favorites', key: 'favorites'    as const, Icon: Heart   },
   { id: 'unsorted',  key: 'unsorted'     as const, Icon: Inbox   },
 ] as const;
