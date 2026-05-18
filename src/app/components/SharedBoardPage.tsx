@@ -19,6 +19,7 @@ interface SharedBoard {
   token: string;
   category: string;
   owner_name?: string;
+  owner_email?: string;
   links_snapshot: SharedLink[];
   synced_at: string | null;
 }
@@ -54,7 +55,7 @@ export function SharedBoardPage() {
     (async () => {
       const { data, error } = await supabase
         .from('shared_boards')
-        .select('token, category, owner_name, links_snapshot, synced_at, view_count')
+        .select('token, category, owner_name, owner_email, links_snapshot, synced_at, view_count')
         .eq('token', token)
         .single();
 
@@ -175,14 +176,26 @@ export function SharedBoardPage() {
           <p className="text-[11px] font-bold uppercase tracking-widest mb-2 text-purple-400">Shared Board</p>
           <h1 className="text-[36px] font-extrabold text-gray-900 leading-tight tracking-tight">
             {board?.category}
-            {board?.owner_name && (
-              <span className="text-gray-400 font-normal text-[22px] ml-3">by {board.owner_name}</span>
-            )}
           </h1>
-          <p className="text-[14px] text-gray-400 mt-2">
+          <p className="text-[14px] text-gray-400 mt-1 mb-4">
             {links.length} save{links.length !== 1 ? 's' : ''}
             {board?.synced_at && <span> · shared {timeAgo(board.synced_at)}</span>}
           </p>
+          {/* Shared by */}
+          {(board?.owner_name || board?.owner_email) && (
+            <div className="inline-flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-gray-50 border border-gray-100">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold text-white shrink-0"
+                style={{ background: 'linear-gradient(135deg, #A259FF, #FF7262)' }}>
+                {(board.owner_name || board.owner_email || '?')[0].toUpperCase()}
+              </div>
+              <div>
+                <p className="text-[11px] text-gray-400 leading-none mb-0.5">Shared by</p>
+                <p className="text-[13px] font-semibold text-gray-800 leading-none">
+                  {board.owner_name || board.owner_email?.split('@')[0]}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {user && (
