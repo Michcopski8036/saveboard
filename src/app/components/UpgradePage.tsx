@@ -143,9 +143,11 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     </li>
                   ))}
                 </ul>
-                <button disabled className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-gray-300 cursor-default" style={{ border: '1px solid #E5E7EB' }}>
-                  Current plan
-                </button>
+                {!isPro && (
+                  <button disabled className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-gray-300 cursor-default" style={{ border: '1px solid #E5E7EB' }}>
+                    Current plan
+                  </button>
+                )}
               </div>
 
               {/* Pro */}
@@ -187,7 +189,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                       disabled={!!loadingPlan}
                       onClick={() => handleCheckout('pro', 'yearly')}>
                       {loadingPlan === 'pro-yearly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                      Yearly −43%
+                      Yearly −47%
                     </button>
                   </div>
                 )}
