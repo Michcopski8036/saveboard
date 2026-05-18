@@ -308,13 +308,27 @@ export function SharedBoardPage() {
       {!user && (
         <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm border-t border-gray-100 px-4 py-3">
           <div className="max-w-sm mx-auto">
-            <button
-              onClick={handleSaveBoard}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
-              style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
-              <BookmarkPlus className="w-4 h-4" />
-              Sign in &amp; Save to My Board
-            </button>
+            {saved ? (
+              <a
+                href={window.location.origin}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all shadow-lg"
+                style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
+                <Check className="w-4 h-4" />
+                View My Board
+              </a>
+            ) : (
+              <button
+                onClick={handleSaveBoard}
+                disabled={saving}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 shadow-lg shadow-purple-200"
+                style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
+                {saving ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
+                ) : (
+                  <><BookmarkPlus className="w-4 h-4" /> Sign in &amp; Save to My Board</>
+                )}
+              </button>
+            )}
           </div>
         </div>
       )}
