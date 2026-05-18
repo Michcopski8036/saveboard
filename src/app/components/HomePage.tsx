@@ -228,22 +228,22 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
           <Zap className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
           <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>Quick Stats</p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-            <p className="text-[11px] font-medium mb-1.5" style={{ color: t.textMuted }}>Total Links</p>
-            <p className="text-[28px] font-bold leading-none" style={{ color: t.textPrimary }}>{links.length}</p>
+        <div className="grid grid-cols-4 gap-3">
+          <div className="rounded-xl p-3" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+            <p className="text-[10px] font-medium mb-1" style={{ color: t.textMuted }}>Total Links</p>
+            <p className="text-[20px] font-bold leading-none" style={{ color: t.textPrimary }}>{links.length}</p>
           </div>
-          <div className="rounded-2xl p-4" style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-            <p className="text-[11px] font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.7)' }}>This Week</p>
-            <p className="text-[28px] font-bold leading-none text-white">{thisWeek}</p>
+          <div className="rounded-xl p-3" style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+            <p className="text-[10px] font-medium mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>This Week</p>
+            <p className="text-[20px] font-bold leading-none text-white">{thisWeek}</p>
           </div>
-          <div className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-            <p className="text-[11px] font-medium mb-1.5" style={{ color: t.textMuted }}>Favorites</p>
-            <p className="text-[28px] font-bold leading-none" style={{ color: t.textPrimary }}>{favorites.size}</p>
+          <div className="rounded-xl p-3" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+            <p className="text-[10px] font-medium mb-1" style={{ color: t.textMuted }}>Favorites</p>
+            <p className="text-[20px] font-bold leading-none" style={{ color: t.textPrimary }}>{favorites.size}</p>
           </div>
-          <div className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-            <p className="text-[11px] font-medium mb-1.5" style={{ color: t.textMuted }}>Boards</p>
-            <p className="text-[28px] font-bold leading-none" style={{ color: t.textPrimary }}>{categories.length}</p>
+          <div className="rounded-xl p-3" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+            <p className="text-[10px] font-medium mb-1" style={{ color: t.textMuted }}>Boards</p>
+            <p className="text-[20px] font-bold leading-none" style={{ color: t.textPrimary }}>{categories.length}</p>
           </div>
         </div>
       </div>
