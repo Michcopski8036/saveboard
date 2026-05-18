@@ -199,19 +199,27 @@ export function SharedBoardPage() {
         </div>
 
         {user && (
-          <button
-            onClick={handleSaveBoard}
-            disabled={saving || saved}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl text-[14px] font-semibold text-white shrink-0 mt-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 shadow-lg shadow-purple-200"
-            style={{ background: saved ? '#10B981' : 'linear-gradient(to right, #A259FF, #FF7262)' }}>
-            {saving ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
-            ) : saved ? (
-              <><Check className="w-4 h-4" /> {skippedCount > 0 ? `Saved! (${skippedCount} skipped)` : 'Saved!'}</>
-            ) : (
-              <><BookmarkPlus className="w-4 h-4" /> Save to My Board</>
-            )}
-          </button>
+          saved ? (
+            <a
+              href={window.location.origin}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl text-[14px] font-semibold text-white shrink-0 mt-2 hover:opacity-90 active:scale-95 transition-all shadow-lg"
+              style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)', boxShadow: '0 8px 24px rgba(162,89,255,0.25)' }}>
+              <Check className="w-4 h-4" />
+              View My Board
+            </a>
+          ) : (
+            <button
+              onClick={handleSaveBoard}
+              disabled={saving}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl text-[14px] font-semibold text-white shrink-0 mt-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 shadow-lg shadow-purple-200"
+              style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
+              {saving ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
+              ) : (
+                <><BookmarkPlus className="w-4 h-4" /> Save to My Board</>
+              )}
+            </button>
+          )
         )}
       </div>
 
