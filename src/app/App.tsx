@@ -606,9 +606,9 @@ function AppContent() {
               ))}
             </div>
 
-            {/* Select toggle */}
+            {/* Select toggle — hidden on home dashboard */}
             <button onClick={() => { setSelectMode(p => !p); setSelectedIds(new Set()); }}
-              className="hidden sm:block px-3 py-1.5 rounded-xl text-[12px] font-medium transition-all"
+              className={`${selected === 'all' ? 'hidden' : 'hidden sm:block'} px-3 py-1.5 rounded-xl text-[12px] font-medium transition-all`}
               style={{ background: selectMode ? t.selectBtnActiveBg : t.selectBtnBg, color: selectMode ? t.selectBtnActiveText : t.selectBtnText, border: `1px solid ${selectMode ? t.selectBtnActiveBorder : t.selectBtnBorder}` }}>
               {selectMode ? tr('cancel') : tr('select')}
             </button>
