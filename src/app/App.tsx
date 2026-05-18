@@ -595,8 +595,8 @@ function AppContent() {
               <Search className="w-4 h-4" />
             </button>
 
-            {/* View mode */}
-            <div className="hidden sm:flex items-center p-1 rounded-xl gap-0.5" style={{ background: t.controlContainerBg, border: `1px solid ${t.controlContainerBorder}` }}>
+            {/* View mode — hidden on home dashboard */}
+            <div className={`${selected === 'all' ? 'hidden' : 'hidden sm:flex'} items-center p-1 rounded-xl gap-0.5`} style={{ background: t.controlContainerBg, border: `1px solid ${t.controlContainerBorder}` }}>
               {viewModes.map(({ mode, Icon, label }) => (
                 <button key={mode} onClick={() => setViewMode(mode)} title={label}
                   className="p-1.5 rounded-lg transition-all"
