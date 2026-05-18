@@ -120,38 +120,45 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
       )}
 
       {/* ── Shared Boards ────────────────────────────────────────────── */}
-      {sharedBoards.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Share2 className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
-            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>Shared Boards</p>
-          </div>
-          <div className="space-y-2">
-            {sharedBoards.map(board => (
-              <div key={board.token} className="flex items-center justify-between p-3.5 rounded-2xl"
-                style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: dotColor(board.category), boxShadow: `0 0 8px ${dotColor(board.category)}60` }} />
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{board.category}</p>
-                    <p className="text-[11px]" style={{ color: t.textMuted }}>
-                      {board.count} link{board.count !== 1 ? 's' : ''} · {board.synced_at ? timeAgo(new Date(board.synced_at)) : 'not synced'}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => copyShareLink(board.token)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold shrink-0 ml-3 transition-colors"
-                  style={{ background: copiedToken === board.token ? 'rgba(34,197,94,0.10)' : 'rgba(124,58,237,0.08)', color: copiedToken === board.token ? '#16A34A' : '#7C3AED' }}>
-                  {copiedToken === board.token
-                    ? <><Check className="w-3 h-3" /> Copied!</>
-                    : <><Link2 className="w-3 h-3" /> Copy link</>}
-                </button>
+      {sharedBoards.length > 0 && (() => {
+        const latest = sharedBoards[0];
+        return (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Share2 className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
+                <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>Recently Shared</p>
               </div>
-            ))}
+              {sharedBoards.length > 1 && (
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(124,58,237,0.08)', color: '#7C3AED' }}>
+                  {sharedBoards.length} shared
+                </span>
+              )}
+            </div>
+            <div className="flex items-center justify-between p-3.5 rounded-2xl"
+              style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: dotColor(latest.category), boxShadow: `0 0 8px ${dotColor(latest.category)}60` }} />
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{latest.category}</p>
+                  <p className="text-[11px]" style={{ color: t.textMuted }}>
+                    {latest.count} link{latest.count !== 1 ? 's' : ''} · {latest.synced_at ? timeAgo(new Date(latest.synced_at)) : 'not synced'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => copyShareLink(latest.token)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold shrink-0 ml-3 transition-colors"
+                style={{ background: copiedToken === latest.token ? 'rgba(34,197,94,0.10)' : 'rgba(124,58,237,0.08)', color: copiedToken === latest.token ? '#16A34A' : '#7C3AED' }}>
+                {copiedToken === latest.token
+                  ? <><Check className="w-3 h-3" /> Copied!</>
+                  : <><Link2 className="w-3 h-3" /> Copy link</>}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── Boards ───────────────────────────────────────────────────── */}
       <div>
