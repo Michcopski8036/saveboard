@@ -11,13 +11,6 @@ function hexToRgb(hex: string) {
   return `${r},${g},${b}`;
 }
 function domain(url: string) { try { return new URL(url).hostname.replace('www.',''); } catch { return ''; } }
-function timeAgo(d: Date) {
-  const s = Math.floor((Date.now() - d.getTime()) / 1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return `${Math.floor(s/60)}m ago`;
-  if (s < 86400) return `${Math.floor(s/3600)}h ago`;
-  return `${Math.floor(s/86400)}d ago`;
-}
 
 interface SharedBoard { token: string; category: string; synced_at: string | null; count: number; views: number; viewers: { email: string | null; viewed_at: string }[]; }
 
@@ -28,10 +21,9 @@ interface HomePageProps {
   userEmail?: string;
   sharedBoards?: SharedBoard[];
   onSelect: (id: string) => void;
-  onAddLink: () => void;
 }
 
-export function HomePage({ links, categories, favorites, userEmail, sharedBoards = [], onSelect, onAddLink }: HomePageProps) {
+export function HomePage({ links, categories, favorites, userEmail, sharedBoards = [], onSelect }: HomePageProps) {
   const { t } = useTheme();
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 

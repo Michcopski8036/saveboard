@@ -723,7 +723,6 @@ function AppContent() {
               userEmail={user?.email}
               sharedBoards={sharedBoards}
               onSelect={(id) => { setSelected(id); setSidebarOpen(false); }}
-              onAddLink={() => setShowAddModal(true)}
             />
           ) : isLoading ? (
             <div className="flex justify-center pt-24">
