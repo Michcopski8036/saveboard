@@ -723,6 +723,7 @@ function AppContent() {
               userEmail={user?.email}
               sharedBoards={sharedBoards}
               onSelect={(id) => { setSelected(id); setSidebarOpen(false); }}
+              cardProps={cardProps}
             />
           ) : isLoading ? (
             <div className="flex justify-center pt-24">

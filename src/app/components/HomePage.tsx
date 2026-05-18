@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Bookmark, Clock, Heart, Inbox, ArrowRight, Zap, Link2, Check, Share2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import type { LinkData } from './LinkCard';
-import { isPlaceholder, PlatformPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
+import { LinkCard, type LinkData } from './LinkCard';
 
 const PALETTE = ['#8B5CF6','#6366F1','#3B82F6','#0EA5E9','#10B981','#F59E0B','#EF4444','#EC4899'];
 function dotColor(n: string) { return PALETTE[[...n].reduce((a,c) => a+c.charCodeAt(0),0) % PALETTE.length]; }
@@ -10,7 +9,6 @@ function hexToRgb(hex: string) {
   const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
   return `${r},${g},${b}`;
 }
-function domain(url: string) { try { return new URL(url).hostname.replace('www.',''); } catch { return ''; } }
 
 interface SharedBoard { token: string; category: string; synced_at: string | null; count: number; views: number; viewers: { email: string | null; viewed_at: string }[]; }
 
@@ -21,9 +19,10 @@ interface HomePageProps {
   userEmail?: string;
   sharedBoards?: SharedBoard[];
   onSelect: (id: string) => void;
+  cardProps: (link: LinkData) => any;
 }
 
-export function HomePage({ links, categories, favorites, userEmail, sharedBoards = [], onSelect }: HomePageProps) {
+export function HomePage({ links, categories, favorites, userEmail, sharedBoards = [], onSelect, cardProps }: HomePageProps) {
   const { t } = useTheme();
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
@@ -72,32 +71,9 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
           <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 sm:-mx-6 sm:px-6"
             style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
             {recent.map(l => (
-              <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer"
-                className="flex-none w-[148px] rounded-2xl overflow-hidden transition-all hover:-translate-y-0.5"
-                style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                {/* Fixed-height image */}
-                <div className="w-full h-[88px] overflow-hidden">
-                  {l.image && !isPlaceholder(l.image) ? (
-                    <img src={l.image} alt={l.title} className="w-full h-full object-cover"
-                      onError={e => { e.currentTarget.style.display = 'none'; }} />
-                  ) : (
-                    <PlatformPlaceholder
-                      platform={isPlaceholder(l.image) ? (l.image.replace('placeholder:', '') as any) : detectPlatformFromUrl(l.url)}
-                      className="w-full h-full"
-                    />
-                  )}
-                </div>
-                {/* Content */}
-                <div className="p-2.5">
-                  <p className="text-[12px] font-semibold line-clamp-2 leading-snug mb-1.5" style={{ color: t.textPrimary }}>{l.title}</p>
-                  <div className="flex items-center gap-1">
-                    <img src={`https://www.google.com/s2/favicons?domain=${domain(l.url)}&sz=16`} alt=""
-                      className="w-3 h-3 rounded-sm flex-shrink-0"
-                      onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    <p className="text-[10px] truncate" style={{ color: t.textFaint }}>{domain(l.url)}</p>
-                  </div>
-                </div>
-              </a>
+              <div key={l.id} className="flex-none w-[200px]">
+                <LinkCard {...cardProps(l)} />
+              </div>
             ))}
           </div>
         </div>
