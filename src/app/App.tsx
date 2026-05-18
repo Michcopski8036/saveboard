@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { LinkCard, LinkData } from './components/LinkCard';
@@ -131,43 +131,50 @@ function AppContent() {
     });
   }, [user]);
 
-  useEffect(() => {
-    if (!user) { setSharedBoards([]); return; }
-    supabase
+  const fetchSharedBoards = useCallback(async (uid: string) => {
+    const { data } = await supabase
       .from('shared_boards')
       .select('token, category, synced_at, links_snapshot, view_count')
-      .eq('owner_id', user.id)
-      .order('view_count', { ascending: false })
-      .then(async ({ data }) => {
-        if (!data) return;
-        const tokens = data.map((b: any) => b.token);
-        const { data: viewData } = await supabase
+      .eq('owner_id', uid)
+      .order('view_count', { ascending: false });
+    if (!data) return;
+    const tokens = data.map((b: any) => b.token);
+    const { data: viewData } = tokens.length
+      ? await supabase
           .from('shared_board_views')
           .select('token, viewer_email, viewed_at')
           .in('token', tokens)
-          .order('viewed_at', { ascending: false });
+          .order('viewed_at', { ascending: false })
+      : { data: [] };
 
-        // Deduplicate by email per token
-        const viewsByToken: Record<string, { email: string | null; viewed_at: string }[]> = {};
-        (viewData ?? []).forEach((v: any) => {
-          if (!viewsByToken[v.token]) viewsByToken[v.token] = [];
-          const seen = viewsByToken[v.token];
-          const key = v.viewer_email ?? '__anon__';
-          if (!seen.some(x => (x.email ?? '__anon__') === key)) {
-            seen.push({ email: v.viewer_email, viewed_at: v.viewed_at });
-          }
-        });
+    const viewsByToken: Record<string, { email: string | null; viewed_at: string }[]> = {};
+    (viewData ?? []).forEach((v: any) => {
+      if (!viewsByToken[v.token]) viewsByToken[v.token] = [];
+      const seen = viewsByToken[v.token];
+      const key = v.viewer_email ?? '__anon__';
+      if (!seen.some(x => (x.email ?? '__anon__') === key)) {
+        seen.push({ email: v.viewer_email, viewed_at: v.viewed_at });
+      }
+    });
+    setSharedBoards(data.map((b: any) => ({
+      token: b.token,
+      category: b.category,
+      synced_at: b.synced_at,
+      count: Array.isArray(b.links_snapshot) ? b.links_snapshot.length : 0,
+      views: b.view_count ?? 0,
+      viewers: viewsByToken[b.token] ?? [],
+    })));
+  }, []);
 
-        setSharedBoards(data.map((b: any) => ({
-          token: b.token,
-          category: b.category,
-          synced_at: b.synced_at,
-          count: Array.isArray(b.links_snapshot) ? b.links_snapshot.length : 0,
-          views: b.view_count ?? 0,
-          viewers: viewsByToken[b.token] ?? [],
-        })));
-      });
-  }, [user]);
+  useEffect(() => {
+    if (!user) { setSharedBoards([]); return; }
+    fetchSharedBoards(user.id);
+
+    // Refetch when the tab regains focus
+    const onFocus = () => fetchSharedBoards(user.id);
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [user, fetchSharedBoards]);
 
   useEffect(() => {
     if (!user) { setLinks([]); setCategories([]); return; }
@@ -722,7 +729,7 @@ function AppContent() {
               favorites={favorites}
               userEmail={user?.email}
               sharedBoards={sharedBoards}
-              onSelect={(id) => { setSelected(id); setSidebarOpen(false); }}
+              onSelect={(id) => { setSelected(id); setSidebarOpen(false); if (id === 'all' && user) fetchSharedBoards(user.id); }}
               cardProps={cardProps}
             />
           ) : isLoading ? (
