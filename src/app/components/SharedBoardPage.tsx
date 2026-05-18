@@ -203,10 +203,9 @@ export function SharedBoardPage() {
             <a
               href={`${window.location.origin}?board=${encodeURIComponent(board!.category)}`}
               className="flex items-center gap-2 px-5 py-3 rounded-2xl text-[14px] font-semibold text-white shrink-0 mt-2 hover:opacity-90 active:scale-95 transition-all shadow-lg"
-              style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)', boxShadow: '0 8px 24px rgba(162,89,255,0.25)' }}>
+              style={{ background: '#6ECA97', boxShadow: '0 8px 24px rgba(110,202,151,0.30)' }}>
               <Check className="w-4 h-4" />
-              View My Board
-            </a>
+              Saved!{skippedCount > 0 ? ` (${skippedCount} skipped)` : ''}
           ) : (
             <button
               onClick={handleSaveBoard}
@@ -312,9 +311,9 @@ export function SharedBoardPage() {
               <a
                 href={`${window.location.origin}?board=${encodeURIComponent(board!.category)}`}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all shadow-lg"
-                style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
+                style={{ background: '#6ECA97', boxShadow: '0 8px 24px rgba(110,202,151,0.30)' }}>
                 <Check className="w-4 h-4" />
-                View My Board
+                Saved!{skippedCount > 0 ? ` (${skippedCount} skipped)` : ''}
               </a>
             ) : (
               <button
