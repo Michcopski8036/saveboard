@@ -1,17 +1,9 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Bookmark, ExternalLink } from 'lucide-react';
-
-function isInAppBrowser(): boolean {
-  const ua = navigator.userAgent;
-  return /KAKAOTALK|NAVER|Line\/|Instagram|FBAN|FBAV|Twitter|MicroMessenger|GSA\//.test(ua) ||
-    (ua.includes('Android') && /wv/.test(ua)) ||
-    (ua.includes('iPhone') && !ua.includes('Safari'));
-}
+import { Bookmark } from 'lucide-react';
 
 export function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-  const inApp = isInAppBrowser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,54 +37,9 @@ export function Auth() {
     });
   };
 
-  const [copied, setCopied] = useState(false);
-
-  const openInBrowser = () => {
-    const url = window.location.href;
-    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-    if (isIOS) {
-      // iOS Chrome scheme: replace https:// with googlechromes://
-      window.location.href = url.replace(/^https:\/\//, 'googlechromes://').replace(/^http:\/\//, 'googlechrome://');
-    } else {
-      // Android Chrome intent
-      const host = url.replace(/^https?:\/\//, '');
-      window.location.href = `intent://${host}#Intent;scheme=https;package=com.android.chrome;end`;
-    }
-  };
-
-  const copyLink = () => {
-    navigator.clipboard?.writeText(window.location.href).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
-
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
-      {inApp && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-50 border-b border-amber-200 px-4 py-3">
-          <p className="text-[13px] text-amber-800 font-medium text-center leading-snug">
-            Google sign-in is blocked in this browser.
-          </p>
-          <p className="text-[12px] text-amber-700 text-center mt-0.5">
-            Open SaveBoard in Chrome or Safari to sign in with Google.
-          </p>
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={openInBrowser}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 transition-colors">
-              <ExternalLink className="w-3.5 h-3.5" />
-              Open in Chrome
-            </button>
-            <button
-              onClick={copyLink}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 transition-colors">
-              {copied ? '✓ Copied!' : 'Copy Link'}
-            </button>
-          </div>
-        </div>
-      )}
-      <div className="w-full max-w-sm" style={{ marginTop: inApp ? '110px' : 0 }}>
+      <div className="w-full max-w-sm">
         <div className="flex items-center gap-2 justify-center mb-8">
           <div className="p-2 bg-gradient-to-br from-[#1ABCFE] via-[#A259FF] to-[#F24E1E] rounded-[10px]">
             <Bookmark className="w-5 h-5 text-white" />
