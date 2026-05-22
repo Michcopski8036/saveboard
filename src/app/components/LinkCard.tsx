@@ -39,6 +39,16 @@ function getYouTubeVideoId(url: string): string | null {
 function getVimeoVideoId(url: string): string | null {
   const m = url.match(/vimeo\.com\/(?:.*\/)?(\d+)/); return m ? m[1] : null;
 }
+function getTikTokVideoId(url: string): string | null {
+  const m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
+  return m ? m[1] : null;
+}
+function isFacebookVideo(url: string): boolean {
+  return /facebook\.com\/.*(\/videos?\/|\/watch)/.test(url) || url.includes('fb.watch');
+}
+function isInstagramVideo(url: string): boolean {
+  return /instagram\.com\/(reel|p|tv)\//.test(url);
+}
 function fakeVideoDuration(id: string): string {
   const n = [...id].reduce((a, c) => a + c.charCodeAt(0), 0);
   return `${2 + (n % 17)}:${(n % 60).toString().padStart(2, '0')}`;
@@ -273,15 +283,20 @@ export function LinkCard({
   const isPdf     = link.image === 'placeholder:pdf';
   const ytId      = getYouTubeVideoId(link.url);
   const isYT      = ytId !== null;
-  const isYTShort = link.url.includes('/shorts/');
   const vimeoId   = getVimeoVideoId(link.url);
   const isVimeo   = vimeoId !== null;
-  const isVideo   = isYT || isVimeo || link.url.includes('dailymotion.com') || link.url.includes('twitch.tv') || link.category === 'Videos';
+  const tikTokId  = getTikTokVideoId(link.url);
+  const isTikTok  = tikTokId !== null;
+  const isIgVideo = isInstagramVideo(link.url);
+  const isFbVid   = isFacebookVideo(link.url);
+  const isPortraitVideo = link.url.includes('/shorts/') || isTikTok || isIgVideo;
+  const isVideo   = isYT || isVimeo || isTikTok || isIgVideo || isFbVid ||
+    link.url.includes('dailymotion.com') || link.url.includes('twitch.tv') || link.category === 'Videos';
   const domain    = isMemo ? 'Note' : isPdf ? 'PDF' : (() => { try { return new URL(link.url).hostname.toLowerCase().replace('www.', ''); } catch { return ''; } })();
   const aiTags    = deriveAiTags(link, domain);
   const aiSummary = getAiSummary(link.description);
   const readTime  = getReadTime(link.description);
-  const duration  = isYT && ytId ? fakeVideoDuration(ytId) : isVimeo && vimeoId ? fakeVideoDuration(vimeoId) : null;
+  const duration  = isYT && ytId ? fakeVideoDuration(ytId) : isVimeo && vimeoId ? fakeVideoDuration(vimeoId) : isTikTok && tikTokId ? fakeVideoDuration(tikTokId) : null;
   const isDefaultPlaceholder = link.image === 'placeholder:default';
   const isArticle = !isVideo && !isMemo && !isPdf && !isPlaceholder(link.image);
 
@@ -554,10 +569,10 @@ export function LinkCard({
         {isPlaceholder(link.image) ? (
           <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} domain={isMemo || isPdf ? undefined : domain}
             text={isMemo ? link.description : undefined}
-            className={`w-full ${compact ? 'h-full object-cover' : isYTShort ? 'aspect-[9/16]' : isMemo ? '' : 'aspect-video'}`} />
+            className={`w-full ${compact ? 'h-full object-cover' : isMemo ? '' : 'aspect-video'}`} />
         ) : (
           <img src={link.image} alt={link.title}
-            className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isYTShort ? 'aspect-[9/16] object-cover' : isVideo ? 'aspect-video object-cover' : 'h-auto'} ${(isYT || isVimeo) && isHovered ? 'invisible' : ''}`}
+            className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isVideo ? 'aspect-video object-cover' : 'h-auto'} ${(isYT || isVimeo || isTikTok || isFbVid) && isHovered ? 'invisible' : ''}`}
             style={{ transform: imgHovered && !isVideo ? 'scale(1.04)' : 'scale(1)' }}
             onError={e => { const p = e.currentTarget.closest('a'); if (p) p.style.display = 'none'; }} />
         )}
@@ -588,15 +603,33 @@ export function LinkCard({
 
         {isYT && isHovered && (
           <iframe src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=${isMuted ? '1' : '0'}&controls=0&loop=1&playlist=${ytId}`}
-            className={`absolute inset-0 w-full h-full ${isYTShort ? 'aspect-[9/16]' : ''}`}
+            className="absolute inset-0 w-full h-full"
             allow="autoplay; encrypted-media" allowFullScreen />
         )}
         {isVimeo && isHovered && (
           <iframe src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=${isMuted ? '1' : '0'}&loop=1&background=1`}
             className="absolute inset-0 w-full h-full" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
         )}
+        {isTikTok && tikTokId && isHovered && (
+          <iframe src={`https://www.tiktok.com/embed/v2/${tikTokId}`}
+            className="absolute inset-0 w-full h-full aspect-[9/16]"
+            allow="autoplay; encrypted-media" allowFullScreen />
+        )}
+        {isFbVid && isHovered && (
+          <iframe src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(link.url)}&show_text=false&autoplay=true&muted=true`}
+            className="absolute inset-0 w-full h-full" allow="autoplay; encrypted-media" allowFullScreen />
+        )}
+        {isIgVideo && isHovered && !selectMode && (
+          <a href={link.url} target="_blank" rel="noopener noreferrer"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 no-underline"
+            style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
+            onClick={e => e.stopPropagation()}>
+            <ExternalLink className="w-7 h-7 text-white" />
+            <span className="text-white text-[13px] font-semibold">Open in Instagram</span>
+          </a>
+        )}
 
-        {(isYT || isVimeo) && isHovered && !selectMode && (
+        {(isYT || isVimeo || isTikTok || isFbVid) && isHovered && !selectMode && (
           <button onClick={sp(() => setIsMuted(p => !p))}
             className="absolute bottom-2 right-2 z-10 p-1.5 rounded-full transition-colors"
             style={{ background: 'rgba(0,0,0,0.60)', backdropFilter: 'blur(8px)' }}>

@@ -1,4 +1,5 @@
 import { Bookmark, Link2, FileText, Play, StickyNote, Sparkles, Share2, ArrowRight, Check, Search, Shield } from 'lucide-react';
+import { Link } from 'react-router';
 
 interface Props {
   onGetStarted: () => void;
@@ -19,12 +20,20 @@ export function LandingPage({ onGetStarted }: Props) {
               Save<span className="bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">Board</span>
             </span>
           </div>
-          <button
-            onClick={onGetStarted}
-            className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            Sign in
-          </button>
+          <div className="flex items-center gap-5">
+            <Link
+              to="/blog"
+              className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Blog
+            </Link>
+            <button
+              onClick={onGetStarted}
+              className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Sign in
+            </button>
+          </div>
         </div>
       </nav>
 
