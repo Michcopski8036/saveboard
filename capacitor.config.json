@@ -1,5 +1,5 @@
 {
-  "appId": "com.linkboard.app",
+  "appId": "app.saveboard.saveboard",
   "appName": "SaveBoard",
   "webDir": "dist"
 }

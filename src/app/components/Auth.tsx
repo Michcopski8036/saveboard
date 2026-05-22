@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 import { supabase } from '../lib/supabase';
 import { Bookmark } from 'lucide-react';
 
@@ -7,6 +9,7 @@ export function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
@@ -30,11 +33,56 @@ export function Auth() {
     }
   };
 
-  const handleOAuth = async (provider: 'google' | 'apple' | 'facebook') => {
+  const handleOAuth = async (provider: 'google' | 'facebook') => {
     await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: window.location.origin }
     });
+  };
+
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    setError('');
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const { response } = await SignInWithApple.authorize({
+          clientId: 'app.saveboard.saveboard',
+          redirectURI: 'https://mchikdltrcbovhdzdhhf.supabase.co/auth/v1/callback',
+          scopes: 'email name',
+          nonce: crypto.randomUUID(),
+        });
+        if (!response.identityToken) throw new Error('Apple did not return an identity token');
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: response.identityToken,
+        });
+        if (error) throw error;
+        // Apple only provides name on first sign-in — save it immediately
+        const givenName = response.givenName ?? '';
+        const familyName = response.familyName ?? '';
+        if (givenName || familyName) {
+          await supabase.auth.updateUser({
+            data: {
+              full_name: `${givenName} ${familyName}`.trim(),
+              given_name: givenName,
+              family_name: familyName,
+            },
+          });
+        }
+      } else {
+        // Web fallback
+        await supabase.auth.signInWithOAuth({
+          provider: 'apple',
+          options: { redirectTo: window.location.origin },
+        });
+      }
+    } catch (err: any) {
+      if (err?.message !== 'The user canceled the authorization attempt') {
+        setError(err.message ?? 'Apple Sign In failed');
+      }
+    } finally {
+      setAppleLoading(false);
+    }
   };
 
   return (
@@ -55,6 +103,25 @@ export function Auth() {
         <p className="text-gray-500 text-center mb-8 text-sm">
           {isLogin ? 'Sign in to access your saves' : 'Start saving your favourite links'}
         </p>
+
+        {/* Apple */}
+        <button
+          onClick={handleAppleSignIn}
+          disabled={appleLoading}
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-black text-white rounded-[10px] hover:bg-gray-900 transition-colors mb-3 disabled:opacity-60"
+        >
+          {appleLoading ? (
+            <svg className="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="white">
+              <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.39.07 2.36.74 3.18.8 1.21-.24 2.37-.93 3.67-.84 1.56.12 2.73.72 3.5 1.84-3.22 1.93-2.46 6.18.65 7.38-.48 1.24-1.08 2.44-3 3.7zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+            </svg>
+          )}
+          <span className="text-sm font-medium">Continue with Apple</span>
+        </button>
 
         {/* Google */}
         <button
