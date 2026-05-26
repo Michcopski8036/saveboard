@@ -21,7 +21,9 @@ function deriveOwnerName(user: User): string {
   );
 }
 
-const BASE_URL = window.location.origin;
+const BASE_URL = window.location.origin.startsWith('capacitor')
+  ? 'https://saveboard.app'
+  : window.location.origin;
 
 async function pushSnapshot(links: LinkData[], token: string, ownerName: string, ownerEmail: string) {
   const snapshot = links.map(l => ({

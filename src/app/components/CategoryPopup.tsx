@@ -102,6 +102,7 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF]"
+              style={{ fontSize: '16px' }}
             />
           </div>
         </div>
@@ -127,7 +128,8 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
                     onKeyDown={handleKeyDown}
                     onClick={(e) => e.stopPropagation()}
                     autoFocus
-                    className="text-base flex-1 bg-transparent border-b-2 border-[#A259FF] outline-none px-1"
+                    className="flex-1 bg-transparent border-b-2 border-[#A259FF] outline-none px-1"
+                style={{ fontSize: '16px' }}
                   />
                 ) : (
                   <span
@@ -164,6 +166,7 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
                 placeholder="Board name"
                 autoFocus
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF]"
+                style={{ fontSize: '16px' }}
               />
               <button
                 onClick={handleCreateBoard}

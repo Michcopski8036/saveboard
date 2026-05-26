@@ -316,21 +316,23 @@ export function LinkCard({
   const notesPortal = showNotesModal ? createPortal(
     <>
       <div className="fixed inset-0 backdrop-blur-sm" style={{ zIndex: 9998, background: t.modalBackdrop }} onClick={() => setShowNotesModal(false)} />
-      <div className="fixed w-[500px] max-w-[90vw] p-6 rounded-2xl overflow-y-auto"
-        style={{ zIndex: 9999, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', maxHeight: '85dvh', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
+      <div className="fixed w-[500px] max-w-[90vw] rounded-2xl flex flex-col"
+        style={{ zIndex: 9999, top: '60px', left: '50%', transform: 'translateX(-50%)', maxHeight: 'calc(100vh - 80px)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
         onClick={e => e.stopPropagation()}>
-        <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
-          <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>Notes</h3>
+        <div className="overflow-y-auto p-6 flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
+            <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>Notes</h3>
+          </div>
+          <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.title}</p>
+          <textarea value={notesInput} onChange={e => setNotesInput(e.target.value)} placeholder="Add your notes here…"
+            autoFocus
+            className="w-full h-36 px-4 py-3 rounded-xl resize-none focus:outline-none transition-all"
+            style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, caretColor: '#7C3AED', fontSize: '16px' }}
+            onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
+            onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
         </div>
-        <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.title}</p>
-        <textarea value={notesInput} onChange={e => setNotesInput(e.target.value)} placeholder="Add your notes here…"
-          autoFocus
-          className="w-full h-36 px-4 py-3 text-sm rounded-xl resize-none focus:outline-none transition-all"
-          style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, caretColor: '#7C3AED' }}
-          onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
-          onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
-        <div className="flex gap-2 mt-4 justify-end">
+        <div className="flex gap-2 px-6 py-4 justify-end shrink-0" style={{ borderTop: `1px solid ${t.modalBorder}` }}>
           <button onClick={() => setShowNotesModal(false)} className="px-4 py-2 rounded-xl text-sm transition-colors"
             style={{ border: `1px solid ${t.modalInputBorder}`, color: t.textSecondary }}>Cancel</button>
           <button onClick={() => { onUpdateNotes?.(link.id, notesInput); setShowNotesModal(false); }}
@@ -345,101 +347,105 @@ export function LinkCard({
   const editPortal = showEditModal ? createPortal(
     <>
       <div className="fixed inset-0 backdrop-blur-sm" style={{ zIndex: 9998, background: t.modalBackdrop }} onClick={() => setShowEditModal(false)} />
-      <div className="fixed w-[500px] max-w-[90vw] p-6 rounded-2xl overflow-y-auto"
-        style={{ zIndex: 9999, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', maxHeight: '85dvh', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
+      <div className="fixed w-[500px] max-w-[90vw] rounded-2xl flex flex-col"
+        style={{ zIndex: 9999, top: '60px', left: '50%', transform: 'translateX(-50%)', maxHeight: 'calc(100vh - 80px)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
         onClick={e => e.stopPropagation()}>
-        <div className="flex items-center gap-2 mb-1">
-          <Pencil className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
-          <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>Edit Content</h3>
-        </div>
-        <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.url}</p>
-        <div className="space-y-3">
-          <div>
-            <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Title</label>
-            <input value={editTitle} onChange={e => setEditTitle(e.target.value)}
-              autoFocus
-              className="w-full px-4 py-3 text-sm rounded-xl focus:outline-none transition-all"
-              style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText }}
-              onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
-              onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
+        {/* Scrollable body */}
+        <div className="overflow-y-auto p-6 flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <Pencil className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
+            <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>Edit Content</h3>
           </div>
-          <div>
-            <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Description</label>
-            <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)}
-              rows={3}
-              className="w-full px-4 py-3 text-sm rounded-xl resize-none focus:outline-none transition-all"
-              style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText }}
-              onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
-              onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
-          </div>
-          <div>
-            <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Tags</label>
-            {editTags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {editTags.map(tag => (
-                  <span key={tag} className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-semibold"
-                    style={{ background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.22)', color: '#0D9488' }}>
-                    #{tag}
-                    <button onClick={() => setEditTags(p => p.filter(t => t !== tag))}
-                      className="text-[10px] leading-none hover:opacity-60">×</button>
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="relative">
-              <input
-                value={tagInput}
-                onChange={e => setTagInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ',') {
-                    e.preventDefault();
-                    const val = tagInput.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
-                    if (val && !editTags.includes(val)) setEditTags(p => [...p, val]);
-                    setTagInput('');
-                  } else if (e.key === 'Backspace' && !tagInput && editTags.length) {
-                    setEditTags(p => p.slice(0, -1));
-                  }
-                }}
-                placeholder="Type a tag and press Enter…"
-                className="w-full px-3 py-2 text-sm rounded-xl focus:outline-none transition-all"
-                style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText }}
+          <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.url}</p>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Title</label>
+              <input value={editTitle} onChange={e => setEditTitle(e.target.value)}
+                autoFocus
+                className="w-full px-4 py-3 rounded-xl focus:outline-none transition-all"
+                style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, fontSize: '16px' }}
                 onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
-                onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }}
-              />
-              {(() => {
-                const filtered = suggestedTags.filter(s =>
-                  s.label.includes(tagInput.toLowerCase()) &&
-                  !editTags.includes(s.label) &&
-                  tagInput.length > 0
-                );
-                if (!filtered.length) return null;
-                return (
-                  <div className="absolute z-10 top-full left-0 right-0 mt-1 rounded-xl overflow-hidden"
-                    style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
-                    {filtered.map(({ label, type }) => {
-                      const c = TAG_COLORS[type] ?? TAG_COLORS.default;
-                      return (
-                        <button key={label}
-                          onMouseDown={e => e.preventDefault()}
-                          onClick={() => { setEditTags(p => [...p, label]); setTagInput(''); }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors"
-                          onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
-                            style={{ background: c.bg, border: `1px solid ${c.border}`, color: c.color }}>
-                            #{label}
-                          </span>
-                          <span className="text-[12px]" style={{ color: t.dropdownText }}>{label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
+                onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Description</label>
+              <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)}
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl resize-none focus:outline-none transition-all"
+                style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, fontSize: '16px' }}
+                onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
+                onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Tags</label>
+              {editTags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {editTags.map(tag => (
+                    <span key={tag} className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-semibold"
+                      style={{ background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.22)', color: '#0D9488' }}>
+                      #{tag}
+                      <button onClick={() => setEditTags(p => p.filter(t => t !== tag))}
+                        className="text-[10px] leading-none hover:opacity-60">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="relative">
+                <input
+                  value={tagInput}
+                  onChange={e => setTagInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ',') {
+                      e.preventDefault();
+                      const val = tagInput.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+                      if (val && !editTags.includes(val)) setEditTags(p => [...p, val]);
+                      setTagInput('');
+                    } else if (e.key === 'Backspace' && !tagInput && editTags.length) {
+                      setEditTags(p => p.slice(0, -1));
+                    }
+                  }}
+                  placeholder="Type a tag and press Enter…"
+                  className="w-full px-3 py-2 rounded-xl focus:outline-none transition-all"
+                  style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, fontSize: '16px' }}
+                  onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }}
+                />
+                {(() => {
+                  const filtered = suggestedTags.filter(s =>
+                    s.label.includes(tagInput.toLowerCase()) &&
+                    !editTags.includes(s.label) &&
+                    tagInput.length > 0
+                  );
+                  if (!filtered.length) return null;
+                  return (
+                    <div className="absolute z-10 top-full left-0 right-0 mt-1 rounded-xl overflow-hidden"
+                      style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
+                      {filtered.map(({ label, type }) => {
+                        const c = TAG_COLORS[type] ?? TAG_COLORS.default;
+                        return (
+                          <button key={label}
+                            onMouseDown={e => e.preventDefault()}
+                            onClick={() => { setEditTags(p => [...p, label]); setTagInput(''); }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors"
+                            onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
+                              style={{ background: c.bg, border: `1px solid ${c.border}`, color: c.color }}>
+                              #{label}
+                            </span>
+                            <span className="text-[12px]" style={{ color: t.dropdownText }}>{label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           </div>
         </div>
-        <div className="flex gap-2 mt-4 justify-end">
+        {/* Sticky footer — always above keyboard */}
+        <div className="flex gap-2 px-6 py-4 justify-end shrink-0" style={{ borderTop: `1px solid ${t.modalBorder}` }}>
           <button onClick={() => setShowEditModal(false)} className="px-4 py-2 rounded-xl text-sm transition-colors"
             style={{ border: `1px solid ${t.modalInputBorder}`, color: t.textSecondary }}>Cancel</button>
           <button onClick={() => { onUpdateLink?.(link.id, editTitle.trim() || link.title, editDesc); onUpdateTags?.(link.id, editTags); setShowEditModal(false); }}

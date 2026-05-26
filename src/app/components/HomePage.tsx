@@ -27,7 +27,8 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   const copyShareLink = async (token: string) => {
-    await navigator.clipboard.writeText(`${window.location.origin}/share/${token}`);
+    const base = window.location.origin.startsWith('capacitor') ? 'https://saveboard.app' : window.location.origin;
+    await navigator.clipboard.writeText(`${base}/share/${token}`);
     setCopiedToken(token);
     setTimeout(() => setCopiedToken(null), 2000);
   };

@@ -1,5 +1,14 @@
 {
   "appId": "app.saveboard.saveboard",
   "appName": "SaveBoard",
-  "webDir": "dist"
+  "webDir": "saveboard/dist",
+  "ios": {
+    "contentInset": "always"
+  },
+  "plugins": {
+    "Keyboard": {
+      "resize": "native",
+      "resizeOnFullScreen": true
+    }
+  }
 }

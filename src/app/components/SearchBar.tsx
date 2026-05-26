@@ -14,7 +14,8 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search links..."
-        className="w-full pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF] focus:border-transparent text-sm"
+        className="w-full pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF] focus:border-transparent"
+        style={{ fontSize: '16px' }}
       />
       {value && (
         <button

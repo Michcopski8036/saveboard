@@ -185,6 +185,40 @@ function AppContent() {
     return () => window.removeEventListener('focus', onFocus);
   }, [user, fetchSharedBoards]);
 
+  // Handle items shared from iOS Share Extension via App Group pending queue
+  useEffect(() => {
+    if (!user) return;
+    const handler = async (e: Event) => {
+      const items = (e as CustomEvent<Array<{ type: string; url?: string; text?: string; imageBase64?: string }>]).detail;
+      if (!Array.isArray(items)) return;
+      for (const item of items) {
+        if (item.type === 'url' && item.url) {
+          await handleAddUrl(item.url);
+        } else if (item.type === 'text' && item.text) {
+          await handleAddUrl(item.text);
+        } else if (item.type === 'image' && item.imageBase64) {
+          try {
+            const { generateId } = await import('./utils/metadataFetcher');
+            const id = generateId();
+            const byteString = atob(item.imageBase64);
+            const bytes = new Uint8Array(byteString.length);
+            for (let i = 0; i < byteString.length; i++) bytes[i] = byteString.charCodeAt(i);
+            const blob = new Blob([bytes], { type: 'image/jpeg' });
+            const path = `${user.id}/${id}-shared.jpg`;
+            const { error: ue } = await supabase.storage.from('pdfs').upload(path, blob, { contentType: 'image/jpeg' });
+            if (ue) throw ue;
+            const { data: { publicUrl } } = supabase.storage.from('pdfs').getPublicUrl(path);
+            const nl = { id, user_id: user.id, url: publicUrl, title: 'Shared Image', description: '', image: publicUrl, category: 'None', created_at: Date.now() };
+            const { error } = await supabase.from('links').insert(nl);
+            if (!error) setLinks(p => [{ ...nl, savedAt: new Date(nl.created_at) }, ...p]);
+          } catch { /* silent */ }
+        }
+      }
+    };
+    window.addEventListener('saveboard-share', handler);
+    return () => window.removeEventListener('saveboard-share', handler);
+  }, [user]);
+
   useEffect(() => {
     if (!user) { setLinks([]); setCategories([]); return; }
     loadData().then(() => {
@@ -586,8 +620,8 @@ function AppContent() {
                   onChange={e => { setHeaderUrl(e.target.value); if (headerStatus !== 'idle') setHeaderStatus('idle'); }}
                   onKeyDown={e => { if (e.key === 'Enter' && headerUrl.trim()) handleHeaderSave(); }}
                   placeholder={headerStatus === 'saved' ? 'Link saved!' : headerStatus === 'error' ? 'Failed — try again' : tr('placeholder')}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none transition-all"
-                  style={{ background: t.inputBg, border: `1px solid ${headerStatus === 'saved' ? 'rgba(16,185,129,0.4)' : headerStatus === 'error' ? 'rgba(239,68,68,0.4)' : t.inputBorder}`, color: t.inputText }}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl focus:outline-none transition-all"
+                  style={{ background: t.inputBg, border: `1px solid ${headerStatus === 'saved' ? 'rgba(16,185,129,0.4)' : headerStatus === 'error' ? 'rgba(239,68,68,0.4)' : t.inputBorder}`, color: t.inputText, fontSize: '16px' }}
                   onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
                   onBlur={e => { e.currentTarget.style.borderColor = t.inputBorder; e.currentTarget.style.boxShadow = 'none'; }}
                 />
@@ -826,8 +860,8 @@ function AppContent() {
                 onKeyDown={e => { if (e.key === 'Enter' && !isAdding && urlInput.trim()) handleAddUrl(undefined, closeModal); }}
                 placeholder="https://… or write a note"
                 autoFocus
-                className="w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
-                style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText }}
+                className="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none transition-all"
+                style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, fontSize: '16px' }}
                 onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
                 onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }}
               />
@@ -956,8 +990,8 @@ function AppContent() {
                   onChange={e => setSearchQuery(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Escape') { setShowSearch(false); setSearchQuery(''); } }}
                   placeholder="Search links, notes, boards…"
-                  className="w-full pl-10 pr-10 py-3 rounded-xl text-sm focus:outline-none transition-all"
-                  style={{ background: t.inputBg, border: `1px solid ${t.inputFocusBorder}`, boxShadow: t.inputFocusShadow, color: t.inputText }}
+                  className="w-full pl-10 pr-10 py-3 rounded-xl focus:outline-none transition-all"
+                  style={{ background: t.inputBg, border: `1px solid ${t.inputFocusBorder}`, boxShadow: t.inputFocusShadow, color: t.inputText, fontSize: '16px' }}
                 />
                 <button onClick={() => { setShowSearch(false); setSearchQuery(''); }} className="absolute right-3 top-1/2 -translate-y-1/2">
                   <X className="w-4 h-4" style={{ color: t.textMuted }} />

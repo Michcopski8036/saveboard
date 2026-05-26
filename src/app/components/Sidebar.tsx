@@ -80,8 +80,8 @@ function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isM
             onKeyDown={e => { if (e.key === 'Enter') commitRename(cat); if (e.key === 'Escape') setRenamingCat(null); }}
             onBlur={() => commitRename(cat)}
             onClick={e => e.stopPropagation()}
-            className="flex-1 min-w-0 text-[13px] font-medium bg-transparent focus:outline-none border-b"
-            style={{ color: active ? t.boardActiveText : t.boardInactiveText, borderColor: color }}
+            className="flex-1 min-w-0 font-medium bg-transparent focus:outline-none border-b"
+            style={{ color: active ? t.boardActiveText : t.boardInactiveText, borderColor: color, fontSize: '16px' }}
           />
         ) : (
           <span className="flex-1 text-[13px] font-medium truncate">{cat}</span>
@@ -357,8 +357,8 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
                   onKeyDown={e => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') { setAddingBoard(false); setBoardName(''); } }}
                   onBlur={() => { if (!boardName.trim()) setAddingBoard(false); }}
                   placeholder="Board name…" autoFocus
-                  className="w-full px-3 py-2 text-[12px] rounded-xl focus:outline-none"
-                  style={{ background: t.boardInputBg, border: `1px solid ${t.boardInputBorder}`, color: t.boardInputText }}
+                  className="w-full px-3 py-2 rounded-xl focus:outline-none"
+                  style={{ background: t.boardInputBg, border: `1px solid ${t.boardInputBorder}`, color: t.boardInputText, fontSize: '16px' }}
                   onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(124,58,237,0.10)'; }}
                 />
               </div>

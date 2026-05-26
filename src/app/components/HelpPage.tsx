@@ -186,7 +186,8 @@ export function HelpPage({ onClose, onShowContact }: HelpPageProps) {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search guides and FAQs…"
-                  className="flex-1 bg-transparent text-[14px] outline-none text-gray-700 placeholder-gray-400"
+                  className="flex-1 bg-transparent outline-none text-gray-700 placeholder-gray-400"
+                  style={{ fontSize: '16px' }}
                   autoFocus
                 />
                 {search && (
