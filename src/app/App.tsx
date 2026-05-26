@@ -189,7 +189,7 @@ function AppContent() {
   useEffect(() => {
     if (!user) return;
     const handler = async (e: Event) => {
-      const items = (e as CustomEvent<Array<{ type: string; url?: string; text?: string; imageBase64?: string }>]).detail;
+      const items = (e as CustomEvent<Array<{ type: string; url?: string; text?: string; imageBase64?: string }>>).detail;
       if (!Array.isArray(items)) return;
       for (const item of items) {
         if (item.type === 'url' && item.url) {
