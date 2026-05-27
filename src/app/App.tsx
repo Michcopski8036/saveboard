@@ -493,6 +493,31 @@ function AppContent() {
   };
   const focusSearch = () => { setShowSearch(true); setTimeout(() => searchOverlayRef.current?.focus(), 50); };
 
+  const handleRestorePurchases = async () => {
+    if (!user) throw new Error('Not signed in');
+    const { data } = await supabase
+      .from('subscriptions')
+      .select('status, plan, billing_cycle, current_period_end, saves_limit, boards_limit, file_size_limit, storage_limit')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    const active = data?.status === 'active' && (data?.plan === 'pro' || data?.plan === 'team');
+    setIsPro(active);
+    setSubData(data ?? null);
+    if (!active) throw new Error('No active subscription found');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    const res = await fetch('/api/delete-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    });
+    const { error } = await res.json();
+    if (error) throw new Error(error);
+    await supabase.auth.signOut();
+  };
+
   const handleExport = () => {
     const blob = new Blob([JSON.stringify({ links, categories, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob); const a = document.createElement('a');
@@ -1160,6 +1185,7 @@ function AppContent() {
         <BillingPage
           onClose={() => setShowBilling(false)}
           onShowUpgrade={() => { setShowBilling(false); setShowUpgrade(true); }}
+          onRestorePurchases={handleRestorePurchases}
           userId={user?.id}
           currentLinks={links.length}
           currentBoards={categories.length}
@@ -1191,6 +1217,7 @@ function AppContent() {
           onExport={handleExport}
           onImport={handleImport}
           onSignOut={async () => { await supabase.auth.signOut(); setShowSettings(false); }}
+          onDeleteAccount={handleDeleteAccount}
           onShowUpgrade={() => { setShowSettings(false); setShowUpgrade(true); }}
           onShowContact={() => setShowContact(true)}
           onShowHelp={() => setShowHelp(true)}

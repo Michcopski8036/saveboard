@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { X, Download, Upload, HelpCircle, LogOut, ChevronRight, Mail, Zap, Shield, FileText } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { X, Download, Upload, HelpCircle, LogOut, ChevronRight, Mail, Zap, Shield, FileText, Trash2, Loader2 } from 'lucide-react';
 import { useTheme, type ThemeMode } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
@@ -10,6 +10,7 @@ interface SettingsPageProps {
   onExport: () => void;
   onImport: (data: any) => void;
   onSignOut: () => void;
+  onDeleteAccount: () => Promise<void>;
   onShowUpgrade: () => void;
   onShowContact: () => void;
   onShowHelp: () => void;
@@ -45,10 +46,12 @@ function RowBtn({ icon: Icon, label, right, onClick, danger }: {
   );
 }
 
-export function SettingsPage({ onClose, user, onExport, onImport, onSignOut, onShowUpgrade, onShowContact, onShowHelp, onShowPrivacy, onShowTerms, linkCount, boardCount, isPro }: SettingsPageProps) {
+export function SettingsPage({ onClose, user, onExport, onImport, onSignOut, onDeleteAccount, onShowUpgrade, onShowContact, onShowHelp, onShowPrivacy, onShowTerms, linkCount, boardCount, isPro }: SettingsPageProps) {
   const { theme, setTheme } = useTheme();
   const { tr } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const email = user?.email ?? '';
   const avatarUrl = user?.user_metadata?.avatar_url;
@@ -164,9 +167,38 @@ export function SettingsPage({ onClose, user, onExport, onImport, onSignOut, onS
               </div>
             )}
 
-            {/* Sign out */}
-            <div className="px-6 py-4">
+            {/* Sign out + Delete account */}
+            <div className="px-6 py-4 space-y-1">
               <RowBtn icon={LogOut} label={tr('logOut')} danger onClick={() => { onSignOut(); onClose(); }} right={null} />
+
+              {!confirmDelete ? (
+                <RowBtn icon={Trash2} label="Delete Account" danger onClick={() => setConfirmDelete(true)} right={null} />
+              ) : (
+                <div className="rounded-2xl p-4 mt-2" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                  <p className="text-[13px] font-semibold text-red-600 mb-1">Delete your account?</p>
+                  <p className="text-[12px] text-gray-500 mb-3">All your saves, boards, and data will be permanently deleted. This cannot be undone.</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      className="flex-1 py-2 rounded-xl text-[13px] font-medium text-gray-600 transition-colors hover:bg-gray-100"
+                      style={{ border: '1px solid #E5E7EB' }}>
+                      Cancel
+                    </button>
+                    <button
+                      disabled={deleteLoading}
+                      onClick={async () => {
+                        setDeleteLoading(true);
+                        try { await onDeleteAccount(); }
+                        finally { setDeleteLoading(false); }
+                      }}
+                      className="flex-1 py-2 rounded-xl text-[13px] font-semibold text-white flex items-center justify-center gap-1.5 transition-opacity hover:opacity-90 disabled:opacity-60"
+                      style={{ background: '#EF4444' }}>
+                      {deleteLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                      Delete Forever
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>

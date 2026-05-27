@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Zap, Users, ExternalLink, CreditCard, Calendar, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Zap, Users, ExternalLink, CreditCard, Calendar, CheckCircle, AlertCircle, Loader2, RotateCcw } from 'lucide-react';
 
 interface SubData {
   plan: string;
@@ -14,6 +14,7 @@ interface SubData {
 interface BillingPageProps {
   onClose: () => void;
   onShowUpgrade: () => void;
+  onRestorePurchases: () => Promise<void>;
   userId?: string;
   currentLinks: number;
   currentBoards: number;
@@ -58,8 +59,10 @@ function UsageBar({ label, used, limit, isStorage }: { label: string; used: numb
   );
 }
 
-export function BillingPage({ onClose, onShowUpgrade, userId, currentLinks, currentBoards, currentStorageMb, subData }: BillingPageProps) {
+export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId, currentLinks, currentBoards, currentStorageMb, subData }: BillingPageProps) {
   const [portalLoading, setPortalLoading] = useState(false);
+  const [restoreLoading, setRestoreLoading] = useState(false);
+  const [restoreMsg, setRestoreMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const plan = subData?.plan ?? 'free';
   const status = subData?.status ?? 'none';
@@ -84,6 +87,20 @@ export function BillingPage({ onClose, onShowUpgrade, userId, currentLinks, curr
     setPortalLoading(true);
     await openPortal(userId);
     setPortalLoading(false);
+  };
+
+  const handleRestore = async () => {
+    setRestoreLoading(true);
+    setRestoreMsg(null);
+    try {
+      await onRestorePurchases();
+      setRestoreMsg({ ok: true, text: 'Subscription restored successfully.' });
+    } catch {
+      setRestoreMsg({ ok: false, text: 'No active subscription found.' });
+    } finally {
+      setRestoreLoading(false);
+      setTimeout(() => setRestoreMsg(null), 3000);
+    }
   };
 
   return (
@@ -190,6 +207,21 @@ export function BillingPage({ onClose, onShowUpgrade, userId, currentLinks, curr
                   style={{ border: '1px solid #E5E7EB' }}>
                   {isPro || isTeam ? 'View All Plans' : 'Upgrade Plan'}
                 </button>
+
+                <button
+                  onClick={handleRestore}
+                  disabled={restoreLoading}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[14px] font-semibold text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-60"
+                  style={{ border: '1px solid #E5E7EB' }}>
+                  {restoreLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                  Restore Purchases
+                </button>
+
+                {restoreMsg && (
+                  <p className="text-center text-[12px] font-medium" style={{ color: restoreMsg.ok ? '#16A34A' : '#DC2626' }}>
+                    {restoreMsg.text}
+                  </p>
+                )}
               </div>
 
               {isActive && (
