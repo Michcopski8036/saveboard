@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { X, Zap, Users, ExternalLink, CreditCard, Calendar, CheckCircle, AlertCircle, Loader2, RotateCcw } from 'lucide-react';
 
 interface SubData {
@@ -33,7 +34,7 @@ async function openPortal(userId?: string) {
   const { url, error } = await res.json();
   if (error) { alert(`Error: ${error}`); return; }
   if (Capacitor.isNativePlatform()) {
-    Capacitor.openUrl(url);
+    await Browser.open({ url });
   } else {
     window.location.href = url;
   }
