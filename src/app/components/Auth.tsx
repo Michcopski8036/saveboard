@@ -45,16 +45,18 @@ export function Auth() {
     setError('');
     try {
       if (Capacitor.isNativePlatform()) {
+        const rawNonce = crypto.randomUUID().replace(/-/g, '');
         const { response } = await SignInWithApple.authorize({
           clientId: 'app.saveboard.saveboard',
           redirectURI: 'https://mchikdltrcbovhdzdhhf.supabase.co/auth/v1/callback',
           scopes: 'email name',
-          nonce: crypto.randomUUID(),
+          nonce: rawNonce,
         });
         if (!response.identityToken) throw new Error('Apple did not return an identity token');
         const { error } = await supabase.auth.signInWithIdToken({
           provider: 'apple',
           token: response.identityToken,
+          nonce: rawNonce,
         });
         if (error) throw error;
         // Apple only provides name on first sign-in — save it immediately

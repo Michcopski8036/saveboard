@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { X, Zap, Users, ExternalLink, CreditCard, Calendar, CheckCircle, AlertCircle, Loader2, RotateCcw } from 'lucide-react';
 
 interface SubData {
@@ -31,7 +32,11 @@ async function openPortal(userId?: string) {
   });
   const { url, error } = await res.json();
   if (error) { alert(`Error: ${error}`); return; }
-  window.location.href = url;
+  if (Capacitor.isNativePlatform()) {
+    Capacitor.openUrl(url);
+  } else {
+    window.location.href = url;
+  }
 }
 
 function UsageBar({ label, used, limit, isStorage }: { label: string; used: number; limit: number; isStorage?: boolean }) {
