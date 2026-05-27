@@ -10,7 +10,24 @@ const supabase = createClient(
 
 const SITE = 'https://www.saveboard.app';
 
+const ALLOWED_ORIGINS = [
+  'https://www.saveboard.app',
+  'capacitor://localhost',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+function setCors(req: VercelRequest, res: VercelResponse) {
+  const origin = req.headers.origin ?? '';
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  res.setHeader('Access-Control-Allow-Origin', allowed);
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  setCors(req, res);
+  if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { userId } = req.body as { userId: string };

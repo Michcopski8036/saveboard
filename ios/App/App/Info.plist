@@ -49,5 +49,18 @@
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SaveBoard needs access to your photo library to attach images to your saves.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>SaveBoard needs permission to save images to your photo library.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>app.saveboard.saveboard</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -16,8 +16,9 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		63B2A3532FC5E15800C271C9 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B2A3522FC5E15800C271C9 /* MainViewController.swift */; };
-		63B2A3562FC5E4E200C271C9 /* SignInWithApplePlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 63B2A3552FC5E4E200C271C9 /* SignInWithApplePlugin.m */; };
-		63B2A3582FC5E5B600C271C9 /* SignInWithApplePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B2A3572FC5E5B600C271C9 /* SignInWithApplePlugin.swift */; };
+		63B2A35B2FC6B36900C271C9 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B2A35A2FC6B36900C271C9 /* StoreKit.framework */; };
+		63B2A3622FC6B57F00C271C9 /* StoreKitPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B2A3612FC6B57F00C271C9 /* StoreKitPlugin.swift */; };
+		63B2A3632FC6B57F00C271C9 /* StoreKitPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 63B2A3602FC6B57F00C271C9 /* StoreKitPlugin.m */; };
 		BB00000500000000000BBBBB /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000200000000000BBBBB /* ShareViewController.swift */; };
 		BB00000600000000000BBBBB /* ShareExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BB00000100000000000BBBBB /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -60,6 +61,9 @@
 		63B2A3542FC5E4E100C271C9 /* App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "App-Bridging-Header.h"; sourceTree = "<group>"; };
 		63B2A3552FC5E4E200C271C9 /* SignInWithApplePlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SignInWithApplePlugin.m; sourceTree = "<group>"; };
 		63B2A3572FC5E5B600C271C9 /* SignInWithApplePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApplePlugin.swift; sourceTree = "<group>"; };
+		63B2A35A2FC6B36900C271C9 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		63B2A3602FC6B57F00C271C9 /* StoreKitPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StoreKitPlugin.m; sourceTree = "<group>"; };
+		63B2A3612FC6B57F00C271C9 /* StoreKitPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitPlugin.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		AA1111112DB0000000AAAAAA /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		BB00000100000000000BBBBB /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,6 +78,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */,
+				63B2A35B2FC6B36900C271C9 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +98,7 @@
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
 				BB00000700000000000BBBBB /* ShareExtension */,
+				63B2A3592FC6B36900C271C9 /* Frameworks */,
 				504EC3051FED79650016851F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -120,10 +126,20 @@
 				AA1111112DB0000000AAAAAA /* App.entitlements */,
 				63B2A3572FC5E5B600C271C9 /* SignInWithApplePlugin.swift */,
 				63B2A3552FC5E4E200C271C9 /* SignInWithApplePlugin.m */,
+				63B2A3602FC6B57F00C271C9 /* StoreKitPlugin.m */,
+				63B2A3612FC6B57F00C271C9 /* StoreKitPlugin.swift */,
 				63B2A3522FC5E15800C271C9 /* MainViewController.swift */,
 				63B2A3542FC5E4E100C271C9 /* App-Bridging-Header.h */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		63B2A3592FC6B36900C271C9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				63B2A35A2FC6B36900C271C9 /* StoreKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		BB00000700000000000BBBBB /* ShareExtension */ = {
@@ -248,10 +264,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
-				63B2A3562FC5E4E200C271C9 /* SignInWithApplePlugin.m in Sources */,
 				63B2A3532FC5E15800C271C9 /* MainViewController.swift in Sources */,
-				63B2A3582FC5E5B600C271C9 /* SignInWithApplePlugin.swift in Sources */,
-			);
+				63B2A3622FC6B57F00C271C9 /* StoreKitPlugin.swift in Sources */,
+				63B2A3632FC6B57F00C271C9 /* StoreKitPlugin.m in Sources */,
+				);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		BB00000900000000000BBBBB /* Sources */ = {

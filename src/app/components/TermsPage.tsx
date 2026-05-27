@@ -66,7 +66,7 @@ const SECTIONS: Section[] = [
         ],
       },
       'We reserve the right to change plan limits or pricing at any time. Existing paid subscribers will be notified of price changes at least 30 days in advance.',
-      'All payments are processed securely by Stripe. Subscriptions auto-renew unless cancelled. Refunds are handled on a case-by-case basis — contact us at the email below.',
+      'Payments are processed securely by Apple (via In-App Purchase on iOS) or Stripe (on web and Android). Subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period. Refunds for Apple IAP purchases are handled by Apple; for all other purchases contact us at the email below.',
     ],
   },
   {

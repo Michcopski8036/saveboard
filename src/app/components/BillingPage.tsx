@@ -25,18 +25,24 @@ interface BillingPageProps {
 }
 
 async function openPortal(userId?: string) {
-  if (!userId) return;
-  const res = await fetch('/api/create-portal', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId }),
-  });
-  const { url, error } = await res.json();
-  if (error) { alert(`Error: ${error}`); return; }
   if (Capacitor.isNativePlatform()) {
-    await Browser.open({ url });
-  } else {
+    // iOS users manage their subscription through Apple
+    await Browser.open({ url: 'https://apps.apple.com/account/subscriptions' });
+    return;
+  }
+  // Web / Android → Stripe portal
+  if (!userId) return;
+  try {
+    const res = await fetch('/api/create-portal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    const { url, error } = await res.json();
+    if (error) { alert(`Error: ${error}`); return; }
     window.location.href = url;
+  } catch (err: any) {
+    alert(`Billing error: ${err?.message ?? String(err)}`);
   }
 }
 

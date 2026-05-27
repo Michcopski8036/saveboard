@@ -20,6 +20,9 @@ function GalleryIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -114,7 +117,35 @@ function AppContent() {
       setUser(session?.user ?? null); setAuthLoading(false);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
-    return () => subscription.unsubscribe();
+
+    // Handle OAuth deep link callback (native only)
+    let appUrlListener: { remove: () => void } | null = null;
+    if (Capacitor.isNativePlatform()) {
+      CapApp.addListener('appUrlOpen', async ({ url }) => {
+        if (!url.includes('login-callback')) return;
+        await Browser.close();
+
+        // Extract params from query string or hash fragment
+        const [, rest] = url.split(/[?#]/);
+        const params = new URLSearchParams(rest ?? '');
+        const code = params.get('code');
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) console.error('exchangeCodeForSession error:', error.message);
+        } else if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (error) console.error('setSession error:', error.message);
+        }
+      }).then(l => { appUrlListener = l; });
+    }
+
+    return () => {
+      subscription.unsubscribe();
+      appUrlListener?.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -493,8 +524,8 @@ function AppContent() {
   };
   const focusSearch = () => { setShowSearch(true); setTimeout(() => searchOverlayRef.current?.focus(), 50); };
 
-  const handleRestorePurchases = async () => {
-    if (!user) throw new Error('Not signed in');
+  const refreshSubscription = async () => {
+    if (!user) return;
     const { data } = await supabase
       .from('subscriptions')
       .select('status, plan, billing_cycle, current_period_end, saves_limit, boards_limit, file_size_limit, storage_limit')
@@ -503,7 +534,35 @@ function AppContent() {
     const active = data?.status === 'active' && (data?.plan === 'pro' || data?.plan === 'team');
     setIsPro(active);
     setSubData(data ?? null);
-    if (!active) throw new Error('No active subscription found');
+    return active;
+  };
+
+  const handleRestorePurchases = async () => {
+    if (!user) throw new Error('Not signed in');
+    if (Capacitor.isNativePlatform()) {
+      const { StoreKit } = await import('./lib/storekit');
+      const { transactions } = await StoreKit.restorePurchases();
+      if (!transactions.length) throw new Error('No active subscription found');
+      // Record the most recent active transaction in Supabase
+      const tx = transactions[0];
+      const isYearly = tx.productId.includes('yearly');
+      await supabase.from('subscriptions').upsert({
+        user_id: user.id,
+        plan: 'pro',
+        status: 'active',
+        billing_cycle: isYearly ? 'yearly' : 'monthly',
+        current_period_end: tx.expiresDate ?? null,
+        saves_limit: '300',
+        boards_limit: '30',
+        file_size_limit: '20MB',
+        storage_limit: '2GB',
+        source: 'apple',
+      }, { onConflict: 'user_id' });
+      await refreshSubscription();
+    } else {
+      const active = await refreshSubscription();
+      if (!active) throw new Error('No active subscription found');
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -1178,6 +1237,7 @@ function AppContent() {
           userId={user?.id}
           userEmail={user?.email}
           isPro={isPro}
+          onPurchaseSuccess={refreshSubscription}
         />
       )}
 

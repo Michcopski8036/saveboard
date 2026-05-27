@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 import { supabase } from '../lib/supabase';
 import { Bookmark } from 'lucide-react';
@@ -34,10 +35,21 @@ export function Auth() {
   };
 
   const handleOAuth = async (provider: 'google' | 'facebook') => {
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: window.location.origin }
-    });
+    if (Capacitor.isNativePlatform()) {
+      const { data } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: 'app.saveboard.saveboard://login-callback',
+          skipBrowserRedirect: true,
+        },
+      });
+      if (data?.url) await Browser.open({ url: data.url });
+    } else {
+      await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: window.location.origin },
+      });
+    }
   };
 
   const handleAppleSignIn = async () => {
@@ -46,11 +58,17 @@ export function Auth() {
     try {
       if (Capacitor.isNativePlatform()) {
         const rawNonce = crypto.randomUUID().replace(/-/g, '');
+        const encoder = new TextEncoder();
+        const data = encoder.encode(rawNonce);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashedNonce = Array.from(new Uint8Array(hashBuffer))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('');
         const { response } = await SignInWithApple.authorize({
           clientId: 'app.saveboard.saveboard',
           redirectURI: 'https://mchikdltrcbovhdzdhhf.supabase.co/auth/v1/callback',
           scopes: 'email name',
-          nonce: rawNonce,
+          nonce: hashedNonce,
         });
         if (!response.identityToken) throw new Error('Apple did not return an identity token');
         const { error } = await supabase.auth.signInWithIdToken({

@@ -1,7 +1,7 @@
 {
   "appId": "app.saveboard.saveboard",
   "appName": "SaveBoard",
-  "webDir": "saveboard/dist",
+  "webDir": "dist",
   "ios": {
     "contentInset": "always"
   },

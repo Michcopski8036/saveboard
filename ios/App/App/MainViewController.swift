@@ -3,17 +3,20 @@ import WebKit
 
 class MainViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
-        bridge?.registerPluginType(SignInWithApplePlugin.self)
+        bridge?.registerPluginType(StoreKitPlugin.self)
 
-        // Inject SignInWithApple into Capacitor.PluginHeaders before page JS runs.
-        // autoRegisterPlugins only picks up SPM-packaged plugins; our app-target plugin
-        // must be declared here so the JS bridge finds it in PluginHeaders.
+        // Inject app-target plugin headers before page JS runs.
+        // autoRegisterPlugins only picks up SPM-packaged plugins.
         let js = """
         (function() {
             var a = (window.Capacitor = window.Capacitor || {});
             var h = (a.PluginHeaders = a.PluginHeaders || []);
-            if (!h.some(function(p) { return p.name === 'SignInWithApple'; })) {
-                h.push({ name: 'SignInWithApple', methods: [{ name: 'authorize', rtype: 'promise' }] });
+            if (!h.some(function(p) { return p.name === 'StoreKit'; })) {
+                h.push({ name: 'StoreKit', methods: [
+                    { name: 'getProducts', rtype: 'promise' },
+                    { name: 'purchase', rtype: 'promise' },
+                    { name: 'restorePurchases', rtype: 'promise' },
+                ]});
             }
         })();
         """

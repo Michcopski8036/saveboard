@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { X, Check, Zap, Users, Sparkles, Loader2 } from 'lucide-react';
+import { StoreKit, IAP_PRODUCTS, type StoreProduct } from '../lib/storekit';
+import { supabase } from '../lib/supabase';
 
 const AUD = { proMo: 5.49, proYr: 34.99, teamSeat: 9.49 };
 
@@ -11,6 +14,7 @@ interface UpgradePageProps {
   userId?: string;
   userEmail?: string;
   isPro?: boolean;
+  onPurchaseSuccess?: () => void;
 }
 
 export const FREE_LIMITS = { links: 30, boards: 5, fileSizeMb: 5, storageMb: 50 };
@@ -58,12 +62,142 @@ async function startCheckout(plan: 'pro' | 'team', interval: 'monthly' | 'yearly
   window.location.href = url;
 }
 
-export function UpgradePage({ onClose, currentLinks, currentBoards, currentStorageMb = 0, userId, userEmail, isPro = false }: UpgradePageProps) {
+// ── iOS IAP view ─────────────────────────────────────────────────────────────
+
+function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess }: {
+  userId?: string;
+  isPro?: boolean;
+  onClose: () => void;
+  onPurchaseSuccess?: () => void;
+}) {
+  const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    StoreKit.getProducts({ productIds: Object.values(IAP_PRODUCTS) })
+      .then(({ products }) => setProducts(products))
+      .catch(() => setErrorMsg('Could not load prices. Check your connection.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const findProduct = (id: string) => products.find(p => p.id === id);
+  const monthly = findProduct(IAP_PRODUCTS.proMonthly);
+  const yearly  = findProduct(IAP_PRODUCTS.proYearly);
+
+  const handlePurchase = async (productId: string) => {
+    if (!userId) { alert('Please sign in first.'); return; }
+    setPurchasingId(productId);
+    setErrorMsg('');
+    try {
+      const tx = await StoreKit.purchase({ productId });
+      const billingCycle = productId === IAP_PRODUCTS.proYearly ? 'yearly' : 'monthly';
+      await supabase.from('subscriptions').upsert({
+        user_id: userId,
+        plan: 'pro',
+        status: 'active',
+        billing_cycle: billingCycle,
+        current_period_end: tx.expiresDate ?? null,
+        saves_limit: '300',
+        boards_limit: '30',
+        file_size_limit: '20MB',
+        storage_limit: '2GB',
+        source: 'apple',
+      }, { onConflict: 'user_id' });
+      onPurchaseSuccess?.();
+      onClose();
+    } catch (err: any) {
+      if (err?.message !== 'User cancelled') {
+        setErrorMsg(err?.message ?? 'Purchase failed. Please try again.');
+      }
+    } finally {
+      setPurchasingId(null);
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-5">
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Sparkles className="w-5 h-5 text-yellow-400" />
+          <span className="text-[11px] font-bold uppercase tracking-widest text-purple-600">Upgrade to Pro</span>
+        </div>
+        <h2 className="text-[22px] font-bold text-gray-900 mb-1">Save more. Organize better.</h2>
+        <p className="text-[13px] text-gray-500">Cancel anytime in your Apple subscription settings</p>
+      </div>
+
+      <ul className="space-y-2.5 px-1">
+        {['300 saves', '30 boards', '2GB storage', '20MB file size limit', 'All features included', 'Priority support'].map(f => (
+          <li key={f} className="flex items-center gap-2.5 text-[14px] text-gray-700">
+            <Check className="w-4 h-4 text-purple-500 shrink-0" />{f}
+          </li>
+        ))}
+      </ul>
+
+      {loading ? (
+        <div className="flex justify-center py-4">
+          <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {monthly && (
+            <button
+              disabled={!!purchasingId || isPro}
+              onClick={() => handlePurchase(IAP_PRODUCTS.proMonthly)}
+              className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+              {purchasingId === IAP_PRODUCTS.proMonthly ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              {monthly.displayPrice} / month
+            </button>
+          )}
+          {yearly && (
+            <button
+              disabled={!!purchasingId || isPro}
+              onClick={() => handlePurchase(IAP_PRODUCTS.proYearly)}
+              className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+              {purchasingId === IAP_PRODUCTS.proYearly ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              {yearly.displayPrice} / year
+              <span className="text-white/70 text-[12px]">save 47%</span>
+            </button>
+          )}
+          {isPro && (
+            <p className="text-center text-[13px] font-semibold text-purple-600">✓ You are already on Pro</p>
+          )}
+        </div>
+      )}
+
+      {errorMsg && <p className="text-center text-[13px] text-red-500">{errorMsg}</p>}
+
+      <p className="text-center text-[10px] text-gray-400 leading-relaxed">
+        Prices are shown in your local currency as determined by your App Store region. Payment will be charged to your Apple ID. Subscription renews automatically unless cancelled at least 24 hours before the end of the current period. Manage in Apple ID settings.
+      </p>
+
+      {/* Team plan — coming soon */}
+      <div className="rounded-2xl p-4 opacity-60" style={{ border: '1px dashed #D1D5DB' }}>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-gray-400" />
+            <span className="text-[12px] font-bold uppercase tracking-widest text-gray-400">Team</span>
+          </div>
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">Coming Soon</span>
+        </div>
+        <p className="text-[12px] text-gray-400">Unlimited saves, 10GB storage, team sharing — launching soon</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export function UpgradePage({ onClose, currentLinks, currentBoards, currentStorageMb = 0, userId, userEmail, isPro = false, onPurchaseSuccess }: UpgradePageProps) {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const isNative = Capacitor.isNativePlatform();
+
   const linkPct    = Math.min((currentLinks    / FREE_LIMITS.links)    * 100, 100);
   const boardPct   = Math.min((currentBoards   / FREE_LIMITS.boards)   * 100, 100);
   const storagePct = Math.min((currentStorageMb / FREE_LIMITS.storageMb) * 100, 100);
-
   const fmtStorage = (mb: number) => mb >= 1000 ? `${(mb / 1024).toFixed(1)}GB` : `${mb}MB`;
 
   const handleCheckout = async (plan: 'pro' | 'team', interval: 'monthly' | 'yearly' = 'monthly') => {
@@ -128,131 +262,143 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
               </div>
             </div>
 
-            {/* Pricing cards */}
-            <div className="p-4 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+            {/* iOS: Apple IAP view */}
+            {isNative ? (
+              <IAPUpgradeView
+                userId={userId}
+                isPro={isPro}
+                onClose={onClose}
+                onPurchaseSuccess={onPurchaseSuccess}
+              />
+            ) : (
+              <>
+                {/* Web/Android: Stripe pricing cards */}
+                <div className="p-4 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
 
-              {/* Free */}
-              <div className="rounded-2xl p-4 sm:p-6 flex flex-col" style={{ border: '1px solid #E5E7EB' }}>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Free</p>
-                <p className="text-[32px] font-bold text-gray-900 leading-none mb-1">$0</p>
-                <p className="text-[12px] text-gray-400 mb-5">Forever free</p>
-                <ul className="space-y-2.5 mb-6 flex-1">
-                  {['30 saves', '5 boards', '50MB storage', '5MB file size limit', 'All features included'].map(f => (
-                    <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-500">
-                      <Check className="w-3.5 h-3.5 text-gray-300 shrink-0" />{f}
-                    </li>
-                  ))}
-                </ul>
-                {!isPro && (
-                  <button disabled className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-gray-300 cursor-default" style={{ border: '1px solid #E5E7EB' }}>
-                    Current plan
-                  </button>
-                )}
-              </div>
+                  {/* Free */}
+                  <div className="rounded-2xl p-4 sm:p-6 flex flex-col" style={{ border: '1px solid #E5E7EB' }}>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Free</p>
+                    <p className="text-[32px] font-bold text-gray-900 leading-none mb-1">$0</p>
+                    <p className="text-[12px] text-gray-400 mb-5">Forever free</p>
+                    <ul className="space-y-2.5 mb-6 flex-1">
+                      {['30 saves', '5 boards', '50MB storage', '5MB file size limit', 'All features included'].map(f => (
+                        <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-500">
+                          <Check className="w-3.5 h-3.5 text-gray-300 shrink-0" />{f}
+                        </li>
+                      ))}
+                    </ul>
+                    {!isPro && (
+                      <button disabled className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-gray-300 cursor-default" style={{ border: '1px solid #E5E7EB' }}>
+                        Current plan
+                      </button>
+                    )}
+                  </div>
 
-              {/* Pro */}
-              <div className="rounded-2xl p-4 sm:p-6 relative flex flex-col" style={{ border: '2px solid #7C3AED', background: 'linear-gradient(135deg,rgba(124,58,237,0.04),rgba(99,102,241,0.04))' }}>
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-bold text-white tracking-widest uppercase"
-                  style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-                  Most Popular
-                </div>
-                <div className="flex items-center gap-1.5 mb-2">
-                  <Zap className="w-3.5 h-3.5 text-purple-600" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-purple-600">Pro</p>
-                </div>
-                <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.proMo}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
-                <p className="text-[12px] font-semibold text-purple-600 mb-5">or A${AUD.proYr}/yr — save 47%</p>
-                <ul className="space-y-2.5 mb-6 flex-1">
-                  {['300 saves','30 boards','2GB storage','20MB file size limit','All features included','Priority support'].map(f => (
-                    <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
-                      <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
-                    </li>
-                  ))}
-                </ul>
-                {isPro ? (
-                  <button disabled className="w-full py-2.5 rounded-xl text-[13px] font-semibold cursor-default flex items-center justify-center gap-1.5" style={{ background: 'rgba(124,58,237,0.10)', color: '#7C3AED' }}>
-                    ✓ Current Plan
-                  </button>
-                ) : (
-                  <div className="flex gap-2">
+                  {/* Pro */}
+                  <div className="rounded-2xl p-4 sm:p-6 relative flex flex-col" style={{ border: '2px solid #7C3AED', background: 'linear-gradient(135deg,rgba(124,58,237,0.04),rgba(99,102,241,0.04))' }}>
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-bold text-white tracking-widest uppercase"
+                      style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+                      Most Popular
+                    </div>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Zap className="w-3.5 h-3.5 text-purple-600" />
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-purple-600">Pro</p>
+                    </div>
+                    <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.proMo}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
+                    <p className="text-[12px] font-semibold text-purple-600 mb-5">or A${AUD.proYr}/yr — save 47%</p>
+                    <ul className="space-y-2.5 mb-6 flex-1">
+                      {['300 saves','30 boards','2GB storage','20MB file size limit','All features included','Priority support'].map(f => (
+                        <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
+                          <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
+                        </li>
+                      ))}
+                    </ul>
+                    {isPro ? (
+                      <button disabled className="w-full py-2.5 rounded-xl text-[13px] font-semibold cursor-default flex items-center justify-center gap-1.5" style={{ background: 'rgba(124,58,237,0.10)', color: '#7C3AED' }}>
+                        ✓ Current Plan
+                      </button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button
+                          className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
+                          style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
+                          disabled={!!loadingPlan}
+                          onClick={() => handleCheckout('pro', 'monthly')}>
+                          {loadingPlan === 'pro-monthly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                          Monthly
+                        </button>
+                        <button
+                          className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
+                          style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
+                          disabled={!!loadingPlan}
+                          onClick={() => handleCheckout('pro', 'yearly')}>
+                          {loadingPlan === 'pro-yearly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                          Yearly −47%
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Team */}
+                  <div className="rounded-2xl p-6 flex flex-col" style={{ border: '1px solid #E5E7EB' }}>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Users className="w-3.5 h-3.5 text-gray-500" />
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Team</p>
+                    </div>
+                    <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.teamSeat}<span className="text-[16px] font-normal text-gray-400">/seat/mo</span></p>
+                    <p className="text-[12px] text-gray-400 mb-5">Min 3 seats · billed monthly</p>
+                    <ul className="space-y-2.5 mb-6 flex-1">
+                      {['Unlimited saves','Unlimited boards','10GB storage','50MB file size limit','All features included'].map(f => (
+                        <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
+                          <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />{f}
+                        </li>
+                      ))}
+                    </ul>
                     <button
-                      className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
-                      style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
+                      className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-gray-700 transition-colors hover:bg-gray-50 flex items-center justify-center gap-1.5 disabled:opacity-60"
+                      style={{ border: '1px solid #E5E7EB' }}
                       disabled={!!loadingPlan}
-                      onClick={() => handleCheckout('pro', 'monthly')}>
-                      {loadingPlan === 'pro-monthly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                      Monthly
-                    </button>
-                    <button
-                      className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
-                      style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}
-                      disabled={!!loadingPlan}
-                      onClick={() => handleCheckout('pro', 'yearly')}>
-                      {loadingPlan === 'pro-yearly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                      Yearly −47%
+                      onClick={() => handleCheckout('team', 'monthly')}>
+                      {loadingPlan === 'team-monthly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                      Get Team →
                     </button>
                   </div>
-                )}
-              </div>
-
-              {/* Team */}
-              <div className="rounded-2xl p-6 flex flex-col" style={{ border: '1px solid #E5E7EB' }}>
-                <div className="flex items-center gap-1.5 mb-2">
-                  <Users className="w-3.5 h-3.5 text-gray-500" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Team</p>
                 </div>
-                <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.teamSeat}<span className="text-[16px] font-normal text-gray-400">/seat/mo</span></p>
-                <p className="text-[12px] text-gray-400 mb-5">Min 3 seats · billed monthly</p>
-                <ul className="space-y-2.5 mb-6 flex-1">
-                  {['Unlimited saves','Unlimited boards','10GB storage','50MB file size limit','All features included'].map(f => (
-                    <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
-                      <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />{f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-gray-700 transition-colors hover:bg-gray-50 flex items-center justify-center gap-1.5 disabled:opacity-60"
-                  style={{ border: '1px solid #E5E7EB' }}
-                  disabled={!!loadingPlan}
-                  onClick={() => handleCheckout('team', 'monthly')}>
-                  {loadingPlan === 'team-monthly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                  Get Team →
-                </button>
-              </div>
-            </div>
 
-            {/* Comparison table */}
-            <div className="px-4 pb-6 sm:px-8 sm:pb-8 overflow-x-auto">
-              <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid #E5E7EB' }}>
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                      <th className="py-3 px-4 text-left text-[11px] font-semibold uppercase tracking-widest text-gray-400">Feature</th>
-                      <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest text-gray-400">Free</th>
-                      <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#7C3AED' }}>Pro</th>
-                      <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest text-gray-400">Team</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {comparisonRows.map((row, i) => (
-                      <tr key={row.feature} style={{ borderTop: i > 0 ? '1px solid #F3F4F6' : undefined }}>
-                        <td className="py-3 px-4 text-[13px] text-gray-700">{row.feature}</td>
-                        <Cell value={row.free} />
-                        <Cell value={row.pro} highlight />
-                        <Cell value={row.team} />
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                {/* Comparison table */}
+                <div className="px-4 pb-6 sm:px-8 sm:pb-8 overflow-x-auto">
+                  <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid #E5E7EB' }}>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
+                          <th className="py-3 px-4 text-left text-[11px] font-semibold uppercase tracking-widest text-gray-400">Feature</th>
+                          <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest text-gray-400">Free</th>
+                          <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#7C3AED' }}>Pro</th>
+                          <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest text-gray-400">Team</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {comparisonRows.map((row, i) => (
+                          <tr key={row.feature} style={{ borderTop: i > 0 ? '1px solid #F3F4F6' : undefined }}>
+                            <td className="py-3 px-4 text-[13px] text-gray-700">{row.feature}</td>
+                            <Cell value={row.free} />
+                            <Cell value={row.pro} highlight />
+                            <Cell value={row.team} />
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
-            <p className="text-center text-[10px] sm:text-[11px] text-gray-400 px-4 pb-2">
-              No credit card required for free plan · Secure payments via Stripe · Cancel anytime
-            </p>
-            <p className="text-center text-[10px] sm:text-[11px] text-gray-400 pb-4 sm:pb-6">
-              Prices in AUD · Your bank converts automatically
-            </p>
+                <p className="text-center text-[10px] sm:text-[11px] text-gray-400 px-4 pb-2">
+                  No credit card required for free plan · Secure payments via Stripe · Cancel anytime
+                </p>
+                <p className="text-center text-[10px] sm:text-[11px] text-gray-400 pb-4 sm:pb-6">
+                  Prices shown in AUD (Australian Dollars) · If you are outside Australia, your bank will convert at the current exchange rate
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",
     "@capacitor/android": "^8.3.4",
+    "@capacitor/app": "^8.1.0",
     "@capacitor/browser": "^8.0.3",
     "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^8.3.1",
@@ -79,6 +81,7 @@
     "@tailwindcss/vite": "4.1.12",
     "@vercel/node": "^5.8.0",
     "@vitejs/plugin-react": "4.7.0",
+    "patch-package": "^8.0.1",
     "tailwindcss": "4.1.12",
     "vite": "6.3.5"
   },
