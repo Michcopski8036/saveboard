@@ -44,7 +44,10 @@ function getTikTokVideoId(url: string): string | null {
   return m ? m[1] : null;
 }
 function isFacebookVideo(url: string): boolean {
-  return /facebook\.com\/.*(\/videos?\/|\/watch)/.test(url) || url.includes('fb.watch');
+  return /facebook\.com\/.*(\/videos?\/|\/watch|\/reel\/)/.test(url) || url.includes('fb.watch');
+}
+function isFacebookReel(url: string): boolean {
+  return /facebook\.com\/reel\//.test(url);
 }
 function isInstagramVideo(url: string): boolean {
   return /instagram\.com\/(reel|p|tv)\//.test(url);
@@ -289,7 +292,8 @@ export function LinkCard({
   const isTikTok  = tikTokId !== null;
   const isIgVideo = isInstagramVideo(link.url);
   const isFbVid   = isFacebookVideo(link.url);
-  const isPortraitVideo = link.url.includes('/shorts/') || isTikTok || isIgVideo;
+  const isFbReel  = isFacebookReel(link.url);
+  const isPortraitVideo = link.url.includes('/shorts/') || isTikTok || isIgVideo || isFbReel;
   const isVideo   = isYT || isVimeo || isTikTok || isIgVideo || isFbVid ||
     link.url.includes('dailymotion.com') || link.url.includes('twitch.tv') || link.category === 'Videos';
   const domain    = isMemo ? 'Note' : isPdf ? 'PDF' : (() => { try { return new URL(link.url).hostname.toLowerCase().replace('www.', ''); } catch { return ''; } })();
@@ -575,10 +579,10 @@ export function LinkCard({
         {isPlaceholder(link.image) ? (
           <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} domain={isMemo || isPdf ? undefined : domain}
             text={isMemo ? link.description : undefined}
-            className={`w-full ${compact ? 'h-full object-cover' : isMemo ? '' : 'aspect-video'}`} />
+            className={`w-full ${compact ? 'h-full object-cover' : isMemo ? '' : isPortraitVideo ? 'aspect-[9/16]' : 'aspect-video'}`} />
         ) : (
           <img src={link.image} alt={link.title}
-            className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isVideo ? 'aspect-video object-cover' : 'h-auto'} ${(isYT || isVimeo || isTikTok || isFbVid) && isHovered ? 'invisible' : ''}`}
+            className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isVideo ? (isPortraitVideo ? 'aspect-[9/16] object-cover' : 'aspect-video object-cover') : 'h-auto'} ${(isYT || isVimeo || isTikTok || isFbVid) && isHovered ? 'invisible' : ''}`}
             style={{ transform: imgHovered && !isVideo ? 'scale(1.04)' : 'scale(1)' }}
             onError={e => { const p = e.currentTarget.closest('a'); if (p) p.style.display = 'none'; }} />
         )}
@@ -609,7 +613,7 @@ export function LinkCard({
 
         {isYT && isHovered && (
           <iframe src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=${isMuted ? '1' : '0'}&controls=0&loop=1&playlist=${ytId}`}
-            className="absolute inset-0 w-full h-full"
+            className={`absolute inset-0 w-full h-full${isPortraitVideo ? ' object-cover' : ''}`}
             allow="autoplay; encrypted-media" allowFullScreen />
         )}
         {isVimeo && isHovered && (
@@ -618,7 +622,7 @@ export function LinkCard({
         )}
         {isTikTok && tikTokId && isHovered && (
           <iframe src={`https://www.tiktok.com/embed/v2/${tikTokId}`}
-            className="absolute inset-0 w-full h-full aspect-[9/16]"
+            className="absolute inset-0 w-full h-full"
             allow="autoplay; encrypted-media" allowFullScreen />
         )}
         {isFbVid && isHovered && (

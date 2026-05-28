@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SaveBoard</string>
+    <string name="title_activity_main">SaveBoard</string>
+    <string name="package_name">app.saveboard.saveboard</string>
+    <string name="custom_url_scheme">app.saveboard.saveboard</string>
+</resources>

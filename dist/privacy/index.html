@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — SaveBoard</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #F9FAFB; color: #374151; line-height: 1.6; }
+    a { color: #7C3AED; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    header { background: #fff; border-bottom: 1px solid #E5E7EB; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+    header .logo { font-size: 18px; font-weight: 700; color: #111827; }
+    header .logo span { color: #7C3AED; }
+    header nav { margin-left: auto; font-size: 14px; color: #6B7280; }
+    header nav a { color: #7C3AED; }
+
+    main { max-width: 720px; margin: 40px auto; padding: 0 24px 80px; }
+
+    .badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(5,150,105,0.08); border: 1px solid rgba(5,150,105,0.2); color: #059669; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 999px; margin-bottom: 20px; }
+
+    h1 { font-size: 32px; font-weight: 700; color: #111827; margin-bottom: 6px; }
+    .updated { font-size: 13px; color: #9CA3AF; margin-bottom: 28px; }
+
+    .intro { background: rgba(5,150,105,0.06); border: 1px solid rgba(5,150,105,0.14); border-radius: 16px; padding: 18px 20px; margin-bottom: 36px; font-size: 14px; color: #4B5563; }
+
+    section { margin-bottom: 32px; }
+    h2 { font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 10px; }
+    p { font-size: 14px; color: #4B5563; margin-bottom: 10px; }
+    ul { list-style: none; margin: 8px 0 10px; padding: 0; }
+    ul li { display: flex; gap: 10px; font-size: 14px; color: #4B5563; margin-bottom: 8px; }
+    ul li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #059669; flex-shrink: 0; margin-top: 8px; }
+
+    footer { border-top: 1px solid #E5E7EB; padding-top: 24px; margin-top: 40px; text-align: center; font-size: 13px; color: #9CA3AF; }
+    footer a { color: #7C3AED; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Save<span>Board</span></div>
+  <nav><a href="https://www.saveboard.app">← Back to app</a></nav>
+</header>
+
+<main>
+  <div class="badge">🔒 Privacy Policy</div>
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated: May 14, 2026</p>
+
+  <div class="intro">
+    SaveBoard ("we", "us", "our") is committed to protecting your privacy. This policy explains what data we collect, how we use it, and the choices you have. By using SaveBoard, you agree to the practices described here.
+  </div>
+
+  <section>
+    <h2>1. Information We Collect</h2>
+    <p>When you create an account and use SaveBoard, we collect the following information:</p>
+    <ul>
+      <li>Account information: your email address and profile data provided via your sign-in provider (e.g. Google OAuth, Apple Sign In).</li>
+      <li>Content you save: links, notes, embed codes, titles, descriptions, tags, board names, and any other content you add to SaveBoard.</li>
+      <li>Usage data: how you interact with the app (views, sorts, feature usage) to help us improve the product.</li>
+      <li>Device information: browser type, operating system, and IP address for security and analytics purposes.</li>
+    </ul>
+    <p>We do not collect payment card details directly. Any Pro plan billing is handled by Apple (via In-App Purchase) or Stripe, each subject to their own privacy policy.</p>
+  </section>
+
+  <section>
+    <h2>2. How We Use Your Information</h2>
+    <p>We use the information we collect to:</p>
+    <ul>
+      <li>Provide, operate, and maintain the SaveBoard service.</li>
+      <li>Sync your saved links and boards across devices.</li>
+      <li>Fetch metadata (title, description, preview image) for URLs you save — this request is made from our server to the target website.</li>
+      <li>Send transactional emails (e.g. password reset, account notifications).</li>
+      <li>Analyse aggregate usage trends to improve features and performance.</li>
+      <li>Respond to your support requests.</li>
+    </ul>
+    <p>We do not sell, rent, or share your personal information with third parties for marketing purposes.</p>
+  </section>
+
+  <section>
+    <h2>3. Data Storage &amp; Security</h2>
+    <p>Your data is stored in Supabase (PostgreSQL), a secure cloud database platform hosted on AWS infrastructure. Data is encrypted in transit (TLS) and at rest.</p>
+    <p>File uploads (PDFs, images) are stored in Supabase Storage with access controls scoped to your account. No other user can access your files.</p>
+    <p>While we implement industry-standard security measures, no method of transmission over the internet is 100% secure. We cannot guarantee absolute security.</p>
+  </section>
+
+  <section>
+    <h2>4. Third-Party Services</h2>
+    <p>SaveBoard uses the following third-party services, each subject to their own privacy policies:</p>
+    <ul>
+      <li>Supabase — database, authentication, and file storage.</li>
+      <li>Vercel — hosting and edge delivery.</li>
+      <li>Google OAuth — optional sign-in provider (only if you choose "Continue with Google").</li>
+      <li>Apple Sign In — optional sign-in provider (only if you choose "Continue with Apple").</li>
+      <li>Stripe — payment processing for Pro subscriptions (web and Android).</li>
+      <li>Apple In-App Purchase — payment processing for Pro subscriptions (iOS).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>5. Cookies &amp; Local Storage</h2>
+    <p>SaveBoard uses browser localStorage to remember your preferences (theme, language, session token). We do not use third-party advertising cookies.</p>
+    <p>Your authentication session token is stored securely and expires automatically after a period of inactivity.</p>
+  </section>
+
+  <section>
+    <h2>6. Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li>Access your data: export all your links and boards at any time via Settings → Export links.</li>
+      <li>Delete your data: contact us and we will permanently delete your account and all associated data within 30 days.</li>
+      <li>Correct your data: update your profile information at any time within the app.</li>
+      <li>Withdraw consent: you may close your account at any time.</li>
+    </ul>
+    <p>If you are located in the European Economic Area (EEA), you have additional rights under GDPR, including the right to data portability and the right to lodge a complaint with a supervisory authority.</p>
+  </section>
+
+  <section>
+    <h2>7. Data Retention</h2>
+    <p>We retain your data for as long as your account is active. If you delete your account, we will remove your personal data from our systems within 30 days, except where retention is required by law.</p>
+  </section>
+
+  <section>
+    <h2>8. Children's Privacy</h2>
+    <p>SaveBoard is not directed to children under the age of 13. We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us and we will delete it promptly.</p>
+  </section>
+
+  <section>
+    <h2>9. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. When we do, we will update the "Last updated" date at the top of this page. For significant changes, we will notify you via email or an in-app notice.</p>
+    <p>Continued use of SaveBoard after changes are posted constitutes your acceptance of the updated policy.</p>
+  </section>
+
+  <section>
+    <h2>10. Contact Us</h2>
+    <p>If you have any questions about this Privacy Policy or how we handle your data, please contact us at <a href="mailto:hello@saveboard.app">hello@saveboard.app</a>.</p>
+  </section>
+
+  <footer>
+    <p>© 2026 SaveBoard · <a href="https://www.saveboard.app">saveboard.app</a> · <a href="mailto:hello@saveboard.app">hello@saveboard.app</a></p>
+  </footer>
+</main>
+
+</body>
+</html>

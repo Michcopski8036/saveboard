@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="brand" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#A259FF"/>
+      <stop offset="50%" stop-color="#FF7262"/>
+      <stop offset="100%" stop-color="#F24E1E"/>
+    </linearGradient>
+    <linearGradient id="logo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1ABCFE"/>
+      <stop offset="48%" stop-color="#A259FF"/>
+      <stop offset="100%" stop-color="#F24E1E"/>
+    </linearGradient>
+    <linearGradient id="leftBg" x1="0%" y1="0%" x2="60%" y2="100%">
+      <stop offset="0%" stop-color="#EDE9FE"/>
+      <stop offset="100%" stop-color="#FDE8F0"/>
+    </linearGradient>
+    <linearGradient id="ig" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#feda77"/>
+      <stop offset="30%" stop-color="#f58529"/>
+      <stop offset="60%" stop-color="#dd2a7b"/>
+      <stop offset="85%" stop-color="#8134af"/>
+      <stop offset="100%" stop-color="#515bd4"/>
+    </linearGradient>
+    <clipPath id="card1clip"><rect x="32" y="28" width="168" height="168" rx="12"/></clipPath>
+    <clipPath id="card2clip"><rect x="32" y="210" width="168" height="155" rx="12"/></clipPath>
+    <clipPath id="card3clip"><rect x="32" y="379" width="168" height="140" rx="12"/></clipPath>
+    <clipPath id="card4clip"><rect x="214" y="48" width="168" height="160" rx="12"/></clipPath>
+    <clipPath id="card5clip"><rect x="214" y="222" width="168" height="150" rx="12"/></clipPath>
+    <clipPath id="card6clip"><rect x="214" y="386" width="168" height="145" rx="12"/></clipPath>
+    <clipPath id="card7clip"><rect x="396" y="28" width="168" height="155" rx="12"/></clipPath>
+    <clipPath id="card8clip"><rect x="396" y="197" width="168" height="165" rx="12"/></clipPath>
+    <clipPath id="card9clip"><rect x="396" y="376" width="168" height="150" rx="12"/></clipPath>
+  </defs>
+
+  <!-- ── LEFT PANEL ── -->
+  <rect width="596" height="630" fill="url(#leftBg)"/>
+
+  <!-- === COLUMN 1 === -->
+
+  <!-- Card 1: YouTube -->
+  <rect x="32" y="28" width="168" height="168" rx="12" fill="white"/>
+  <rect x="32" y="28" width="168" height="98" fill="#FF0000" clip-path="url(#card1clip)"/>
+  <rect x="82" y="55" width="68" height="46" rx="12" fill="rgba(0,0,0,0.18)"/>
+  <polygon points="107,65 107,90 130,77" fill="white"/>
+  <text x="44" y="148" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">The Best Morning</text>
+  <text x="44" y="163" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">Routine</text>
+  <text x="44" y="181" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" fill="#9CA3AF">youtube.com</text>
+
+  <!-- Card 2: Medium -->
+  <rect x="32" y="210" width="168" height="155" rx="12" fill="white"/>
+  <rect x="32" y="210" width="168" height="88" fill="#000000" clip-path="url(#card2clip)"/>
+  <path transform="translate(92,230) scale(2)" fill="white" d="M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 12a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/>
+  <text x="44" y="322" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">How to learn</text>
+  <text x="44" y="337" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">anything fast</text>
+  <text x="44" y="353" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" fill="#9CA3AF">medium.com</text>
+
+  <!-- Card 3: Note -->
+  <rect x="32" y="379" width="168" height="140" rx="12" fill="#FFFBEB"/>
+  <text x="44" y="411" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="600" fill="#D97706">📝 Note</text>
+  <text x="44" y="432" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="12" font-weight="700" fill="#111827">My workout</text>
+  <text x="44" y="448" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="12" font-weight="700" fill="#111827">plan for June</text>
+  <text x="44" y="470" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10.5" fill="#6B7280">Mon: Legs · Tue: Push</text>
+  <text x="44" y="485" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10.5" fill="#6B7280">Wed: Pull · Thu: Core</text>
+  <text x="44" y="506" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" fill="#D97706">● Personal</text>
+
+  <!-- === COLUMN 2 === -->
+
+  <!-- Card 4: Recipe (photo) -->
+  <rect x="214" y="48" width="168" height="160" rx="12" fill="white"/>
+  <image href="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=336&h=184" x="214" y="48" width="168" height="92" preserveAspectRatio="xMidYMid slice" clip-path="url(#card4clip)"/>
+  <text x="226" y="165" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">Creamy Pasta</text>
+  <text x="226" y="180" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">Carbonara</text>
+  <text x="226" y="196" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" fill="#9CA3AF">tasty.co</text>
+
+  <!-- Card 5: Instagram -->
+  <rect x="214" y="222" width="168" height="150" rx="12" fill="white"/>
+  <rect x="214" y="222" width="168" height="85" fill="url(#ig)" clip-path="url(#card5clip)"/>
+  <rect x="274" y="240" width="48" height="42" rx="10" fill="none" stroke="white" stroke-width="3.5"/>
+  <circle cx="298" cy="261" r="11" fill="none" stroke="white" stroke-width="3"/>
+  <circle cx="317" cy="245" r="4" fill="white"/>
+  <text x="226" y="332" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">Japan Travel</text>
+  <text x="226" y="347" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">Photos 🇯🇵</text>
+  <text x="226" y="363" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" fill="#9CA3AF">instagram.com</text>
+
+  <!-- Card 6: X / Twitter -->
+  <rect x="214" y="386" width="168" height="145" rx="12" fill="white"/>
+  <rect x="214" y="386" width="168" height="82" fill="#000000" clip-path="url(#card6clip)"/>
+  <path transform="translate(268,395) scale(2.5)" fill="white" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.735-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  <text x="226" y="493" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">Thread: Build in</text>
+  <text x="226" y="508" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">public tips</text>
+  <text x="226" y="523" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" fill="#9CA3AF">x.com</text>
+
+  <!-- === COLUMN 3 === -->
+
+  <!-- Card 7: Book (photo) -->
+  <rect x="396" y="28" width="168" height="155" rx="12" fill="white"/>
+  <image href="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=336&h=176" x="396" y="28" width="168" height="88" preserveAspectRatio="xMidYMid slice" clip-path="url(#card7clip)"/>
+  <text x="408" y="138" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">Atomic Habits</text>
+  <text x="408" y="153" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">Summary</text>
+  <text x="408" y="170" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" fill="#9CA3AF">blinkist.com</text>
+
+  <!-- Card 8: TikTok -->
+  <rect x="396" y="197" width="168" height="165" rx="12" fill="white"/>
+  <rect x="396" y="197" width="168" height="100" fill="#010101" clip-path="url(#card8clip)"/>
+  <path transform="translate(452,207) scale(3.5)" fill="#69C9D0" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.35a8.16 8.16 0 0 0 4.79 1.53V7.44a4.85 4.85 0 0 1-1.02-.75z"/>
+  <path transform="translate(452,207) scale(3.5)" fill="#EE1D52" opacity="0.85" d="M18.57 6.44a4.83 4.83 0 0 1-2.75-4.69V2h-.5a4.83 4.83 0 0 0 3.25 4.44z"/>
+  <text x="408" y="323" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">Viral pasta</text>
+  <text x="408" y="338" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">recipe 🍝</text>
+  <text x="408" y="353" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" fill="#9CA3AF">tiktok.com</text>
+
+  <!-- Card 9: Link / product -->
+  <rect x="396" y="376" width="168" height="150" rx="12" fill="white"/>
+  <image href="https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?auto=format&fit=crop&w=336&h=170" x="396" y="376" width="168" height="85" preserveAspectRatio="xMidYMid slice" clip-path="url(#card9clip)"/>
+  <text x="408" y="487" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">Standing desk</text>
+  <text x="408" y="502" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11.5" font-weight="700" fill="#111827">I want to buy</text>
+  <text x="408" y="518" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" fill="#9CA3AF">amazon.com</text>
+
+  <!-- ── RIGHT PANEL ── -->
+  <rect x="596" width="604" height="630" fill="#FFFFFF"/>
+  <line x1="596" y1="0" x2="596" y2="630" stroke="#E5E7EB" stroke-width="1"/>
+
+  <!-- Icon rounded square -->
+  <rect x="633" y="245" width="140" height="140" rx="32" fill="url(#logo)"/>
+
+  <!-- Bookmark inside icon -->
+  <path d="M689,268 H719 Q731,268 731,280 V352 L704,336 L677,352 V280 Q677,268 689,268 Z"
+        fill="none" stroke="white" stroke-width="5.5"
+        stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- "SaveBoard" horizontal, left-aligned from x=793 -->
+  <text x="793" y="324"
+        font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+        font-size="72" font-weight="600" fill="#111827" letter-spacing="-2">Save<tspan fill="url(#brand)">Board</tspan>
+  </text>
+
+  <!-- Sparkle path -->
+  <path d="M800,359 L803,353 L806,359 L812,362 L806,365 L803,371 L800,365 L794,362 Z"
+        fill="#A259FF"/>
+  <path d="M816,348 L817.5,345 L819,348 L822,349.5 L819,351 L817.5,354 L816,351 L813,349.5 Z"
+        fill="#A259FF" opacity="0.7"/>
+
+  <!-- "AI POWERED" text -->
+  <text x="828" y="371"
+        font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+        font-size="34" font-weight="700" fill="#A259FF" letter-spacing="2">
+    AI POWERED
+  </text>
+</svg>
