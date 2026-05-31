@@ -61,13 +61,21 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
   return (
     <>
       <button onClick={handleProfileClick} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-        {avatarUrl ? (
-          <img src={avatarUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#A259FF] to-[#FF7262] flex items-center justify-center text-white text-sm font-medium">
-            {initials}
-          </div>
-        )}
+        <div className="relative">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#A259FF] to-[#FF7262] flex items-center justify-center text-white text-sm font-medium">
+              {initials}
+            </div>
+          )}
+          {isPro && (
+            <span className="absolute -bottom-1 -right-1 text-[8px] font-bold px-1 py-px rounded-full text-white leading-none"
+              style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)', border: '1.5px solid white' }}>
+              PRO
+            </span>
+          )}
+        </div>
         <ChevronDown className="w-4 h-4 text-gray-700" />
       </button>
 
