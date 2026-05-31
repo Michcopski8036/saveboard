@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = 'https://mchikdltrcbovhdzdhhf.supabase.co';
-const ADMIN_EMAIL  = 'michcopski@gmail.com';
+const ADMIN_EMAILS = new Set(['michcopski@gmail.com', 'admin@saveboard.app']);
 
 const supabase = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const token = (req.headers.authorization ?? '').replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
   const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-  if (authErr || !user || user.email !== ADMIN_EMAIL) return res.status(403).json({ error: 'Forbidden' });
+  if (authErr || !user || !ADMIN_EMAILS.has(user.email ?? '')) return res.status(403).json({ error: 'Forbidden' });
 
   const now      = new Date();
   const weekAgo  = new Date(now.getTime() - 7  * 86400000).toISOString();

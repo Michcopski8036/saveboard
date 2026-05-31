@@ -758,7 +758,7 @@ function AppContent() {
             </button>
 
             {/* Avatar */}
-            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowAdmin={user?.email === 'michcopski@gmail.com' ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
+            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowAdmin={['michcopski@gmail.com','admin@saveboard.app'].includes(user?.email ?? '') ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
           </div>
 
           {/* Sub-header: title + sort — hidden on home dashboard */}
@@ -1295,7 +1295,7 @@ function AppContent() {
       )}
 
       {/* ── Admin dashboard ────────────────────────────────────────────── */}
-      {showAdmin && user?.email === 'michcopski@gmail.com' && (
+      {showAdmin && ['michcopski@gmail.com','admin@saveboard.app'].includes(user?.email ?? '') && (
         <AdminDashboard onClose={() => setShowAdmin(false)} userEmail={user.email} />
       )}
     </div>
