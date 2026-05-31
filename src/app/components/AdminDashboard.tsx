@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Users, Link2, TrendingUp, Share2, Eye, Crown, Apple, CreditCard,
   RefreshCw, BarChart2, Tag, Folder, Calendar, ArrowUp, ArrowDown,
-  Minus, Globe, Smartphone, AlertCircle, CheckCircle, XCircle,
+  Minus, Globe, Smartphone, AlertCircle, CheckCircle, XCircle, ChevronDown, Loader2,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
@@ -133,6 +133,79 @@ function PlanBadge({ plan, source }: { plan: string; source: string | null }) {
   );
 }
 
+const PLAN_OPTIONS = [
+  { key: 'free',        label: 'Free',           color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.2)' },
+  { key: 'pro_monthly', label: 'Pro · Monthly',  color: '#7C3AED', bg: 'rgba(124,58,237,0.12)', border: 'rgba(124,58,237,0.25)' },
+  { key: 'pro_yearly',  label: 'Pro · Yearly',   color: '#7C3AED', bg: 'rgba(124,58,237,0.12)', border: 'rgba(124,58,237,0.25)' },
+  { key: 'team',        label: 'Team',           color: '#0891B2', bg: 'rgba(6,182,212,0.12)',  border: 'rgba(6,182,212,0.25)'  },
+] as const;
+
+type PlanKey = typeof PLAN_OPTIONS[number]['key'];
+
+function planKeyFromUser(plan: string, source: string | null, billingCycle?: string): PlanKey {
+  if (plan === 'team') return 'team';
+  if (plan === 'pro') return billingCycle === 'yearly' ? 'pro_yearly' : 'pro_monthly';
+  return 'free';
+}
+
+function PlanSelector({ userId, plan, source, onUpdate }: {
+  userId: string; plan: string; source: string | null;
+  onUpdate: (userId: string, planKey: PlanKey) => Promise<void>;
+}) {
+  const { t } = useTheme();
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = PLAN_OPTIONS.find(o => o.key === planKeyFromUser(plan, source)) ?? PLAN_OPTIONS[0];
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleSelect = async (key: PlanKey) => {
+    setOpen(false);
+    if (key === planKeyFromUser(plan, source)) return;
+    setSaving(true);
+    await onUpdate(userId, key);
+    setSaving(false);
+  };
+
+  return (
+    <div ref={ref} className="relative inline-block">
+      <button onClick={() => setOpen(v => !v)} disabled={saving}
+        className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold transition-opacity hover:opacity-80"
+        style={{ background: current.bg, color: current.color, border: `1px solid ${current.border}` }}>
+        {saving
+          ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
+          : current.key === 'pro_monthly' || current.key === 'pro_yearly'
+            ? <><Crown className="w-2.5 h-2.5" /> {current.label}</>
+            : current.label
+        }
+        {!saving && <ChevronDown className="w-2.5 h-2.5 opacity-60" />}
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full mt-1 w-36 rounded-xl shadow-xl z-50 py-1 overflow-hidden"
+          style={{ background: t.modalBg, border: `1px solid ${t.modalBorder}` }}>
+          {PLAN_OPTIONS.map(opt => (
+            <button key={opt.key} onClick={() => handleSelect(opt.key)}
+              className="w-full text-left px-3 py-2 text-[11px] font-semibold flex items-center gap-2 transition-colors"
+              style={{ color: opt.color, background: opt.key === planKeyFromUser(plan, source) ? opt.bg : 'transparent' }}
+              onMouseEnter={e => { e.currentTarget.style.background = opt.bg; }}
+              onMouseLeave={e => { e.currentTarget.style.background = opt.key === planKeyFromUser(plan, source) ? opt.bg : 'transparent'; }}>
+              {opt.key === 'pro_monthly' || opt.key === 'pro_yearly' ? <Crown className="w-3 h-3" /> : null}
+              {opt.label}
+              {opt.key === planKeyFromUser(plan, source) && <CheckCircle className="w-3 h-3 ml-auto" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Bar row ────────────────────────────────────────────────────────────────
 function BarRow({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const { t } = useTheme();
@@ -154,6 +227,8 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [planOverrides, setPlanOverrides] = useState<Record<string, PlanKey>>({});
+  const [planError, setPlanError] = useState<string | null>(null);
 
   const fetchStats = useCallback(async () => {
     setLoading(true); setError(null);
@@ -175,6 +250,25 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
   }, []);
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  const updatePlan = useCallback(async (userId: string, planKey: PlanKey) => {
+    setPlanError(null);
+    const prev = planOverrides[userId];
+    setPlanOverrides(p => ({ ...p, [userId]: planKey })); // optimistic
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+      const res = await fetch('/api/admin-update-plan', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, planKey }),
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? 'Update failed'); }
+    } catch (e: any) {
+      setPlanError(e.message);
+      setPlanOverrides(p => { const n = { ...p }; if (prev !== undefined) n[userId] = prev; else delete n[userId]; return n; });
+    }
+  }, [planOverrides]);
 
   const totalPaid = (stats?.subscriptions.proCount ?? 0) + (stats?.subscriptions.teamCount ?? 0);
   const totalUsers = stats?.overview.totalUsers ?? 0;
@@ -365,6 +459,13 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                 SECTION 3 · RECENT USERS
             ═══════════════════════════════════════════════════════════════ */}
             <Section title="Recent Users" icon={Users}>
+              {planError && (
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl mb-3 text-[12px]"
+                  style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444' }}>
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  Plan update failed: {planError}
+                </div>
+              )}
               <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${t.cardBorder}` }}>
                 <table className="w-full text-[12px]">
                   <thead>
@@ -376,23 +477,35 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                     </tr>
                   </thead>
                   <tbody>
-                    {stats.recentUsers.map((u, i) => (
-                      <tr key={u.id}
-                        style={{ background: i % 2 === 0 ? t.pageBg : t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
-                        <td className="px-4 py-2.5 font-medium truncate max-w-[200px]" style={{ color: t.textPrimary }}>
-                          {u.email}
-                        </td>
-                        <td className="px-4 py-2.5" style={{ color: t.textMuted }}>
-                          {new Date(u.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <PlanBadge plan={u.plan} source={u.source} />
-                        </td>
-                        <td className="px-4 py-2.5 font-bold" style={{ color: t.textPrimary }}>
-                          {u.linkCount}
-                        </td>
-                      </tr>
-                    ))}
+                    {stats.recentUsers.map((u, i) => {
+                      const effectivePlan = planOverrides[u.id] === 'free' ? 'free'
+                        : planOverrides[u.id]?.startsWith('pro') ? 'pro'
+                        : planOverrides[u.id] === 'team' ? 'team'
+                        : u.plan;
+                      const effectiveSource = planOverrides[u.id] ? 'admin' : u.source;
+                      return (
+                        <tr key={u.id}
+                          style={{ background: i % 2 === 0 ? t.pageBg : t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
+                          <td className="px-4 py-2.5 font-medium truncate max-w-[200px]" style={{ color: t.textPrimary }}>
+                            {u.email}
+                          </td>
+                          <td className="px-4 py-2.5" style={{ color: t.textMuted }}>
+                            {new Date(u.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <PlanSelector
+                              userId={u.id}
+                              plan={effectivePlan}
+                              source={effectiveSource}
+                              onUpdate={updatePlan}
+                            />
+                          </td>
+                          <td className="px-4 py-2.5 font-bold" style={{ color: t.textPrimary }}>
+                            {u.linkCount}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
