@@ -21,7 +21,7 @@ interface AdminStats {
   };
   recentUsers: Array<{
     id: string; email: string; created_at: string;
-    plan: string; status: string; source: string | null; linkCount: number;
+    plan: string; status: string; source: string | null; linkCount: number; boardCount: number;
   }>;
   topCategories: Array<{ category: string; count: number }>;
   topTags: Array<{ tag: string; count: number }>;
@@ -489,7 +489,7 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                 <table className="w-full text-[12px]">
                   <thead>
                     <tr style={{ background: t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
-                      {['Email', 'Joined', 'Plan', 'Links'].map(h => (
+                      {['Email', 'Joined', 'Plan', 'Links', 'Boards'].map(h => (
                         <th key={h} className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]"
                           style={{ color: t.textFaint }}>{h}</th>
                       ))}
@@ -521,6 +521,9 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                           </td>
                           <td className="px-4 py-2.5 font-bold" style={{ color: t.textPrimary }}>
                             {u.linkCount}
+                          </td>
+                          <td className="px-4 py-2.5 font-bold" style={{ color: t.textPrimary }}>
+                            {u.boardCount}
                           </td>
                         </tr>
                       );

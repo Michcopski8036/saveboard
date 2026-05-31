@@ -38,6 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     subscriptionsRes,
     sharedBoardsRes,
     sharedViewsRes,
+    boardsByUserRes,
   ] = await Promise.all([
     // All users via admin API
     supabase.auth.admin.listUsers({ perPage: 1000 }),
@@ -65,6 +66,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Total share views
     supabase.from('shared_board_views').select('id', { count: 'exact', head: true }),
+
+    // Board counts per user
+    supabase.from('categories').select('user_id'),
   ]);
 
   // ── Users ─────────────────────────────────────────────────────────────────
@@ -139,12 +143,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     userLinkCount[row.user_id] = (userLinkCount[row.user_id] ?? 0) + 1;
   }
 
+  const userBoardCount: Record<string, number> = {};
+  for (const row of (boardsByUserRes.data ?? [])) {
+    userBoardCount[row.user_id] = (userBoardCount[row.user_id] ?? 0) + 1;
+  }
+
   const enrichedUsers = recentUsers.map(u => ({
     ...u,
     plan:  subByUser[u.id]?.plan  ?? 'free',
     status: subByUser[u.id]?.status ?? 'free',
     source: subByUser[u.id]?.source ?? null,
-    linkCount: userLinkCount[u.id] ?? 0,
+    linkCount:  userLinkCount[u.id]  ?? 0,
+    boardCount: userBoardCount[u.id] ?? 0,
   }));
 
   // ── Shared boards ─────────────────────────────────────────────────────────
