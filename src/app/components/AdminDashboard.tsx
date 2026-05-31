@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Users, Link2, TrendingUp, Share2, Eye, Crown, Apple, CreditCard,
   RefreshCw, BarChart2, Tag, Folder, Calendar, ArrowUp, ArrowDown,
@@ -155,14 +156,25 @@ function PlanSelector({ userId, plan, source, onUpdate }: {
   const { t } = useTheme();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [dropPos, setDropPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
   const current = PLAN_OPTIONS.find(o => o.key === planKeyFromUser(plan, source)) ?? PLAN_OPTIONS[0];
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (btnRef.current && !btnRef.current.contains(e.target as Node)) setOpen(false);
+    };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [open]);
+
+  const handleOpen = () => {
+    if (!btnRef.current) return;
+    const r = btnRef.current.getBoundingClientRect();
+    setDropPos({ top: r.bottom + window.scrollY + 4, left: r.left + window.scrollX });
+    setOpen(v => !v);
+  };
 
   const handleSelect = async (key: PlanKey) => {
     setOpen(false);
@@ -173,36 +185,38 @@ function PlanSelector({ userId, plan, source, onUpdate }: {
   };
 
   return (
-    <div ref={ref} className="relative inline-block">
-      <button onClick={() => setOpen(v => !v)} disabled={saving}
+    <>
+      <button ref={btnRef} onClick={handleOpen} disabled={saving}
         className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold transition-opacity hover:opacity-80"
         style={{ background: current.bg, color: current.color, border: `1px solid ${current.border}` }}>
         {saving
           ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
-          : current.key === 'pro_monthly' || current.key === 'pro_yearly'
+          : (current.key === 'pro_monthly' || current.key === 'pro_yearly')
             ? <><Crown className="w-2.5 h-2.5" /> {current.label}</>
             : current.label
         }
         {!saving && <ChevronDown className="w-2.5 h-2.5 opacity-60" />}
       </button>
 
-      {open && (
-        <div className="absolute left-0 top-full mt-1 w-36 rounded-xl shadow-xl z-50 py-1 overflow-hidden"
-          style={{ background: t.modalBg, border: `1px solid ${t.modalBorder}` }}>
+      {open && createPortal(
+        <div style={{ position: 'absolute', top: dropPos.top, left: dropPos.left, width: 144, zIndex: 9999,
+          background: t.modalBg, border: `1px solid ${t.modalBorder}`, borderRadius: 12,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.15)', padding: '4px 0' }}>
           {PLAN_OPTIONS.map(opt => (
             <button key={opt.key} onClick={() => handleSelect(opt.key)}
               className="w-full text-left px-3 py-2 text-[11px] font-semibold flex items-center gap-2 transition-colors"
               style={{ color: opt.color, background: opt.key === planKeyFromUser(plan, source) ? opt.bg : 'transparent' }}
               onMouseEnter={e => { e.currentTarget.style.background = opt.bg; }}
               onMouseLeave={e => { e.currentTarget.style.background = opt.key === planKeyFromUser(plan, source) ? opt.bg : 'transparent'; }}>
-              {opt.key === 'pro_monthly' || opt.key === 'pro_yearly' ? <Crown className="w-3 h-3" /> : null}
+              {(opt.key === 'pro_monthly' || opt.key === 'pro_yearly') ? <Crown className="w-3 h-3" /> : null}
               {opt.label}
               {opt.key === planKeyFromUser(plan, source) && <CheckCircle className="w-3 h-3 ml-auto" />}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
 
