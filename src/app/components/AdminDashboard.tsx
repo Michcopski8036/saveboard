@@ -8,6 +8,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { WorldMap } from './WorldMap';
+import { SeoPanel } from './SeoPanel';
 
 interface AdminStats {
   overview: {
@@ -688,6 +689,13 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                   </a>
                 ))}
               </div>
+            </Section>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                SEO & AI CRAWLERS
+            ═══════════════════════════════════════════════════════════════ */}
+            <Section title="SEO & AI 크롤러" icon={Globe}>
+              <SeoPanel accessToken={accessToken} />
             </Section>
 
             {/* Footer */}
