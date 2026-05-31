@@ -115,7 +115,7 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
         <div>
           <div className="flex items-center justify-between mb-3">
             <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>Recently Saved</p>
-            <button onClick={() => onSelect('recent')}
+            <button onClick={() => onSelect('browse')}
               className="flex items-center gap-1 text-[12px] font-medium transition-opacity hover:opacity-70"
               style={{ color: '#7C3AED' }}>
               View all <ArrowRight className="w-3.5 h-3.5" />

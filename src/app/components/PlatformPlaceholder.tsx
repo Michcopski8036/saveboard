@@ -146,17 +146,26 @@ export function PlatformPlaceholder({ platform, domain, text, className = '' }: 
         style={{ background: `linear-gradient(to bottom, ${config.gloss}, transparent)` }}
       />
       {isMemo
-        ? text ? (
-          <div style={{ padding: '20px', width: '100%' }}>
-            <p style={{ fontSize: '15px', fontWeight: 600, lineHeight: '1.6', color: t.memoText, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif' }}>
-              {text}
-            </p>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center w-full h-full">
-            <BrandLogo platform="memo" />
-          </div>
-        )
+        ? (() => {
+            const sizeMatch = text?.match(/^\[sz:(sm|lg)\]/);
+            const sz = sizeMatch ? sizeMatch[1] : 'md';
+            const displayText = text?.replace(/^\[sz:(sm|md|lg)\]/, '') ?? '';
+            const fontSize = sz === 'sm' ? '12px' : sz === 'lg' ? '19px' : '15px';
+            const isHtml = displayText.trimStart().startsWith('<');
+            return displayText ? (
+              <div style={{ padding: '20px', width: '100%', fontSize, fontWeight: 400, lineHeight: '1.65', color: t.memoText, fontFamily: '"Pretendard", -apple-system, BlinkMacSystemFont, sans-serif', wordBreak: 'break-word' }}>
+                {isHtml
+                  ? <div dangerouslySetInnerHTML={{ __html: displayText }} className="memo-card-html" />
+                  : <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{displayText}</p>
+                }
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center w-full h-full gap-2 px-4 py-5 text-center">
+                <BrandLogo platform="memo" />
+                <p style={{ fontSize: '11px', color: t.memoText, opacity: 0.35, fontStyle: 'italic', lineHeight: 1.4 }}>Write more details…</p>
+              </div>
+            );
+          })()
         : <BrandLogo platform={platform} text={text} />
       }
       {platform === 'default' && domain && (

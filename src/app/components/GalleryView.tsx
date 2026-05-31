@@ -1,13 +1,20 @@
-import { useState, useEffect } from 'react';
-import { ExternalLink, Link2, RefreshCw, Sparkles, Play, Clock, FileText } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { ExternalLink, Link2, RefreshCw, Clock, FileText, Heart, Tag, Trash2, Check, X, Folder, Play } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { isPlaceholder, getPlatformFromPlaceholder, PlatformPlaceholder } from './PlatformPlaceholder';
+import { RichTextEditor } from './RichTextEditor';
 import { TAG_COLORS, deriveAiTags } from './LinkCard';
 import type { LinkData } from './LinkCard';
 
 interface GalleryViewProps {
   links: LinkData[];
   favorites: Set<string>;
+  categories?: string[];
+  onUpdateLink?: (id: string, title: string, description: string) => void;
+  onUpdateTags?: (id: string, tags: string[]) => void;
+  onToggleFavorite?: (id: string) => void;
+  onUpdateCategory?: (id: string, category: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 function getDomain(link: LinkData): string {
@@ -16,8 +23,10 @@ function getDomain(link: LinkData): string {
   try { return new URL(link.url).hostname.replace('www.', ''); } catch { return ''; }
 }
 function getAiSummary(desc: string): string | null {
-  if (!desc || desc.startsWith('Link saved from') || desc.length < 30) return null;
-  return desc.length > 120 ? desc.slice(0, 117).trimEnd() + '…' : desc;
+  if (!desc || desc.startsWith('Link saved from')) return null;
+  const plain = desc.trimStart().startsWith('<') ? desc.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : desc;
+  if (plain.length < 30) return null;
+  return plain.length > 120 ? plain.slice(0, 117).trimEnd() + '…' : plain;
 }
 function getReadTime(desc: string): number {
   return Math.max(1, Math.ceil(desc.split(/\s+/).filter(Boolean).length / 200));
@@ -181,28 +190,48 @@ function GalleryCard({ link, isActive, onClick }: { link: LinkData; isActive: bo
   );
 }
 
-export function GalleryView({ links, favorites }: GalleryViewProps) {
+export function GalleryView({ links, favorites, categories = [], onUpdateLink, onUpdateTags, onToggleFavorite, onUpdateCategory, onDelete }: GalleryViewProps) {
   const { t } = useTheme();
   const [selected, setSelected] = useState<LinkData | null>(links[0] ?? null);
   const [iframeError, setIframeError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
+  const [editTitle, setEditTitle] = useState(links[0]?.title ?? '');
+  const [tagInput, setTagInput] = useState('');
+  const [showCatMenu, setShowCatMenu] = useState(false);
+  const [showTagInput, setShowTagInput] = useState(false);
+  const tagInputRef = useRef<HTMLInputElement>(null);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Tag icon kept for non-memo toolbar usage
+  void Tag;
 
   useEffect(() => {
-    setSelected(links[0] ?? null);
+    const found = links.find(l => l.id === selected?.id) ?? links[0] ?? null;
+    setSelected(found);
+    setEditTitle(found?.title ?? '');
     setIframeError(false);
     setIframeKey(k => k + 1);
   }, [links]);
 
   const handleSelect = (link: LinkData) => {
     setSelected(link);
+    setEditTitle(link.title);
     setIframeError(false);
     setIframeKey(k => k + 1);
+    setShowCatMenu(false);
+    setTagInput('');
   };
+
+  const autoSave = useCallback((title: string, desc: string) => {
+    if (!selected || !onUpdateLink) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => onUpdateLink(selected.id, title.trim() || selected.title, desc), 800);
+  }, [selected, onUpdateLink]);
 
   const isMemo    = selected?.image === 'placeholder:memo';
   const isPdf     = selected?.image === 'placeholder:pdf';
   const isBlocked = selected ? isIframeBlocked(selected.url) : false;
   const isEmbeddable = selected && !isMemo && !isBlocked && selected.url !== '#';
+  const isFav = selected ? favorites.has(selected.id) : false;
 
   return (
     <div className="flex flex-1 overflow-hidden rounded-2xl" style={{ border: `1px solid ${t.cardBorder}`, minHeight: 0 }}>
@@ -233,45 +262,134 @@ export function GalleryView({ links, favorites }: GalleryViewProps) {
         {selected ? (
           <>
             {/* Toolbar */}
-            <div className="flex items-center gap-3 px-4 py-3 shrink-0"
+            <div className="flex items-center gap-2 px-4 py-2.5 shrink-0"
               style={{ borderBottom: `1px solid ${t.cardBorder}`, background: t.cardBg }}>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{selected.title}</p>
-                {!isMemo && selected.url !== '#' && (
-                  <p className="text-[11px] truncate" style={{ color: t.textMuted }}>{selected.url}</p>
-                )}
+                {isMemo
+                  ? <input value={editTitle} onChange={e => { setEditTitle(e.target.value); autoSave(e.target.value, selected.description ?? ''); }}
+                      className="w-full text-[14px] font-semibold bg-transparent focus:outline-none"
+                      style={{ color: t.textPrimary }} />
+                  : <>
+                      <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{selected.title}</p>
+                      {selected.url !== '#' && <p className="text-[11px] truncate" style={{ color: t.textMuted }}>{selected.url}</p>}
+                    </>
+                }
               </div>
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-0.5 shrink-0">
+                {/* Favorite */}
+                <button onClick={() => onToggleFavorite?.(selected.id)}
+                  className="p-1.5 rounded-lg transition-colors" title="Favorite"
+                  style={{ color: isFav ? '#EF4444' : t.textMuted }}
+                  onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                  <Heart className={`w-4 h-4 ${isFav ? 'fill-red-400' : ''}`} />
+                </button>
+
+                {/* Move board */}
+                {categories.length > 0 && (
+                  <div className="relative">
+                    <button onClick={() => { setShowCatMenu(v => !v); setShowTagInput(false); }}
+                      className="p-1.5 rounded-lg transition-colors" title="Move to board"
+                      style={{ color: t.textMuted }}
+                      onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                      <Folder className="w-4 h-4" />
+                    </button>
+                    {showCatMenu && (
+                      <div className="absolute right-0 top-full mt-1 w-44 rounded-xl shadow-xl z-50 py-1 overflow-hidden"
+                        style={{ background: t.modalBg, border: `1px solid ${t.modalBorder}` }}>
+                        {['None', ...categories].map(cat => (
+                          <button key={cat} onClick={() => { onUpdateCategory?.(selected.id, cat); setShowCatMenu(false); }}
+                            className="w-full text-left px-3 py-1.5 text-[12px] transition-colors flex items-center gap-2"
+                            style={{ color: selected.category === cat ? '#7C3AED' : t.textPrimary }}
+                            onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                            {selected.category === cat && <Check className="w-3 h-3 text-violet-500" />}
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Reload (non-memo) */}
                 {isEmbeddable && (
-                  <button
-                    onClick={() => { setIframeError(false); setIframeKey(k => k + 1); }}
-                    title="Reload"
-                    className="p-1.5 rounded-lg transition-colors"
-                    style={{ color: t.textMuted }}
+                  <button onClick={() => { setIframeError(false); setIframeKey(k => k + 1); }}
+                    title="Reload" className="p-1.5 rounded-lg transition-colors" style={{ color: t.textMuted }}
                     onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
                     <RefreshCw className="w-3.5 h-3.5" />
                   </button>
                 )}
+
+                {/* Open link */}
                 {selected.url !== '#' && (
                   <a href={selected.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white transition-opacity hover:opacity-90"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white transition-opacity hover:opacity-90 ml-1"
                     style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-                    <ExternalLink className="w-3 h-3" />
-                    Open
+                    <ExternalLink className="w-3 h-3" />Open
                   </a>
                 )}
+
+                {/* Delete */}
+                <button onClick={() => { if (confirm('Delete this item?')) { onDelete?.(selected.id); } }}
+                  className="p-1.5 rounded-lg transition-colors ml-1" title="Delete"
+                  style={{ color: t.textMuted }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#EF4444'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = t.textMuted; }}>
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
             {/* Preview */}
             <div className="flex-1 overflow-y-auto flex flex-col" style={{ minHeight: 0 }}>
               {isMemo ? (
-                <div className="flex-1 flex items-center justify-center p-8">
-                  <div className="max-w-lg w-full rounded-2xl p-6"
-                    style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                    <p className="text-[13px] font-semibold mb-3" style={{ color: t.textMuted }}>Note</p>
-                    <p className="text-[15px] leading-relaxed whitespace-pre-wrap" style={{ color: t.textPrimary }}>{selected.description}</p>
+                <div className="flex-1 p-6 overflow-y-auto">
+                  <div className="max-w-2xl mx-auto space-y-4">
+                    <RichTextEditor
+                      key={selected.id}
+                      content={(selected.description ?? '').replace(/^\[sz:(sm|md|lg)\]/, '')}
+                      onChange={desc => autoSave(editTitle, desc)}
+                      placeholder="Write more details…"
+                    />
+
+                    {/* Tags editor */}
+                    <div>
+                      <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>Tags</label>
+                      {(selected.tags ?? []).length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {(selected.tags ?? []).map(tag => (
+                            <span key={tag} className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-semibold"
+                              style={{ background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.22)', color: '#0D9488' }}>
+                              #{tag}
+                              <button onClick={() => onUpdateTags?.(selected.id, (selected.tags ?? []).filter(t => t !== tag))}>
+                                <X className="w-2.5 h-2.5 hover:opacity-60" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="relative">
+                        <input ref={tagInputRef} value={tagInput} onChange={e => setTagInput(e.target.value)}
+                          placeholder="Type a tag and press Enter…"
+                          className="w-full px-4 py-3 rounded-xl focus:outline-none transition-all text-[14px]"
+                          style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText }}
+                          onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
+                          onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && tagInput.trim()) {
+                              const newTags = [...new Set([...(selected.tags ?? []), tagInput.trim()])];
+                              onUpdateTags?.(selected.id, newTags);
+                              setTagInput('');
+                            }
+                            if (e.key === 'Backspace' && !tagInput && (selected.tags ?? []).length > 0) {
+                              onUpdateTags?.(selected.id, (selected.tags ?? []).slice(0, -1));
+                            }
+                          }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : isPdf ? (

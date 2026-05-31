@@ -2,3 +2,14 @@ node_modules
 *.backup
 .vercel
 .env*.local
+
+# Build artifacts
+dist/
+*.ipa
+*.apk
+*.aab
+
+# Signing keys
+*.jks
+*.keystore
+ExportOptions.plist

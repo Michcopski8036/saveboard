@@ -1,3 +1,13 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+/* Rich text card preview */
+.rich-card-preview p, .memo-card-html p { margin: 0 0 2px; }
+.rich-card-preview ul, .memo-card-html ul { margin: 2px 0; padding-left: 14px; list-style: disc; }
+.rich-card-preview li, .memo-card-html li { margin-bottom: 1px; }
+
+/* Show drag handle on touch devices */
+@media (hover: none) {
+  .touch-visible { opacity: 1 !important; }
+}

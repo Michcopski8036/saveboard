@@ -1,12 +1,62 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { MoreVertical, Link2, Check, FileText, ChevronDown, Volume2, VolumeX, Heart, Tag, Trash2, Sparkles, Clock, Play, BookOpen, ExternalLink, Pencil, GripVertical } from 'lucide-react';
 import { useDrag, useDrop } from 'react-dnd';
 import { CategoryPopup } from './CategoryPopup';
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
+import { RichTextEditor } from './RichTextEditor';
 import { useTheme } from '../context/ThemeContext';
 
 export const LINK_DRAG_TYPE = 'LINK_TO_BOARD';
+
+function MarkdownText({ text, className, style, clamp }: { text: string; className?: string; style?: React.CSSProperties; clamp?: number }) {
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (/^[-*•]\s/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^[-*•]\s/.test(lines[i])) {
+        items.push(lines[i].replace(/^[-*•]\s/, ''));
+        i++;
+      }
+      elements.push(
+        <ul key={`ul-${i}`} className="list-none pl-0 my-0.5">
+          {items.map((item, j) => (
+            <li key={j} className="flex gap-1.5 items-start">
+              <span className="mt-1.5 w-1 h-1 rounded-full shrink-0 inline-block" style={{ background: 'currentColor', opacity: 0.5 }} />
+              <span>{renderInline(item)}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    } else {
+      elements.push(<span key={`line-${i}`} className="block">{renderInline(line)}{'​'}</span>);
+      i++;
+    }
+  }
+  return (
+    <div className={className} style={{ ...style, ...(clamp ? { display: '-webkit-box', WebkitLineClamp: clamp, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : {}) }}>
+      {elements}
+    </div>
+  );
+}
+
+function renderInline(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const regex = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
+  let last = 0, match: RegExpExecArray | null;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index));
+    if (match[2]) parts.push(<strong key={match.index}>{match[2]}</strong>);
+    else if (match[3]) parts.push(<em key={match.index}>{match[3]}</em>);
+    else if (match[4]) parts.push(<code key={match.index} className="text-[10px] px-1 rounded" style={{ background: 'rgba(124,58,237,0.1)', color: '#7C3AED' }}>{match[4]}</code>);
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
 
 export interface LinkData {
   id: string; url: string; title: string; description: string;
@@ -262,11 +312,14 @@ export function LinkCard({
   const [menuRect, setMenuRect]     = useState<DOMRect | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editTitle, setEditTitle]   = useState(link.title);
-  const [editDesc, setEditDesc]     = useState(link.description);
+  const [editDescHtml, setEditDescHtml] = useState('');
   const [editTags, setEditTags]     = useState<string[]>(link.tags ?? []);
   const [tagInput, setTagInput]     = useState('');
   const [listImgError, setListImgError] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const isHtmlDesc = (desc: string) => desc.trimStart().startsWith('<');
+  const getMemoText = (desc: string) => desc.replace(/^\[sz:(sm|md|lg)\]/, '');
 
   const [{ isDragging }, dragRef] = useDrag({
     type: LINK_DRAG_TYPE,
@@ -310,7 +363,8 @@ export function LinkCard({
   const handleCatClick  = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowCategoryPopup(true); setShowMenu(false); };
   const handleDelClick  = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); if (onDelete && confirm('Delete this link?')) onDelete(link.id); };
   const handleNoteClick = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); setShowNotesModal(true); };
-  const handleEditClick = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setEditTitle(link.title); setEditDesc(link.description); setEditTags(link.tags ?? []); setTagInput(''); setShowEditModal(true); setShowMenu(false); };
+  const openEditModal = () => { setEditTitle(link.title); setEditDescHtml(isHtmlDesc(link.description) ? link.description : getMemoText(link.description)); setEditTags(link.tags ?? []); setTagInput(''); setShowEditModal(true); setShowMenu(false); };
+  const handleEditClick = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); openEditModal(); };
   const handleMenuTgl   = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setMenuRect(r); setShowMenu(p => !p); };
   const handleFav       = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite?.(link.id); };
   const handleSel       = (e: React.MouseEvent) => { if (selectMode && onToggleSelect) { e.preventDefault(); onToggleSelect(link.id); } };
@@ -372,13 +426,8 @@ export function LinkCard({
                 onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
             </div>
             <div>
-              <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Description</label>
-              <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 rounded-xl resize-none focus:outline-none transition-all"
-                style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, fontSize: '16px' }}
-                onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
-                onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
+              <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>Description</label>
+              <RichTextEditor key={link.id} content={editDescHtml} onChange={setEditDescHtml} />
             </div>
             <div>
               <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Tags</label>
@@ -452,7 +501,12 @@ export function LinkCard({
         <div className="flex gap-2 px-6 py-4 justify-end shrink-0" style={{ borderTop: `1px solid ${t.modalBorder}` }}>
           <button onClick={() => setShowEditModal(false)} className="px-4 py-2 rounded-xl text-sm transition-colors"
             style={{ border: `1px solid ${t.modalInputBorder}`, color: t.textSecondary }}>Cancel</button>
-          <button onClick={() => { onUpdateLink?.(link.id, editTitle.trim() || link.title, editDesc); onUpdateTags?.(link.id, editTags); setShowEditModal(false); }}
+          <button onClick={() => {
+              const finalTags = tagInput.trim() && !editTags.includes(tagInput.trim()) ? [...editTags, tagInput.trim()] : editTags;
+              onUpdateLink?.(link.id, editTitle.trim() || link.title, editDescHtml);
+              onUpdateTags?.(link.id, finalTags);
+              setShowEditModal(false);
+            }}
             className="px-4 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90"
             style={{ background: 'linear-gradient(135deg,#7C3AED,#4338CA)' }}>Save</button>
         </div>
@@ -563,9 +617,10 @@ export function LinkCard({
 
   return (
     <div ref={node => { (cardRef as React.MutableRefObject<HTMLDivElement | null>).current = node; dropRef(node); }}
-      className={`group w-full rounded-2xl overflow-hidden transition-all duration-300 relative${compact ? ' flex flex-col h-full' : ''}`}
+      className={`group w-full rounded-2xl overflow-hidden transition-all duration-300 relative${compact ? ' flex flex-col h-full' : ''}${isMemo && !selectMode ? ' cursor-pointer' : ''}`}
       style={{ background: t.cardBg, border: `1px solid ${isOver ? '#A259FF' : (selectedBorder ?? t.cardBorder)}`, boxShadow: isOver ? '0 0 0 2px #A259FF40' : t.cardShadow, opacity: isDragging ? 0.4 : 1 }}
-      onMouseEnter={handleCardEnter} onMouseLeave={handleCardLeave}>
+      onMouseEnter={handleCardEnter} onMouseLeave={handleCardLeave}
+      onClick={isMemo && !selectMode ? (e) => { if ((e.target as HTMLElement).closest('button')) return; openEditModal(); } : undefined}>
 
       {/* Thumbnail */}
       <a href={selectMode || isMemo ? undefined : link.url}
@@ -660,7 +715,7 @@ export function LinkCard({
       {/* Drag handle — always rendered so dragging works even without a thumbnail */}
       {!selectMode && (
         <div ref={dragRef}
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-grab active:cursor-grabbing z-10 touch-none"
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 touch-visible transition-opacity duration-150 cursor-grab active:cursor-grabbing z-10 touch-none"
           onClick={e => e.preventDefault()}
           title="Drag to reorder or move to a board">
           <div className="flex items-center gap-1 px-1.5 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.50)', backdropFilter: 'blur(8px)' }}>
@@ -723,8 +778,11 @@ export function LinkCard({
           </div>
         )}
 
-        {!compact && !isArticle && link.description && link.description.length > 0 && !link.description.startsWith('Link saved from') && (
-          <p className="text-[11px] leading-relaxed line-clamp-2 mb-2" style={{ color: t.textMuted }}>{link.description}</p>
+        {!compact && !isMemo && !isArticle && link.description && link.description.length > 0 && !link.description.startsWith('Link saved from') && (
+          isHtmlDesc(link.description)
+            ? <div className="text-[11px] leading-relaxed mb-2 line-clamp-4 rich-card-preview" style={{ color: t.textMuted }}
+                dangerouslySetInnerHTML={{ __html: link.description }} />
+            : <MarkdownText text={getMemoText(link.description)} className="text-[11px] leading-relaxed mb-2" style={{ color: t.textMuted }} clamp={4} />
         )}
 
         {!compact && isArticle && aiSummary && (

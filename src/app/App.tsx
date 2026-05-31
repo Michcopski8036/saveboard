@@ -35,7 +35,7 @@ import { MultiBackend, TouchTransition, MouseTransition } from 'react-dnd-multi-
 const HTML5toTouch = {
   backends: [
     { id: 'html5', backend: HTML5Backend, transition: MouseTransition },
-    { id: 'touch', backend: TouchBackend, options: { enableMouseEvents: true }, transition: TouchTransition, preview: true },
+    { id: 'touch', backend: TouchBackend, options: { enableMouseEvents: false, delayTouchStart: 200 }, transition: TouchTransition },
   ],
 };
 import { ShareModal } from './components/ShareModal';
@@ -422,7 +422,7 @@ function AppContent() {
       if (looksLikeUrl) { try { new URL(input.startsWith('www.') ? 'https://' + input : input); isValidUrl = true; } catch { /**/ } }
 
       if (!isValidUrl) {
-        const nl = { id: generateId(), user_id: user.id, url: '#', title: input.slice(0, 50), description: input, image: 'placeholder:memo', category: 'None', created_at: Date.now() };
+        const nl = { id: generateId(), user_id: user.id, url: '#', title: input.slice(0, 100), description: '', image: 'placeholder:memo', category: 'None', created_at: Date.now() };
         const { error } = await supabase.from('links').insert(nl);
         if (error) throw error;
         setLinks(p => [{ ...nl, savedAt: new Date(nl.created_at) }, ...p]);
@@ -904,7 +904,10 @@ function AppContent() {
               {filtered.map(link => <LinkCard key={link.id} {...cardProps(link)} compact />)}
             </div>
           ) : viewMode === 'gallery' ? (
-            <GalleryView links={filtered} favorites={favorites} />
+            <GalleryView links={filtered} favorites={favorites} categories={categories}
+              onUpdateLink={handleUpdateLink} onUpdateTags={handleUpdateTags}
+              onToggleFavorite={handleToggleFavorite} onUpdateCategory={handleUpdateCategory}
+              onDelete={handleDeleteLink} />
           ) : (
             <div className="flex flex-col gap-2 max-w-2xl mx-auto">
               {filtered.map(link => <LinkCard key={link.id} {...cardProps(link)} listMode />)}

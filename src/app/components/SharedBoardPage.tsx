@@ -294,7 +294,9 @@ export function SharedBoardPage() {
 
                     {/* Description */}
                     {link.description && (
-                      <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed">{link.description}</p>
+                      link.description.trimStart().startsWith('<')
+                        ? <div className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed rich-card-preview" dangerouslySetInnerHTML={{ __html: link.description }} />
+                        : <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed">{link.description.replace(/^\[sz:(sm|md|lg)\]/, '')}</p>
                     )}
 
                     {/* External link icon on hover */}
