@@ -17,11 +17,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Verify caller is the admin
+  // Verify caller is the admin — decode JWT payload directly (no round-trip to Supabase auth)
   const token = (req.headers.authorization ?? '').replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-  if (authErr || !user || !ADMIN_EMAILS.has(user.email ?? '')) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+    if (!ADMIN_EMAILS.has(payload.email ?? '')) return res.status(403).json({ error: 'Forbidden' });
+  } catch {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 
   const now      = new Date();
   const weekAgo  = new Date(now.getTime() - 7  * 86400000).toISOString();

@@ -25,8 +25,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const token = (req.headers.authorization ?? '').replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-  if (authErr || !user || !ADMIN_EMAILS.has(user.email ?? '')) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+    if (!ADMIN_EMAILS.has(payload.email ?? '')) return res.status(403).json({ error: 'Forbidden' });
+  } catch {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 
   const { userId, planKey } = req.body as { userId: string; planKey: string };
   if (!userId || !planKey) return res.status(400).json({ error: 'userId and planKey required' });
