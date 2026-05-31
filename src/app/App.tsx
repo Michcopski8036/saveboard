@@ -42,6 +42,7 @@ import { ShareModal } from './components/ShareModal';
 import { UpgradePage, FREE_LIMITS } from './components/UpgradePage';
 import { BillingPage } from './components/BillingPage';
 import { SettingsPage } from './components/SettingsPage';
+import { AdminDashboard } from './components/AdminDashboard';
 import { LanguagePage } from './components/LanguagePage';
 import { ContactPage } from './components/ContactPage';
 import { HelpPage } from './components/HelpPage';
@@ -104,6 +105,7 @@ function AppContent() {
   const [isPro, setIsPro] = useState(false);
   const [subData, setSubData] = useState<{ plan: string; status: string; billing_cycle: string; current_period_end: string; saves_limit: string; boards_limit: string; storage_limit: string } | null>(null);
   const [showBilling, setShowBilling] = useState(false);
+  const [showAdmin, setShowAdmin]     = useState(false);
   const [currentStorageMb, setCurrentStorageMb] = useState(0);
   const [sharedBoards, setSharedBoards] = useState<{ token: string; category: string; synced_at: string | null; count: number; views: number; viewers: { email: string | null; viewed_at: string }[] }[]>([]);
   const fileInputRef    = useRef<HTMLInputElement>(null);
@@ -756,7 +758,7 @@ function AppContent() {
             </button>
 
             {/* Avatar */}
-            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
+            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowAdmin={user?.email === 'michcopski@gmail.com' ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
           </div>
 
           {/* Sub-header: title + sort — hidden on home dashboard */}
@@ -1290,6 +1292,11 @@ function AppContent() {
           boardCount={categories.length}
           isPro={isPro}
         />
+      )}
+
+      {/* ── Admin dashboard ────────────────────────────────────────────── */}
+      {showAdmin && user?.email === 'michcopski@gmail.com' && (
+        <AdminDashboard onClose={() => setShowAdmin(false)} userEmail={user.email} />
       )}
     </div>
   );

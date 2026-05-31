@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, LogOut, Download, Upload, Settings, Globe, HelpCircle, Zap, CreditCard } from 'lucide-react';
+import { ChevronDown, LogOut, Download, Upload, Settings, Globe, HelpCircle, Zap, CreditCard, BarChart2 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { useTheme, type ThemeMode } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -14,6 +14,7 @@ interface ProfileMenuProps {
   onShowLanguage?: () => void;
   onShowHelp?: () => void;
   onShowBilling?: () => void;
+  onShowAdmin?: () => void;
   user?: SupabaseUser | null;
   isPro?: boolean;
   currentLinks?: number;
@@ -21,7 +22,7 @@ interface ProfileMenuProps {
   currentStorageMb?: number;
 }
 
-export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onShowBilling, onShowSettings, onShowLanguage, onShowHelp, user, isPro, currentLinks = 0, currentBoards = 0, currentStorageMb = 0 }: ProfileMenuProps) {
+export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onShowBilling, onShowSettings, onShowLanguage, onShowHelp, onShowAdmin, user, isPro, currentLinks = 0, currentBoards = 0, currentStorageMb = 0 }: ProfileMenuProps) {
   const { theme, setTheme } = useTheme();
   const { tr } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
@@ -165,6 +166,16 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
                 <Zap className="w-4 h-4" style={{ color: '#7C3AED' }} />
                 <span className="text-sm font-semibold" style={{ color: '#7C3AED' }}>{isPro ? 'View Plans' : tr('upgradeToPro')}</span>
               </button>
+              {onShowAdmin && (
+                <>
+                  <div className="border-t border-gray-200 my-1" />
+                  <button onClick={() => { onShowAdmin(); setShowMenu(false); }}
+                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
+                    <BarChart2 className="w-4 h-4" style={{ color: '#7C3AED' }} />
+                    <span className="text-sm font-semibold" style={{ color: '#7C3AED' }}>Admin Dashboard</span>
+                  </button>
+                </>
+              )}
               <div className="border-t border-gray-200 my-1" />
               <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors text-red-500">
                 <LogOut className="w-4 h-4" />
