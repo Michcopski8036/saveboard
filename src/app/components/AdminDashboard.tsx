@@ -242,8 +242,21 @@ function BarRow({ label, value, max, color }: { label: string; value: number; ma
   );
 }
 
+type Tab = 'overview' | 'users' | 'revenue' | 'content' | 'seo' | 'system' | 'marketing';
+
+const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: 'overview',  label: 'Overview',  icon: TrendingUp },
+  { id: 'users',     label: 'Users',     icon: Users },
+  { id: 'revenue',   label: 'Revenue',   icon: CreditCard },
+  { id: 'content',   label: 'Content',   icon: Folder },
+  { id: 'seo',       label: 'SEO',       icon: Globe },
+  { id: 'system',    label: 'System',    icon: CheckCircle },
+  { id: 'marketing', label: 'Marketing', icon: Smartphone },
+];
+
 export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; userEmail: string }) {
   const { t } = useTheme();
+  const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState<string | null>(null);
@@ -301,409 +314,337 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
   const spark14 = (stats?.linksOverTime ?? []).slice(-14).map(d => d.count);
 
   return (
-    <div className="fixed inset-0 z-[500] overflow-y-auto" style={{ background: t.pageBg }}>
+    <div className="fixed inset-0 z-[500] flex flex-col" style={{ background: t.pageBg }}>
 
-      {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4"
-        style={{ background: t.cardBg, borderBottom: `1px solid ${t.cardBorder}`, backdropFilter: 'blur(12px)' }}>
+      {/* ── Top bar ─────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-6 py-3 shrink-0"
+        style={{ background: t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center"
             style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-            <BarChart2 className="w-4 h-4 text-white" />
+            <BarChart2 className="w-3.5 h-3.5 text-white" />
           </div>
-          <div>
-            <h1 className="text-[15px] font-bold" style={{ color: t.textPrimary }}>SaveBoard Admin</h1>
-            {lastRefresh && (
-              <p className="text-[10px]" style={{ color: t.textFaint }}>
-                Updated {lastRefresh.toLocaleTimeString()}
-              </p>
-            )}
-          </div>
+          <span className="text-[14px] font-bold" style={{ color: t.textPrimary }}>SaveBoard Admin</span>
+          {lastRefresh && <span className="text-[10px]" style={{ color: t.textFaint }}>· {lastRefresh.toLocaleTimeString()}</span>}
         </div>
         <div className="flex items-center gap-2">
           <button onClick={fetchStats} disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold"
             style={{ background: t.hoverBg, color: t.textMuted }}>
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </button>
           <button onClick={onClose}
-            className="px-4 py-1.5 rounded-xl text-[12px] font-semibold text-white"
+            className="px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white"
             style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-            ← Back to App
+            ← Back
           </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-10">
+      {/* ── Tab bar ─────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-1 px-6 py-2 shrink-0 overflow-x-auto"
+        style={{ background: t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
+        {TABS.map(tab => {
+          const Icon = tab.icon;
+          const active = activeTab === tab.id;
+          return (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold whitespace-nowrap transition-all"
+              style={{
+                background: active ? 'rgba(124,58,237,0.10)' : 'transparent',
+                color: active ? '#7C3AED' : t.textMuted,
+                border: active ? '1px solid rgba(124,58,237,0.20)' : '1px solid transparent',
+              }}>
+              <Icon className="w-3.5 h-3.5" />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
 
-        {/* ── Error ───────────────────────────────────────────────────────── */}
-        {error && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-            <p className="text-[13px] text-red-400">{error}</p>
-          </div>
-        )}
+      {/* ── Content ─────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-6xl mx-auto px-6 py-6 space-y-6">
 
-        {/* ── Loading skeleton ─────────────────────────────────────────────── */}
-        {loading && !stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-28 rounded-2xl animate-pulse" style={{ background: t.cardBg }} />
-            ))}
-          </div>
-        )}
+          {error && (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
+              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+              <p className="text-[13px] text-red-400">{error}</p>
+            </div>
+          )}
 
-        {stats && (
-          <>
-            {/* ═══════════════════════════════════════════════════════════════
-                SECTION 1 · OVERVIEW
-            ═══════════════════════════════════════════════════════════════ */}
-            <Section title="Overview" icon={TrendingUp}>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <KpiCard icon={Users} label="Total Users" value={stats.overview.totalUsers}
-                  sub={`+${stats.overview.newThisWeek} this week`} color="#7C3AED" />
-                <KpiCard icon={Crown} label="Paid Subscribers" value={totalPaid}
-                  sub={`${conversionRate}% conversion`} color="#F59E0B" />
-                <KpiCard icon={Link2} label="Total Links Saved" value={stats.overview.totalLinks}
-                  sub={`+${stats.overview.linksThisWeek} this week`} color="#10B981" spark={spark14} />
-                <KpiCard icon={Eye} label="Share Views" value={stats.overview.totalShareViews}
-                  sub={`${stats.overview.totalSharedBoards} shared boards`} color="#3B82F6" />
-              </div>
+          {loading && !stats && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-28 rounded-2xl animate-pulse" style={{ background: t.cardBg }} />
+              ))}
+            </div>
+          )}
 
-              {/* Links over time chart */}
-              <div className="mt-4 rounded-2xl p-5"
-                style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>
-                  LINKS SAVED — LAST 30 DAYS
-                </p>
-                <div className="flex items-end gap-[3px] h-28">
-                  {stats.linksOverTime.map((d, i) => {
-                    const max = Math.max(...stats.linksOverTime.map(x => x.count), 1);
-                    const pct = Math.max(2, (d.count / max) * 100);
-                    return (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
-                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 hidden group-hover:block z-10 whitespace-nowrap px-1.5 py-0.5 rounded text-[9px] font-semibold"
-                          style={{ background: '#7C3AED', color: '#fff' }}>
-                          {d.date.slice(5)} · {d.count}
-                        </div>
-                        <div className="w-full rounded-t-sm"
-                          style={{ height: `${pct}%`, background: `linear-gradient(to top, #7C3AED, #A78BFA)`, opacity: 0.75 + (i / 30) * 0.25 }} />
+          {stats && (
+            <>
+              {/* OVERVIEW */}
+              {activeTab === 'overview' && (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <KpiCard icon={Users} label="Total Users" value={stats.overview.totalUsers}
+                      sub={`+${stats.overview.newThisWeek} this week`} color="#7C3AED" />
+                    <KpiCard icon={Crown} label="Paid Subscribers" value={totalPaid}
+                      sub={`${conversionRate}% conversion`} color="#F59E0B" />
+                    <KpiCard icon={Link2} label="Total Links Saved" value={stats.overview.totalLinks}
+                      sub={`+${stats.overview.linksThisWeek} this week`} color="#10B981" spark={spark14} />
+                    <KpiCard icon={Eye} label="Share Views" value={stats.overview.totalShareViews}
+                      sub={`${stats.overview.totalSharedBoards} shared boards`} color="#3B82F6" />
+                  </div>
+                  <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                    <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>LINKS SAVED — LAST 30 DAYS</p>
+                    <div className="flex items-end gap-[3px] h-32">
+                      {stats.linksOverTime.map((d, i) => {
+                        const max = Math.max(...stats.linksOverTime.map(x => x.count), 1);
+                        const pct = Math.max(2, (d.count / max) * 100);
+                        return (
+                          <div key={i} className="flex-1 flex flex-col items-center group relative">
+                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 hidden group-hover:block z-10 whitespace-nowrap px-1.5 py-0.5 rounded text-[9px] font-semibold"
+                              style={{ background: '#7C3AED', color: '#fff' }}>
+                              {d.date.slice(5)} · {d.count}
+                            </div>
+                            <div className="w-full rounded-t-sm"
+                              style={{ height: `${pct}%`, background: `linear-gradient(to top,#7C3AED,#A78BFA)`, opacity: 0.7 + (i / 30) * 0.3 }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex justify-between mt-2">
+                      <p className="text-[10px]" style={{ color: t.textFaint }}>{stats.linksOverTime[0]?.date}</p>
+                      <p className="text-[10px]" style={{ color: t.textFaint }}>{stats.linksOverTime[stats.linksOverTime.length - 1]?.date}</p>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* USERS */}
+              {activeTab === 'users' && (
+                <>
+                  <WorldMap usersByCountry={stats.usersByCountry} unknownLocationCount={stats.unknownLocationCount} />
+                  <div>
+                    {planError && (
+                      <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl mb-3 text-[12px]"
+                        style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444' }}>
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />Plan update failed: {planError}
                       </div>
-                    );
-                  })}
-                </div>
-                <div className="flex justify-between mt-2">
-                  <p className="text-[10px]" style={{ color: t.textFaint }}>{stats.linksOverTime[0]?.date}</p>
-                  <p className="text-[10px]" style={{ color: t.textFaint }}>{stats.linksOverTime[stats.linksOverTime.length - 1]?.date}</p>
-                </div>
-              </div>
-            </Section>
+                    )}
+                    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${t.cardBorder}` }}>
+                      <table className="w-full text-[12px]">
+                        <thead>
+                          <tr style={{ background: t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
+                            {['Email', 'Joined', 'Plan', 'Links', 'Boards'].map(h => (
+                              <th key={h} className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]"
+                                style={{ color: t.textFaint }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {stats.recentUsers.map((u, i) => {
+                            const effectivePlan = planOverrides[u.id] === 'free' ? 'free'
+                              : planOverrides[u.id]?.startsWith('pro') ? 'pro'
+                              : planOverrides[u.id] === 'team' ? 'team' : u.plan;
+                            const effectiveSource = planOverrides[u.id] ? 'admin' : u.source;
+                            return (
+                              <tr key={u.id} style={{ background: i % 2 === 0 ? t.pageBg : t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
+                                <td className="px-4 py-2.5 font-medium truncate max-w-[200px]" style={{ color: t.textPrimary }}>{u.email}</td>
+                                <td className="px-4 py-2.5" style={{ color: t.textMuted }}>{new Date(u.created_at).toLocaleDateString()}</td>
+                                <td className="px-4 py-2.5">
+                                  <PlanSelector userId={u.id} plan={effectivePlan} source={effectiveSource} onUpdate={updatePlan} />
+                                </td>
+                                <td className="px-4 py-2.5 font-bold" style={{ color: t.textPrimary }}>{u.linkCount}</td>
+                                <td className="px-4 py-2.5 font-bold" style={{ color: t.textPrimary }}>{u.boardCount}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
 
-            {/* ═══════════════════════════════════════════════════════════════
-                SECTION 2 · USER LOCATIONS
-            ═══════════════════════════════════════════════════════════════ */}
-            <Section title="User Locations" icon={Globe}>
-              <WorldMap
-                usersByCountry={stats.usersByCountry}
-                unknownLocationCount={stats.unknownLocationCount}
-              />
-            </Section>
-
-            {/* ═══════════════════════════════════════════════════════════════
-                SECTION 3 · REVENUE & SUBSCRIPTIONS
-            ═══════════════════════════════════════════════════════════════ */}
-            <Section title="Revenue & Subscriptions" icon={CreditCard}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                {/* Plan breakdown donut */}
-                <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>PLAN BREAKDOWN</p>
-                  <div className="flex items-center gap-4">
-                    <DonutRing segments={[
-                      { value: stats.subscriptions.freeCount,  color: '#E5E7EB', label: 'Free'  },
-                      { value: stats.subscriptions.proCount,   color: '#7C3AED', label: 'Pro'   },
-                      { value: stats.subscriptions.teamCount,  color: '#0891B2', label: 'Team'  },
-                    ]} />
-                    <div className="space-y-2 text-[12px]">
-                      {[
-                        { label: 'Free',  value: stats.subscriptions.freeCount,  color: '#9CA3AF' },
-                        { label: 'Pro',   value: stats.subscriptions.proCount,   color: '#7C3AED' },
-                        { label: 'Team',  value: stats.subscriptions.teamCount,  color: '#0891B2' },
-                      ].map(({ label, value, color }) => (
-                        <div key={label} className="flex items-center gap-2">
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
-                          <span style={{ color: t.textPrimary }}>{label}</span>
-                          <span className="font-bold ml-auto" style={{ color: t.textPrimary }}>{value}</span>
+              {/* REVENUE */}
+              {activeTab === 'revenue' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                    <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>PLAN BREAKDOWN</p>
+                    <div className="flex items-center gap-4">
+                      <DonutRing segments={[
+                        { value: stats.subscriptions.freeCount, color: '#E5E7EB', label: 'Free' },
+                        { value: stats.subscriptions.proCount,  color: '#7C3AED', label: 'Pro' },
+                        { value: stats.subscriptions.teamCount, color: '#0891B2', label: 'Team' },
+                      ]} />
+                      <div className="space-y-2 text-[12px]">
+                        {[{ label: 'Free', value: stats.subscriptions.freeCount, color: '#9CA3AF' },
+                          { label: 'Pro',  value: stats.subscriptions.proCount,  color: '#7C3AED' },
+                          { label: 'Team', value: stats.subscriptions.teamCount, color: '#0891B2' }].map(({ label, value, color }) => (
+                          <div key={label} className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
+                            <span style={{ color: t.textPrimary }}>{label}</span>
+                            <span className="font-bold ml-auto" style={{ color: t.textPrimary }}>{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                    <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>BILLING CYCLE (PRO)</p>
+                    <div className="space-y-3">
+                      <BarRow label="Monthly" value={stats.subscriptions.monthlyPro} max={stats.subscriptions.proCount || 1} color="#7C3AED" />
+                      <BarRow label="Yearly"  value={stats.subscriptions.yearlyPro}  max={stats.subscriptions.proCount || 1} color="#A78BFA" />
+                    </div>
+                    <div className="mt-4 pt-4 flex items-center gap-2" style={{ borderTop: `1px solid ${t.cardBorder}` }}>
+                      <XCircle className="w-3.5 h-3.5 text-red-400" />
+                      <span className="text-[12px]" style={{ color: t.textMuted }}>{stats.subscriptions.cancelledCount} cancelled</span>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                    <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>BILLING PLATFORM</p>
+                    <div className="space-y-4">
+                      {[{ icon: CreditCard, count: stats.subscriptions.stripeCount, label: 'Stripe (web + Android)', color: '#6366F1', bg: 'rgba(99,102,241,0.12)' },
+                        { icon: Apple,      count: stats.subscriptions.appleCount,  label: 'Apple IAP (iOS)',       color: t.textPrimary, bg: 'rgba(0,0,0,0.06)' }].map(({ icon: Icon, count, label, color, bg }) => (
+                        <div key={label} className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: bg }}>
+                            <Icon className="w-4 h-4" style={{ color }} />
+                          </div>
+                          <div>
+                            <p className="text-[13px] font-bold" style={{ color: t.textPrimary }}>{count}</p>
+                            <p className="text-[11px]" style={{ color: t.textMuted }}>{label}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
-                </div>
-
-                {/* Billing cycle */}
-                <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>BILLING CYCLE (PRO)</p>
-                  <div className="space-y-3">
-                    <BarRow label="Monthly" value={stats.subscriptions.monthlyPro}
-                      max={stats.subscriptions.proCount || 1} color="#7C3AED" />
-                    <BarRow label="Yearly" value={stats.subscriptions.yearlyPro}
-                      max={stats.subscriptions.proCount || 1} color="#A78BFA" />
-                  </div>
-                  <div className="mt-4 pt-4 flex items-center gap-2" style={{ borderTop: `1px solid ${t.cardBorder}` }}>
-                    <XCircle className="w-3.5 h-3.5 text-red-400" />
-                    <span className="text-[12px]" style={{ color: t.textMuted }}>
-                      {stats.subscriptions.cancelledCount} cancelled
-                    </span>
-                  </div>
-                </div>
-
-                {/* Platform source */}
-                <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>BILLING PLATFORM</p>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                        style={{ background: 'rgba(99,102,241,0.12)' }}>
-                        <CreditCard className="w-4 h-4" style={{ color: '#6366F1' }} />
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-bold" style={{ color: t.textPrimary }}>{stats.subscriptions.stripeCount}</p>
-                        <p className="text-[11px]" style={{ color: t.textMuted }}>Stripe (web + Android)</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                        style={{ background: 'rgba(0,0,0,0.06)' }}>
-                        <Apple className="w-4 h-4" style={{ color: t.textPrimary }} />
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-bold" style={{ color: t.textPrimary }}>{stats.subscriptions.appleCount}</p>
-                        <p className="text-[11px]" style={{ color: t.textMuted }}>Apple IAP (iOS)</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Section>
-
-            {/* ═══════════════════════════════════════════════════════════════
-                SECTION 3 · RECENT USERS
-            ═══════════════════════════════════════════════════════════════ */}
-            <Section title="Recent Users" icon={Users}>
-              {planError && (
-                <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl mb-3 text-[12px]"
-                  style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444' }}>
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  Plan update failed: {planError}
                 </div>
               )}
-              <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${t.cardBorder}` }}>
-                <table className="w-full text-[12px]">
-                  <thead>
-                    <tr style={{ background: t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
-                      {['Email', 'Joined', 'Plan', 'Links', 'Boards'].map(h => (
-                        <th key={h} className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]"
-                          style={{ color: t.textFaint }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.recentUsers.map((u, i) => {
-                      const effectivePlan = planOverrides[u.id] === 'free' ? 'free'
-                        : planOverrides[u.id]?.startsWith('pro') ? 'pro'
-                        : planOverrides[u.id] === 'team' ? 'team'
-                        : u.plan;
-                      const effectiveSource = planOverrides[u.id] ? 'admin' : u.source;
-                      return (
-                        <tr key={u.id}
-                          style={{ background: i % 2 === 0 ? t.pageBg : t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
-                          <td className="px-4 py-2.5 font-medium truncate max-w-[200px]" style={{ color: t.textPrimary }}>
-                            {u.email}
-                          </td>
-                          <td className="px-4 py-2.5" style={{ color: t.textMuted }}>
-                            {new Date(u.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-2.5">
-                            <PlanSelector
-                              userId={u.id}
-                              plan={effectivePlan}
-                              source={effectiveSource}
-                              onUpdate={updatePlan}
-                            />
-                          </td>
-                          <td className="px-4 py-2.5 font-bold" style={{ color: t.textPrimary }}>
-                            {u.linkCount}
-                          </td>
-                          <td className="px-4 py-2.5 font-bold" style={{ color: t.textPrimary }}>
-                            {u.boardCount}
-                          </td>
+
+              {/* CONTENT */}
+              {activeTab === 'content' && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                      <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>TOP BOARDS</p>
+                      <div className="space-y-2.5">
+                        {stats.topCategories.slice(0, 8).map(({ category, count }) => (
+                          <BarRow key={category} label={category} value={count} max={stats.topCategories[0]?.count ?? 1} color="#10B981" />
+                        ))}
+                        {stats.topCategories.length === 0 && <p className="text-[12px]" style={{ color: t.textFaint }}>No board data yet</p>}
+                      </div>
+                    </div>
+                    <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                      <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>TOP TAGS</p>
+                      <div className="flex flex-wrap gap-2">
+                        {stats.topTags.map(({ tag, count }) => (
+                          <span key={tag} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+                            style={{ background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.22)', color: '#0D9488' }}>
+                            #{tag}<span className="text-[10px] opacity-60">{count}</span>
+                          </span>
+                        ))}
+                        {stats.topTags.length === 0 && <p className="text-[12px]" style={{ color: t.textFaint }}>No tag data yet</p>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${t.cardBorder}` }}>
+                    <p className="text-[12px] font-bold px-4 pt-4 pb-2" style={{ color: t.textMuted }}>SHARED BOARDS</p>
+                    <table className="w-full text-[12px]">
+                      <thead>
+                        <tr style={{ background: t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
+                          {['Board', 'Owner', 'Views', 'Created'].map(h => (
+                            <th key={h} className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]"
+                              style={{ color: t.textFaint }}>{h}</th>
+                          ))}
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </Section>
-
-            {/* ═══════════════════════════════════════════════════════════════
-                SECTION 4 · CONTENT
-            ═══════════════════════════════════════════════════════════════ */}
-            <Section title="Content" icon={Folder}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                {/* Top boards */}
-                <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>TOP BOARDS</p>
-                  <div className="space-y-2.5">
-                    {stats.topCategories.slice(0, 8).map(({ category, count }) => (
-                      <BarRow key={category} label={category} value={count}
-                        max={stats.topCategories[0]?.count ?? 1} color="#10B981" />
-                    ))}
-                    {stats.topCategories.length === 0 && (
-                      <p className="text-[12px]" style={{ color: t.textFaint }}>No board data yet</p>
-                    )}
+                      </thead>
+                      <tbody>
+                        {stats.topSharedBoards.map((b, i) => (
+                          <tr key={b.token} style={{ background: i % 2 === 0 ? t.pageBg : t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
+                            <td className="px-4 py-2.5">
+                              <div className="flex items-center gap-2">
+                                <Folder className="w-3.5 h-3.5 shrink-0" style={{ color: '#7C3AED' }} />
+                                <span className="font-semibold truncate max-w-[140px]" style={{ color: t.textPrimary }}>{b.category}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-2.5 truncate max-w-[160px]" style={{ color: t.textMuted }}>{b.owner_email}</td>
+                            <td className="px-4 py-2.5">
+                              <div className="flex items-center gap-1.5">
+                                <Eye className="w-3 h-3" style={{ color: '#3B82F6' }} />
+                                <span className="font-bold" style={{ color: t.textPrimary }}>{b.view_count}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-2.5" style={{ color: t.textMuted }}>{new Date(b.created_at).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                        {stats.topSharedBoards.length === 0 && (
+                          <tr><td colSpan={4} className="px-4 py-6 text-center text-[12px]" style={{ color: t.textFaint }}>No shared boards yet</td></tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
-                </div>
+                </>
+              )}
 
-                {/* Top tags */}
-                <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>TOP TAGS</p>
+              {/* SEO */}
+              {activeTab === 'seo' && <SeoPanel accessToken={accessToken} />}
+
+              {/* SYSTEM */}
+              {activeTab === 'system' && (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[{ label: 'WEB', name: 'Vercel', detail: 'saveboard.app' },
+                      { label: 'DATABASE', name: 'Supabase', detail: 'Postgres' },
+                      { label: 'iOS', name: 'In Review', detail: 'versionCode 1' },
+                      { label: 'ANDROID', name: 'In Review', detail: 'versionCode 1' }].map(({ label, name, detail }) => (
+                      <div key={label} className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                          <p className="text-[11px] font-bold" style={{ color: t.textMuted }}>{label}</p>
+                        </div>
+                        <p className="text-[13px] font-bold" style={{ color: t.textPrimary }}>{name}</p>
+                        <p className="text-[11px]" style={{ color: t.textFaint }}>{detail}</p>
+                      </div>
+                    ))}
+                  </div>
                   <div className="flex flex-wrap gap-2">
-                    {stats.topTags.map(({ tag, count }) => (
-                      <span key={tag} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
-                        style={{ background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.22)', color: '#0D9488' }}>
-                        #{tag}
-                        <span className="text-[10px] opacity-60">{count}</span>
-                      </span>
+                    {[{ label: 'Supabase', url: 'https://supabase.com/dashboard/project/mchikdltrcbovhdzdhhf' },
+                      { label: 'Stripe',   url: 'https://dashboard.stripe.com' },
+                      { label: 'Vercel',   url: 'https://vercel.com/dashboard' },
+                      { label: 'Play Console', url: 'https://play.google.com/console' },
+                      { label: 'App Store Connect', url: 'https://appstoreconnect.apple.com' }].map(({ label, url }) => (
+                      <a key={label} href={url} target="_blank" rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-xl text-[11px] font-semibold"
+                        style={{ background: t.hoverBg, color: t.textMuted, border: `1px solid ${t.cardBorder}` }}>
+                        {label} ↗
+                      </a>
                     ))}
-                    {stats.topTags.length === 0 && (
-                      <p className="text-[12px]" style={{ color: t.textFaint }}>No tag data yet</p>
-                    )}
                   </div>
-                </div>
-              </div>
-            </Section>
+                </>
+              )}
 
-            {/* ═══════════════════════════════════════════════════════════════
-                SECTION 5 · SHARED BOARDS
-            ═══════════════════════════════════════════════════════════════ */}
-            <Section title="Shared Boards" icon={Share2}>
-              <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${t.cardBorder}` }}>
-                <table className="w-full text-[12px]">
-                  <thead>
-                    <tr style={{ background: t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
-                      {['Board', 'Owner', 'Views', 'Created'].map(h => (
-                        <th key={h} className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]"
-                          style={{ color: t.textFaint }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.topSharedBoards.map((b, i) => (
-                      <tr key={b.token}
-                        style={{ background: i % 2 === 0 ? t.pageBg : t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
-                        <td className="px-4 py-2.5">
-                          <div className="flex items-center gap-2">
-                            <Folder className="w-3.5 h-3.5 shrink-0" style={{ color: '#7C3AED' }} />
-                            <span className="font-semibold truncate max-w-[140px]" style={{ color: t.textPrimary }}>{b.category}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-2.5 truncate max-w-[160px]" style={{ color: t.textMuted }}>{b.owner_email}</td>
-                        <td className="px-4 py-2.5">
-                          <div className="flex items-center gap-1.5">
-                            <Eye className="w-3 h-3" style={{ color: '#3B82F6' }} />
-                            <span className="font-bold" style={{ color: t.textPrimary }}>{b.view_count}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-2.5" style={{ color: t.textMuted }}>
-                          {new Date(b.created_at).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                    {stats.topSharedBoards.length === 0 && (
-                      <tr>
-                        <td colSpan={4} className="px-4 py-6 text-center text-[12px]" style={{ color: t.textFaint }}>
-                          No shared boards yet
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </Section>
-
-            {/* ═══════════════════════════════════════════════════════════════
-                SECTION 6 · SYSTEM HEALTH
-            ═══════════════════════════════════════════════════════════════ */}
-            <Section title="System" icon={Globe}>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                    <p className="text-[11px] font-bold" style={{ color: t.textMuted }}>WEB</p>
+              {/* MARKETING */}
+              {activeTab === 'marketing' && (
+                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                    style={{ background: 'rgba(124,58,237,0.10)', border: '1px solid rgba(124,58,237,0.2)' }}>
+                    <Smartphone className="w-6 h-6" style={{ color: '#7C3AED' }} />
                   </div>
-                  <p className="text-[13px] font-bold" style={{ color: t.textPrimary }}>Vercel</p>
-                  <p className="text-[11px]" style={{ color: t.textFaint }}>saveboard.app</p>
+                  <p className="text-[16px] font-bold" style={{ color: t.textPrimary }}>AI Marketing Hub</p>
+                  <p className="text-[13px]" style={{ color: t.textMuted }}>Coming next — provide your Anthropic API key to activate</p>
                 </div>
-                <div className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                    <p className="text-[11px] font-bold" style={{ color: t.textMuted }}>DATABASE</p>
-                  </div>
-                  <p className="text-[13px] font-bold" style={{ color: t.textPrimary }}>Supabase</p>
-                  <p className="text-[11px]" style={{ color: t.textFaint }}>Postgres</p>
-                </div>
-                <div className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                    <p className="text-[11px] font-bold" style={{ color: t.textMuted }}>iOS</p>
-                  </div>
-                  <p className="text-[13px] font-bold" style={{ color: t.textPrimary }}>In Review</p>
-                  <p className="text-[11px]" style={{ color: t.textFaint }}>versionCode 1</p>
-                </div>
-                <div className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                    <p className="text-[11px] font-bold" style={{ color: t.textMuted }}>ANDROID</p>
-                  </div>
-                  <p className="text-[13px] font-bold" style={{ color: t.textPrimary }}>In Review</p>
-                  <p className="text-[11px]" style={{ color: t.textFaint }}>versionCode 1</p>
-                </div>
-              </div>
+              )}
 
-              {/* Quick links */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {[
-                  { label: 'Supabase Dashboard', url: 'https://supabase.com/dashboard/project/mchikdltrcbovhdzdhhf' },
-                  { label: 'Stripe Dashboard',   url: 'https://dashboard.stripe.com' },
-                  { label: 'Vercel Dashboard',   url: 'https://vercel.com/dashboard' },
-                  { label: 'Play Console',        url: 'https://play.google.com/console' },
-                  { label: 'App Store Connect',   url: 'https://appstoreconnect.apple.com' },
-                ].map(({ label, url }) => (
-                  <a key={label} href={url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-colors"
-                    style={{ background: t.hoverBg, color: t.textMuted, border: `1px solid ${t.cardBorder}` }}>
-                    {label} ↗
-                  </a>
-                ))}
-              </div>
-            </Section>
-
-            {/* ═══════════════════════════════════════════════════════════════
-                SEO & AI CRAWLERS
-            ═══════════════════════════════════════════════════════════════ */}
-            <Section title="SEO & AI 크롤러" icon={Globe}>
-              <SeoPanel accessToken={accessToken} />
-            </Section>
-
-            {/* Footer */}
-            <p className="text-center text-[10px] pb-8" style={{ color: t.textFaint }}>
-              Data generated at {new Date(stats.generatedAt).toLocaleString()} · Admin: {userEmail}
-            </p>
-          </>
-        )}
+              <p className="text-center text-[10px] pb-4" style={{ color: t.textFaint }}>
+                {stats.generatedAt ? `Data from ${new Date(stats.generatedAt).toLocaleString()} · ` : ''}{userEmail}
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
