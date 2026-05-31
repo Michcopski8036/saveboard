@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
+import { WorldMap } from './WorldMap';
 
 interface AdminStats {
   overview: {
@@ -30,6 +31,8 @@ interface AdminStats {
     token: string; category: string; owner_email: string;
     view_count: number; created_at: string;
   }>;
+  usersByCountry: Array<{ iso3: string; count: number }>;
+  unknownLocationCount: number;
   generatedAt: string;
 }
 
@@ -398,7 +401,17 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
             </Section>
 
             {/* ═══════════════════════════════════════════════════════════════
-                SECTION 2 · REVENUE & SUBSCRIPTIONS
+                SECTION 2 · USER LOCATIONS
+            ═══════════════════════════════════════════════════════════════ */}
+            <Section title="User Locations" icon={Globe}>
+              <WorldMap
+                usersByCountry={stats.usersByCountry}
+                unknownLocationCount={stats.unknownLocationCount}
+              />
+            </Section>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                SECTION 3 · REVENUE & SUBSCRIPTIONS
             ═══════════════════════════════════════════════════════════════ */}
             <Section title="Revenue & Subscriptions" icon={CreditCard}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

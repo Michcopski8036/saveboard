@@ -87,6 +87,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .slice(0, 20)
     .map(u => ({ id: u.id, email: u.email ?? '', created_at: u.created_at }));
 
+  // ── Location: infer country from locale in user_metadata ──────────────────
+  const LOCALE_TO_ISO: Record<string, string> = {
+    'en-AU': 'AUS', 'en-US': 'USA', 'en-GB': 'GBR', 'en-CA': 'CAN',
+    'en-NZ': 'NZL', 'en-SG': 'SGP', 'en-IN': 'IND', 'en-IE': 'IRL',
+    'ko': 'KOR', 'ko-KR': 'KOR', 'ja': 'JPN', 'ja-JP': 'JPN',
+    'zh': 'CHN', 'zh-CN': 'CHN', 'zh-TW': 'TWN', 'zh-HK': 'HKG',
+    'fr': 'FRA', 'fr-FR': 'FRA', 'de': 'DEU', 'de-DE': 'DEU',
+    'es': 'ESP', 'es-ES': 'ESP', 'es-MX': 'MEX', 'pt': 'BRA',
+    'pt-BR': 'BRA', 'pt-PT': 'PRT', 'it': 'ITA', 'nl': 'NLD',
+    'ru': 'RUS', 'ar': 'SAU', 'tr': 'TUR', 'vi': 'VNM',
+    'th': 'THA', 'id': 'IDN', 'ms': 'MYS', 'fil': 'PHL',
+    'en': 'USA', // default English → US
+  };
+  const countryCount: Record<string, number> = {};
+  for (const u of allUsers) {
+    const locale: string = u.user_metadata?.locale ?? u.user_metadata?.language ?? '';
+    const iso = LOCALE_TO_ISO[locale] ?? (locale.includes('-') ? LOCALE_TO_ISO[locale.split('-')[0]] : null);
+    const country = iso ?? 'UNKNOWN';
+    countryCount[country] = (countryCount[country] ?? 0) + 1;
+  }
+  const usersByCountry = Object.entries(countryCount)
+    .filter(([c]) => c !== 'UNKNOWN')
+    .sort(([, a], [, b]) => b - a)
+    .map(([iso3, count]) => ({ iso3, count }));
+  const unknownCount = countryCount['UNKNOWN'] ?? 0;
+
   // ── Links ─────────────────────────────────────────────────────────────────
   const totalLinks = linksCountRes.count ?? 0;
   const linksThisWeek = linksWeekRes.count ?? 0;
@@ -169,6 +195,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     overview: { totalUsers, newThisWeek, newThisMonth, totalLinks, linksThisWeek, totalSharedBoards, totalShareViews },
     subscriptions: { proCount, teamCount, freeCount, monthlyPro, yearlyPro, stripeCount, appleCount, cancelledCount },
     recentUsers: enrichedUsers,
+    usersByCountry,
+    unknownLocationCount: unknownCount,
     topCategories,
     topTags,
     linksOverTime: linksOverTimeArr,
