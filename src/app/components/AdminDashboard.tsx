@@ -157,13 +157,16 @@ function PlanSelector({ userId, plan, source, onUpdate }: {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dropPos, setDropPos] = useState({ top: 0, left: 0 });
-  const btnRef = useRef<HTMLButtonElement>(null);
+  const btnRef  = useRef<HTMLButtonElement>(null);
+  const dropRef = useRef<HTMLDivElement>(null);
   const current = PLAN_OPTIONS.find(o => o.key === planKeyFromUser(plan, source)) ?? PLAN_OPTIONS[0];
 
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (btnRef.current && !btnRef.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (btnRef.current?.contains(t) || dropRef.current?.contains(t)) return;
+      setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -199,11 +202,11 @@ function PlanSelector({ userId, plan, source, onUpdate }: {
       </button>
 
       {open && createPortal(
-        <div style={{ position: 'absolute', top: dropPos.top, left: dropPos.left, width: 144, zIndex: 9999,
+        <div ref={dropRef} style={{ position: 'absolute', top: dropPos.top, left: dropPos.left, width: 144, zIndex: 9999,
           background: t.modalBg, border: `1px solid ${t.modalBorder}`, borderRadius: 12,
           boxShadow: '0 8px 24px rgba(0,0,0,0.15)', padding: '4px 0' }}>
           {PLAN_OPTIONS.map(opt => (
-            <button key={opt.key} onClick={() => handleSelect(opt.key)}
+            <button key={opt.key} onMouseDown={() => handleSelect(opt.key)}
               className="w-full text-left px-3 py-2 text-[11px] font-semibold flex items-center gap-2 transition-colors"
               style={{ color: opt.color, background: opt.key === planKeyFromUser(plan, source) ? opt.bg : 'transparent' }}
               onMouseEnter={e => { e.currentTarget.style.background = opt.bg; }}
