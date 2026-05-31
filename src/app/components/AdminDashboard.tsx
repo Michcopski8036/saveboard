@@ -243,12 +243,14 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [planOverrides, setPlanOverrides] = useState<Record<string, PlanKey>>({});
   const [planError, setPlanError] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const fetchStats = useCallback(async () => {
     setLoading(true); setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
+      setAccessToken(session.access_token);
       const res = await fetch('/api/admin-stats', {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -267,14 +269,14 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
 
   const updatePlan = useCallback(async (userId: string, planKey: PlanKey) => {
     setPlanError(null);
+    const token = accessToken;
+    if (!token) { setPlanError('Session not ready — try refreshing'); return; }
     const prev = planOverrides[userId];
     setPlanOverrides(p => ({ ...p, [userId]: planKey })); // optimistic
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
       const res = await fetch('/api/admin-update-plan', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, planKey }),
       });
       if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? 'Update failed'); }
@@ -282,7 +284,7 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
       setPlanError(e.message);
       setPlanOverrides(p => { const n = { ...p }; if (prev !== undefined) n[userId] = prev; else delete n[userId]; return n; });
     }
-  }, [planOverrides]);
+  }, [accessToken, planOverrides]);
 
   const totalPaid = (stats?.subscriptions.proCount ?? 0) + (stats?.subscriptions.teamCount ?? 0);
   const totalUsers = stats?.overview.totalUsers ?? 0;
