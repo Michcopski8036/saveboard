@@ -15,20 +15,36 @@
 
 alter table public.shared_board_views enable row level security;
 
--- (1) Allow anyone to record a view. The viewer's client never reads the row
--- back (insert is return=minimal), so no SELECT grant is needed for this path.
--- Note: we intentionally do NOT gate this on the board existing in
--- shared_boards. Once shared_boards has RLS enabled (see
--- 20260603_shared_boards_rls.sql), anon can no longer SELECT that table
--- directly, so an EXISTS subquery here would always be false and would silently
--- drop every view record. A stray view row for a non-existent token is
--- harmless; the owner-only SELECT policy below never surfaces it.
+-- (1) Allow anyone to record a view, but only for a board that actually exists.
+-- The viewer's client never reads the row back (insert is return=minimal), so no
+-- SELECT grant is needed for this path.
+--
+-- The existence test can't be a plain `EXISTS (... FROM shared_boards ...)`:
+-- once shared_boards has RLS enabled (20260603_shared_boards_rls.sql) anon can
+-- no longer read that table, so the subquery would always be false and would
+-- silently drop every view. Instead we use the SECURITY DEFINER helper
+-- board_token_exists(), which evaluates the check as its owner and therefore
+-- sees shared_boards regardless of the caller's RLS. This also keeps the check
+-- from being the overly-permissive `with check (true)` that bypasses RLS.
+create or replace function public.board_token_exists(p_token uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (select 1 from public.shared_boards where token = p_token);
+$$;
+
+revoke all on function public.board_token_exists(uuid) from public;
+grant execute on function public.board_token_exists(uuid) to anon, authenticated;
+
 drop policy if exists shared_board_views_insert on public.shared_board_views;
 create policy shared_board_views_insert
   on public.shared_board_views
   for insert
   to anon, authenticated
-  with check (true);
+  with check ( public.board_token_exists((token)::uuid) );
 
 -- (2) Only the owner of the referenced board may read its view records.
 drop policy if exists shared_board_views_owner_select on public.shared_board_views;
