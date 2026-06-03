@@ -72,6 +72,7 @@ function AppContent() {
   const [categories, setCategories]     = useState<string[]>([]);
   const [isLoading, setIsLoading]       = useState(false);
   const [isAdding, setIsAdding]         = useState(false);
+  const [isUploading, setIsUploading]   = useState(false);
   const [urlInput, setUrlInput]         = useState('');
   const [searchQuery, setSearchQuery]   = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -271,9 +272,7 @@ function AppContent() {
     localStorage.removeItem('saveboard-pending-import');
     try {
       const { data } = await supabase
-        .from('shared_boards')
-        .select('category, links_snapshot')
-        .eq('token', token)
+        .rpc('get_shared_board', { p_token: token })
         .single();
       if (!data) return;
 
@@ -457,6 +456,7 @@ function AppContent() {
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
+    setIsUploading(true);
     try {
       const { generateId } = await import('./utils/metadataFetcher');
       const id = generateId();
@@ -474,7 +474,7 @@ function AppContent() {
       setLinks(p => [{ ...nl, savedAt: new Date(nl.created_at) }, ...p]);
       setSuccessMessage('File uploaded!'); setTimeout(() => setSuccessMessage(''), 2500); setShowAddModal(false);
     } catch (err: any) { setErrorMessage(err?.message?.toLowerCase().includes('bucket') ? 'Storage bucket not set up — check Supabase' : 'Upload failed'); }
-    finally { setIsAdding(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
+    finally { setIsAdding(false); setIsUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
   const handleUpdateCategory  = async (id: string, cat: string) => { await supabase.from('links').update({ category: cat }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, category: cat } : l)); };
@@ -721,12 +721,14 @@ function AppContent() {
                     : <><ArrowRight className="w-4 h-4" /><span className="hidden sm:block">{tr('save')}</span></>}
                 </button>
               )}
-              <button onClick={() => fileInputRef.current?.click()} title="Upload file"
-                className="p-2 rounded-xl transition-all shrink-0"
+              <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} title="Upload file"
+                className="p-2 rounded-xl transition-all shrink-0 disabled:opacity-60"
                 style={{ background: t.controlContainerBg, border: `1px solid ${t.controlContainerBorder}`, color: t.textMuted }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#7C3AED'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.30)'; }}
+                onMouseEnter={e => { if (isUploading) return; e.currentTarget.style.color = '#7C3AED'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.30)'; }}
                 onMouseLeave={e => { e.currentTarget.style.color = t.textMuted; e.currentTarget.style.borderColor = t.controlContainerBorder; }}>
-                <Paperclip className="w-4 h-4" />
+                {isUploading
+                  ? <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  : <Paperclip className="w-4 h-4" />}
               </button>
             </div>
 
@@ -961,11 +963,13 @@ function AppContent() {
 
             {/* Actions */}
             <div className="flex gap-2">
-              <button onClick={() => fileInputRef.current?.click()} disabled={isAdding}
+              <button onClick={() => fileInputRef.current?.click()} disabled={isAdding || isUploading}
                 className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[12px] font-medium transition-colors disabled:opacity-50"
                 style={{ background: t.modalPdfBg, border: `1px solid ${t.modalPdfBorder}`, color: t.modalPdfText }}>
-                <Paperclip className="w-3.5 h-3.5" />
-                File
+                {isUploading
+                  ? <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  : <Paperclip className="w-3.5 h-3.5" />}
+                {isUploading ? 'Uploading…' : 'File'}
               </button>
               <button onClick={() => handleAddUrl(undefined, closeModal)} disabled={isAdding || !urlInput.trim()}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
@@ -987,6 +991,20 @@ function AppContent() {
 
       {/* Hidden PDF input */}
       <input ref={fileInputRef} type="file" className="hidden" accept="image/*,application/pdf,.pdf,.doc,.docx,.txt" onChange={handleFileUpload} />
+
+      {/* Upload-in-progress overlay (shows regardless of which trigger started the upload) */}
+      {isUploading && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-[4px]" style={{ background: t.modalBackdrop }}>
+          <div className="flex items-center gap-3 px-5 py-4 rounded-2xl"
+            style={{ background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}>
+            <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24" style={{ color: t.modalTitle }}>
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            <span className="text-[14px] font-medium" style={{ color: t.modalTitle }}>Uploading…</span>
+          </div>
+        </div>
+      )}
 
       {/* ── Floating Action Button (tablet+) ──────────────────────────── */}
       {!selectMode && (

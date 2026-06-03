@@ -37,9 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let board: any = null;
   try {
     const { data } = await supabase
-      .from('shared_boards')
-      .select('category, owner_name, owner_email, links_snapshot, synced_at')
-      .eq('token', token)
+      .rpc('get_shared_board', { p_token: token })
       .single();
     board = data;
   } catch {

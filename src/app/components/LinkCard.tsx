@@ -316,6 +316,7 @@ export function LinkCard({
   const [editTags, setEditTags]     = useState<string[]>(link.tags ?? []);
   const [tagInput, setTagInput]     = useState('');
   const [listImgError, setListImgError] = useState(false);
+  const [cardImgError, setCardImgError] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const isHtmlDesc = (desc: string) => desc.trimStart().startsWith('<');
@@ -635,11 +636,14 @@ export function LinkCard({
           <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} domain={isMemo || isPdf ? undefined : domain}
             text={isMemo ? link.description : undefined}
             className={`w-full ${compact ? 'h-full object-cover' : isMemo ? '' : isPortraitVideo ? 'aspect-[9/16]' : 'aspect-video'}`} />
+        ) : cardImgError ? (
+          <PlatformPlaceholder platform={detectPlatformFromUrl(link.url)} domain={domain}
+            className={`w-full ${compact ? 'h-36 object-cover' : isPortraitVideo ? 'aspect-[9/16]' : 'aspect-video'}`} />
         ) : (
           <img src={link.image} alt={link.title}
             className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isVideo ? (isPortraitVideo ? 'aspect-[9/16] object-cover' : 'aspect-video object-cover') : 'h-auto'} ${(isYT || isVimeo || isTikTok || isFbVid) && isHovered ? 'invisible' : ''}`}
             style={{ transform: imgHovered && !isVideo ? 'scale(1.04)' : 'scale(1)' }}
-            onError={e => { const p = e.currentTarget.closest('a'); if (p) p.style.display = 'none'; }} />
+            onError={() => setCardImgError(true)} />
         )}
 
         {isArticle && imgHovered && !selectMode && (

@@ -49,7 +49,9 @@
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>NSPhotoLibraryUsageDescription</key>
+	<key>NSCameraUsageDescription</key>
+		<string>SaveBoard needs access to your camera to take photos and attach them to your saves.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
 	<string>SaveBoard needs access to your photo library to attach images to your saves.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>SaveBoard needs permission to save images to your photo library.</string>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bookmark, Home, Clock, Heart, Inbox, Plus, Sparkles, Zap, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2 } from 'lucide-react';
+import { Bookmark, Home, Clock, Heart, Inbox, Plus, Sparkles, Zap, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2, Layers } from 'lucide-react';
 import { useDrop } from 'react-dnd';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -421,10 +421,11 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
       <div className={sidebarOpen ? 'hidden' : 'hidden md:flex xl:hidden flex-col items-center gap-1 py-4 h-full overflow-y-auto'}>
 
         {/* Logo mark */}
-        <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
+        <button onClick={() => onSelect('all')} title="Home"
+          className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
           style={{ background: t.logoIconBg, boxShadow: t.logoIconShadow }}>
           <Bookmark className="w-4 h-4 text-white" strokeWidth={2.5} />
-        </div>
+        </button>
 
         {/* Expand button */}
         <button
@@ -445,6 +446,9 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
         ))}
 
         <div className="w-7 h-px my-1 shrink-0" style={{ background: t.logoDivider }} />
+
+        {/* All boards shortcut */}
+        <RailBtn id="browse" label="All boards" Icon={Layers} />
 
         {/* Boards (colored dots) */}
         {categories.map(cat => {

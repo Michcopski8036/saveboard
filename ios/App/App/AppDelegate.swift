@@ -59,7 +59,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         let js = "window.dispatchEvent(new CustomEvent('saveboard-share', { detail: \(json) }))"
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
             guard let bridge = (self?.window?.rootViewController as? CAPBridgeViewController)?.bridge else { return }
             bridge.webView?.evaluateJavaScript(js, completionHandler: nil)
         }
