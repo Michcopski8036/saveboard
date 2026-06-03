@@ -1,10 +1,22 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Link2, Check, Share2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { LinkCard, type LinkData } from './LinkCard';
 
 const PALETTE = ['#8B5CF6','#6366F1','#3B82F6','#0EA5E9','#10B981','#F59E0B','#EF4444','#EC4899'];
 function dotColor(n: string) { return PALETTE[[...n].reduce((a,c) => a+c.charCodeAt(0),0) % PALETTE.length]; }
+
+// Responsive column count matching the old Tailwind breakpoints
+// (columns-2 sm:columns-3 md:columns-4 lg:columns-5). We distribute cards into
+// these columns in JS instead of using CSS `columns`, whose multi-column
+// fragmentation mis-paints sibling cards when a hovered card spawns a
+// compositing layer (backdrop-filter blur on the video overlays).
+function columnsForWidth(w: number) {
+  if (w < 640) return 2;
+  if (w < 768) return 3;
+  if (w < 1024) return 4;
+  return 5;
+}
 
 interface SharedBoard { token: string; category: string; synced_at: string | null; count: number; views: number; viewers: { email: string | null; viewed_at: string }[]; }
 
@@ -30,6 +42,19 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
   };
 
   const recent = useMemo(() => [...links].sort((a,b) => b.savedAt.getTime() - a.savedAt.getTime()).slice(0, 8), [links]);
+
+  const [colCount, setColCount] = useState(() => (typeof window === 'undefined' ? 5 : columnsForWidth(window.innerWidth)));
+  useEffect(() => {
+    const onResize = () => setColCount(columnsForWidth(window.innerWidth));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const recentColumns = useMemo(() => {
+    const cols: LinkData[][] = Array.from({ length: colCount }, () => []);
+    recent.forEach((l, i) => cols[i % colCount].push(l));
+    return cols;
+  }, [recent, colCount]);
 
   const greeting = useMemo(() => {
     const h = new Date().getHours();
@@ -121,10 +146,12 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
               View all <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-3.5">
-            {recent.map(l => (
-              <div key={l.id} className="break-inside-avoid mb-3.5">
-                <LinkCard {...cardProps(l)} />
+          <div className="flex gap-3.5 items-start">
+            {recentColumns.map((col, ci) => (
+              <div key={ci} className="flex-1 min-w-0 flex flex-col gap-3.5">
+                {col.map(l => (
+                  <LinkCard {...cardProps(l)} key={l.id} />
+                ))}
               </div>
             ))}
           </div>
