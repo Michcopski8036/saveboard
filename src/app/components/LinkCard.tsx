@@ -641,7 +641,7 @@ export function LinkCard({
             className={`w-full ${compact ? 'h-36 object-cover' : isPortraitVideo ? 'aspect-[9/16]' : 'aspect-video'}`} />
         ) : (
           <img src={link.image} alt={link.title}
-            className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isVideo ? (isPortraitVideo ? 'aspect-[9/16] object-cover' : 'aspect-video object-cover') : 'h-auto'} ${(isYT || isVimeo || isTikTok || isFbVid) && isHovered ? 'invisible' : ''}`}
+            className={`w-full block transition-transform duration-500 ${compact ? 'h-full object-cover' : isVideo ? (isPortraitVideo ? 'aspect-[9/16] object-cover' : 'aspect-video object-cover') : 'h-auto'}`}
             style={{ transform: imgHovered && !isVideo ? 'scale(1.04)' : 'scale(1)' }}
             onError={() => setCardImgError(true)} />
         )}
