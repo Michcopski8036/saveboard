@@ -38,3 +38,16 @@ revoke execute on function public.handle_new_user() from public, anon, authentic
 -- vs the curated snapshot model: live data + all columns rather than the
 -- owner-synced subset.
 drop function if exists public.get_shared_board_links(uuid);
+
+-- ── 4. bot_visits: explicit "no client access" policy ────────────────────────
+-- bot_visits is written/read only via the service role (api/robots.ts inserts
+-- crawler hits, api/bot-stats.ts reads them for the admin dashboard), which
+-- bypasses RLS. RLS was enabled with NO policies, which already denies all
+-- anon/authenticated access — correct, but the advisor flags "RLS enabled but
+-- no policies" since that pattern is usually an accidental lockout. This no-op
+-- policy documents the intent (clients are deliberately blocked) and satisfies
+-- the advisory without granting any access. Verified: anon SELECT returns [],
+-- anon INSERT returns 42501.
+create policy bot_visits_no_client_access on public.bot_visits
+  for all to anon, authenticated
+  using (false) with check (false);
