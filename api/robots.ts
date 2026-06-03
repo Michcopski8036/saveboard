@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       bot_name: matched.name,
       user_agent: ua.slice(0, 500),
       path: '/robots.txt',
-    }).then(() => {}).catch(() => {});
+    }).then(() => {}, () => {});
   }
 
   res.setHeader('Content-Type', 'text/plain');
