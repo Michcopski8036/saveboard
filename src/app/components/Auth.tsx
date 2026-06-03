@@ -181,6 +181,12 @@ export function Auth() {
           />
         </div>
 
+        {!isLogin && (
+          <p className="mt-2 text-xs text-gray-400">
+            Use 8+ characters with uppercase, lowercase, a number, and a symbol.
+          </p>
+        )}
+
         {error && <p className="mt-3 text-sm text-red-500 text-center">{error}</p>}
         {message && <p className="mt-3 text-sm text-green-500 text-center">{message}</p>}
 
