@@ -27,3 +27,14 @@ create policy "Allow owner read pdfs" on storage.objects
 -- signups — it just stops clients from calling the function directly.
 alter function public.handle_new_user() set search_path = '';
 revoke execute on function public.handle_new_user() from public, anon, authenticated;
+
+-- ── 3. Drop orphaned get_shared_board_links() ────────────────────────────────
+-- SECURITY DEFINER, anon-callable function that returned SETOF links (all
+-- columns of the live links table) for a board's owner+category, bypassing RLS.
+-- It was the sharing mechanism for ~11 minutes during dev on 2026-05-13
+-- (commit 34fa6bb2) before being replaced by the links_snapshot approach
+-- (commit be727a26). Never shipped in any released client and unreferenced in
+-- all source/bundles, so this is pure attack-surface removal. It over-exposed
+-- vs the curated snapshot model: live data + all columns rather than the
+-- owner-synced subset.
+drop function if exists public.get_shared_board_links(uuid);
