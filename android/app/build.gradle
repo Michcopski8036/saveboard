@@ -1,5 +1,13 @@
 apply plugin: 'com.android.application'
 
+// Signing credentials are kept out of version control in android/keystore.properties
+// (gitignored). Build release artifacts only on a machine where that file exists.
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "app.saveboard.saveboard"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -18,10 +26,10 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('../../../saveboard-keystore-new.jks')
-            storePassword '2474519aA^^'
-            keyAlias 'saveboard-key'
-            keyPassword '2474519aA^^'
+            storeFile file(keystoreProperties.getProperty('storeFile') ?: '../../../saveboard-keystore-new.jks')
+            storePassword keystoreProperties.getProperty('storePassword')
+            keyAlias keystoreProperties.getProperty('keyAlias')
+            keyPassword keystoreProperties.getProperty('keyPassword')
         }
     }
     buildTypes {
