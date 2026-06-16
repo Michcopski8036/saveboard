@@ -9,7 +9,7 @@ import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
 import { LandingPage } from './components/LandingPage';
-import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2 } from 'lucide-react';
+import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2, Check } from 'lucide-react';
 
 function GalleryIcon({ className }: { className?: string }) {
   return (
@@ -56,6 +56,17 @@ type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a' | 'custom';
 
 const defaultCategories = ['Events', 'Recipes', 'Fitness'];
 
+// Max files accepted in a single upload (e.g. a photo multi-select).
+const MAX_UPLOAD_BATCH = 10;
+
+// Dedup key for importing a shared board: real links dedup by URL, but memos/
+// notes all share url '#', so those fall back to (lowercased) title — otherwise
+// every memo after the first would collapse to the same key and never import.
+const importDedupKey = (l: { url?: string; title?: string }): string => {
+  const u = (l.url ?? '').trim();
+  return u && u !== '#' ? `u:${u}` : `t:${(l.title ?? '').trim().toLowerCase()}`;
+};
+
 // Labels computed dynamically via tr() in AppContent
 
 export default function App() {
@@ -77,6 +88,7 @@ function AppContent() {
   const [searchQuery, setSearchQuery]   = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
   const [selected, setSelected]         = useState<Collection>('all');
   const [viewMode, setViewMode]         = useState<ViewMode>('masonry');
   const [sortOption, setSortOption]     = useState<SortOption>('newest');
@@ -84,6 +96,7 @@ function AppContent() {
   const [selectMode, setSelectMode]     = useState(false);
   const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
   const [showAddModal, setShowAddModal] = useState(false);
+  const [addBoards, setAddBoards] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen]   = useState(false);
   const [shareCategory, setShareCategory] = useState<string | null>(null);
   const [showFabMenu, setShowFabMenu]   = useState(false);
@@ -165,6 +178,13 @@ function AppContent() {
       });
   }, [user]);
 
+  // Seed the Add modal's board multi-select with the currently-viewed board.
+  useEffect(() => {
+    if (showAddModal) {
+      setAddBoards(selected.startsWith('cat:') ? new Set([selected.slice(4)]) : new Set());
+    }
+  }, [showAddModal]);
+
   useEffect(() => {
     if (!user) { setCurrentStorageMb(0); return; }
     supabase.storage.from('pdfs').list(user.id, { limit: 1000 }).then(({ data }) => {
@@ -179,7 +199,7 @@ function AppContent() {
       .from('shared_boards')
       .select('token, category, synced_at, links_snapshot, view_count')
       .eq('owner_id', uid)
-      .order('view_count', { ascending: false });
+      .order('synced_at', { ascending: false });
     if (!data) return;
     const tokens = data.map((b: any) => b.token);
     const { data: viewData } = tokens.length
@@ -242,7 +262,7 @@ function AppContent() {
             const { error: ue } = await supabase.storage.from('pdfs').upload(path, blob, { contentType: 'image/jpeg' });
             if (ue) throw ue;
             const { data: { publicUrl } } = supabase.storage.from('pdfs').getPublicUrl(path);
-            const nl = { id, user_id: user.id, url: publicUrl, title: 'Shared Image', description: '', image: publicUrl, category: 'None', created_at: Date.now() };
+            const nl = { id, user_id: user.id, url: publicUrl, title: 'Shared Image', description: '', image: publicUrl, category: selected.startsWith('cat:') ? selected.slice(4) : 'None', created_at: Date.now() };
             const { error } = await supabase.from('links').insert(nl);
             if (!error) setLinks(p => [{ ...nl, savedAt: new Date(nl.created_at) }, ...p]);
           } catch { /* silent */ }
@@ -284,20 +304,42 @@ function AppContent() {
         setCategories(p => [...p, catName]);
       }
 
-      const { data: existingLinksData } = await supabase.from('links').select('url').eq('user_id', user!.id);
-      const existingUrls = new Set((existingLinksData ?? []).map((l: any) => l.url));
-      const newLinks = data.links_snapshot
-        .filter((l: any) => !existingUrls.has(l.url))
-        .map((l: any) => ({
-          id: crypto.randomUUID(),
-          user_id: user.id,
-          url: l.url,
-          title: l.title,
-          description: l.description || '',
-          image: l.image || '',
-          category: catName,
-          created_at: Date.now(),
-        }));
+      // Dedup within the target board only (so a link already saved in a
+      // different board still gets copied here), keyed so memos don't collapse.
+      const { data: existingLinksData } = await supabase.from('links').select('url, title, category').eq('user_id', user!.id).eq('category', catName);
+      const seen = new Set((existingLinksData ?? []).map((l: any) => importDedupKey(l)));
+      const candidates = (data.links_snapshot as any[]).filter((l: any) => {
+        const k = importDedupKey(l);
+        if (seen.has(k)) return false;
+        seen.add(k);  // also dedup within the snapshot itself
+        return true;
+      });
+
+      // Respect the Free plan saves limit (the import path never checked it).
+      // Query plan + total directly — both the `isPro` and `links` state are
+      // stale right after login (their effects haven't re-rendered this yet).
+      let toImport = candidates;
+      const { data: sub } = await supabase.from('subscriptions').select('plan, status').eq('user_id', user.id).maybeSingle();
+      const planIsPro = sub?.status === 'active' && (sub?.plan === 'pro' || sub?.plan === 'team');
+      if (!planIsPro) {
+        const { count: totalCount } = await supabase.from('links').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+        const remaining = Math.max(0, FREE_LIMITS.links - (totalCount ?? 0));
+        if (candidates.length > remaining) {
+          toImport = candidates.slice(0, remaining);
+          if (remaining === 0) setShowUpgrade(true);
+        }
+      }
+
+      const newLinks = toImport.map((l: any) => ({
+        id: crypto.randomUUID(),
+        user_id: user.id,
+        url: l.url,
+        title: l.title,
+        description: l.description || '',
+        image: l.image || '',
+        category: catName,
+        created_at: Date.now(),
+      }));
       if (newLinks.length > 0) {
         await supabase.from('links').insert(newLinks);
         setLinks(p => [...newLinks.map((l: any) => ({ ...l, savedAt: new Date(l.created_at) })), ...p]);
@@ -387,7 +429,7 @@ function AppContent() {
   const weekLinks = links.filter(l => now - l.savedAt.getTime() < weekMs).length;
 
   // ── Handlers ───────────────────────────────────────────────────────────────
-  const closeModal = () => { setShowAddModal(false); setUrlInput(''); setErrorMessage(''); setSuccessMessage(''); };
+  const closeModal = () => { setShowAddModal(false); setUrlInput(''); setErrorMessage(''); setSuccessMessage(''); setInfoMessage(''); setAddBoards(new Set()); };
 
   const handleHeaderSave = async () => {
     const val = headerUrl.trim();
@@ -404,18 +446,29 @@ function AppContent() {
     const input = (urlOverride ?? urlInput).trim();
     if (!input || !user) return;
     if (!isPro && links.length >= FREE_LIMITS.links) { setShowUpgrade(true); return; }
-    setErrorMessage(''); setSuccessMessage(''); setIsAdding(true);
+    setErrorMessage(''); setSuccessMessage(''); setInfoMessage(''); setIsAdding(true);
+    // Target boards: the multi-select from the Add modal if any, else the
+    // currently-viewed board. The same item is copied into each.
+    const defaultCategory = selected.startsWith('cat:') ? selected.slice(4) : 'None';
+    const targetCats = addBoards.size ? Array.from(addBoards) : [defaultCategory];
+    const boardSuffix = (n: number) => n > 1 ? ` to ${n} boards` : '';
     try {
       const { fetchMetadata, generateId } = await import('./utils/metadataFetcher');
       const { parseEmbedCode } = await import('./utils/embedParser');
 
+      // Insert one copy of `base` (no id/category/created_at) into each board.
+      const insertInto = async (base: Record<string, any>, cats: string[]) => {
+        const rows = cats.map(cat => ({ ...base, id: generateId(), category: cat, created_at: Date.now() }));
+        const { error } = await supabase.from('links').insert(rows);
+        if (error) throw error;
+        setLinks(p => [...rows.map(r => ({ ...r, savedAt: new Date(r.created_at) })), ...p]);
+        return rows.length;
+      };
+
       const embedData = parseEmbedCode(input);
       if (embedData) {
-        const nl = { id: generateId(), user_id: user.id, url: embedData.url, title: embedData.title || 'Embedded Content', description: embedData.description || '', image: embedData.image || 'placeholder:default', category: 'None', created_at: Date.now() };
-        const { error } = await supabase.from('links').insert(nl);
-        if (error) throw error;
-        setLinks(p => [{ ...nl, savedAt: new Date(nl.created_at) }, ...p]);
-        setUrlInput(''); setSuccessMessage('Added!'); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.(); return;
+        const n = await insertInto({ user_id: user.id, url: embedData.url, title: embedData.title || 'Embedded Content', description: embedData.description || '', image: embedData.image || 'placeholder:default' }, targetCats);
+        setUrlInput(''); setSuccessMessage(`Added${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.(); return;
       }
 
       const looksLikeUrl = /^https?:\/\//i.test(input) || /^www\./i.test(input);
@@ -423,58 +476,130 @@ function AppContent() {
       if (looksLikeUrl) { try { new URL(input.startsWith('www.') ? 'https://' + input : input); isValidUrl = true; } catch { /**/ } }
 
       if (!isValidUrl) {
-        const nl = { id: generateId(), user_id: user.id, url: '#', title: input.slice(0, 100), description: '', image: 'placeholder:memo', category: 'None', created_at: Date.now() };
-        const { error } = await supabase.from('links').insert(nl);
-        if (error) throw error;
-        setLinks(p => [{ ...nl, savedAt: new Date(nl.created_at) }, ...p]);
-        setUrlInput(''); setSuccessMessage('Note saved!'); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.(); return;
+        const n = await insertInto({ user_id: user.id, url: '#', title: input.slice(0, 100), description: '', image: 'placeholder:memo' }, targetCats);
+        setUrlInput(''); setSuccessMessage(`Note saved${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.(); return;
       }
 
       const url = input.startsWith('www.') ? 'https://' + input : input;
-      if (links.some(l => l.url === url)) { setErrorMessage('Already saved'); return; }
+      // Per-board dedup: only copy into boards that don't already have this URL.
+      const cats = targetCats.filter(cat => !links.some(l => l.url === url && l.category === cat));
+      if (cats.length === 0) { setErrorMessage('Already saved'); return; }
       const meta = await fetchMetadata(url);
-      const nl = { id: generateId(), user_id: user.id, url, title: meta.title || 'Web Page', description: meta.description || '', image: meta.image || 'placeholder:default', category: 'None', created_at: Date.now() };
-      const { error } = await supabase.from('links').insert(nl);
-      if (error) throw error;
-      setLinks(p => [{ ...nl, savedAt: new Date(nl.created_at) }, ...p]);
-      setUrlInput(''); setSuccessMessage('Link added!'); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.();
+      const n = await insertInto({ user_id: user.id, url, title: meta.title || 'Web Page', description: meta.description || '', image: meta.image || 'placeholder:default' }, cats);
+      setUrlInput(''); setSuccessMessage(`Link added${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.();
     } catch { setErrorMessage('Failed. Please try again.'); }
     finally { setIsAdding(false); }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-    setErrorMessage(''); setSuccessMessage(''); setIsAdding(true);
-    const isTeam = subData?.plan === 'team';
-    const maxMb = isTeam ? 50 : isPro ? 20 : FREE_LIMITS.fileSizeMb;
-    const planLabel = isTeam ? 'Team' : isPro ? 'Pro' : 'Free';
-    if (file.size > maxMb * 1024 * 1024) {
-      setErrorMessage(`File too large. ${planLabel} plan limit is ${maxMb}MB.`);
-      if (!isPro) setShowUpgrade(true);
-      setIsAdding(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0 || !user) return;
+    const clearInput = () => { if (fileInputRef.current) fileInputRef.current.value = ''; };
+
+    const isTeam        = subData?.plan === 'team';
+    const maxMb         = isTeam ? 50    : isPro ? 20   : FREE_LIMITS.fileSizeMb;   // per-file
+    const storageCapMb  = isTeam ? 10240 : isPro ? 2048 : FREE_LIMITS.storageMb;    // total
+    const planLabel     = isTeam ? 'Team' : isPro ? 'Pro' : 'Free';
+
+    setErrorMessage(''); setSuccessMessage(''); setInfoMessage('');
+
+    let files = Array.from(fileList);
+    const info: string[] = [];    // soft notices (limits / skips) — amber
+    const errors: string[] = [];  // hard failures — red
+
+    // Target boards: the Add modal multi-select if any, else the current board.
+    // Each uploaded file is copied (as a link row) into every target board.
+    const targetCats = addBoards.size ? Array.from(addBoards) : [selected.startsWith('cat:') ? selected.slice(4) : 'None'];
+
+    if (files.length > MAX_UPLOAD_BATCH) {
+      info.push(`Max ${MAX_UPLOAD_BATCH} files at once — extra files skipped.`);
+      files = files.slice(0, MAX_UPLOAD_BATCH);
     }
-    setIsUploading(true);
-    try {
-      const { generateId } = await import('./utils/metadataFetcher');
-      const id = generateId();
-      const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const path = `${user.id}/${id}-${safe}`;
-      const { error: ue } = await supabase.storage.from('pdfs').upload(path, file, { contentType: file.type });
-      if (ue) throw ue;
-      const { data: { publicUrl } } = supabase.storage.from('pdfs').getPublicUrl(path);
-      const isImage = file.type.startsWith('image/');
-      const isPdf   = file.type === 'application/pdf';
-      const ext     = file.name.split('.').pop()?.toUpperCase() ?? 'FILE';
-      const nl = { id, user_id: user.id, url: publicUrl, title: file.name.replace(/\.[^.]+$/, ''), description: `${ext} • ${(file.size / 1024).toFixed(0)} KB`, image: isImage ? publicUrl : isPdf ? 'placeholder:pdf' : 'placeholder:file', category: 'None', created_at: Date.now() };
-      const { error } = await supabase.from('links').insert(nl);
-      if (error) throw error;
-      setLinks(p => [{ ...nl, savedAt: new Date(nl.created_at) }, ...p]);
-      setSuccessMessage('File uploaded!'); setTimeout(() => setSuccessMessage(''), 2500); setShowAddModal(false);
-    } catch (err: any) { setErrorMessage(err?.message?.toLowerCase().includes('bucket') ? 'Storage bucket not set up — check Supabase' : 'Upload failed'); }
-    finally { setIsAdding(false); setIsUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
+    // Free plan: don't blow past the saves quota. Each file becomes one row per
+    // target board, so a file costs `targetCats.length` saves.
+    if (!isPro) {
+      const remaining = FREE_LIMITS.links - links.length;
+      const maxFiles = Math.floor(remaining / targetCats.length);
+      if (maxFiles <= 0) { setShowUpgrade(true); clearInput(); return; }
+      if (files.length > maxFiles) {
+        info.push(`Only room for ${maxFiles} more file${maxFiles !== 1 ? 's' : ''} on the Free plan.`);
+        files = files.slice(0, maxFiles);
+      }
+    }
+
+    setIsAdding(true); setIsUploading(true);
+
+    const { generateId } = await import('./utils/metadataFetcher');
+    const newLinks: any[] = [];
+    let runningStorageMb = currentStorageMb;
+    let uploadedFiles = 0, skippedSize = 0, skippedStorage = 0, failed = 0, bucketMissing = false;
+
+    for (const file of files) {
+      const fileMb = file.size / (1024 * 1024);
+      if (file.size > maxMb * 1024 * 1024)        { skippedSize++; continue; }
+      if (runningStorageMb + fileMb > storageCapMb) { skippedStorage++; continue; }
+      try {
+        const id = generateId();
+        const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const path = `${user.id}/${id}-${safe}`;
+        const { error: ue } = await supabase.storage.from('pdfs').upload(path, file, { contentType: file.type });
+        if (ue) throw ue;
+        const { data: { publicUrl } } = supabase.storage.from('pdfs').getPublicUrl(path);
+        const isImage = file.type.startsWith('image/');
+        const isPdf   = file.type === 'application/pdf';
+        const ext     = file.name.split('.').pop()?.toUpperCase() ?? 'FILE';
+        // For PDFs, render page 1 to a real thumbnail; fall back to the
+        // generic placeholder if rendering or its upload fails.
+        let imageVal = isImage ? publicUrl : isPdf ? 'placeholder:pdf' : 'placeholder:file';
+        if (isPdf) {
+          try {
+            const { renderPdfThumbnail } = await import('./utils/pdfThumbnail');
+            const thumb = await renderPdfThumbnail(file);
+            if (thumb) {
+              const thumbPath = `${user.id}/${id}-thumb.jpg`;
+              const { error: te } = await supabase.storage.from('pdfs').upload(thumbPath, thumb, { contentType: 'image/jpeg' });
+              if (!te) {
+                imageVal = supabase.storage.from('pdfs').getPublicUrl(thumbPath).data.publicUrl;
+                runningStorageMb += thumb.size / (1024 * 1024);
+              }
+            }
+          } catch { /* keep placeholder */ }
+        }
+        const base = { user_id: user.id, url: publicUrl, title: file.name.replace(/\.[^.]+$/, ''), description: `${ext} • ${(file.size / 1024).toFixed(0)} KB`, image: imageVal };
+        const rows = targetCats.map(cat => ({ ...base, id: generateId(), category: cat, created_at: Date.now() }));
+        const { error } = await supabase.from('links').insert(rows);
+        if (error) throw error;
+        rows.forEach(r => newLinks.push({ ...r, savedAt: new Date(r.created_at) }));
+        uploadedFiles++;
+        runningStorageMb += fileMb;
+      } catch (err: any) {
+        if (err?.message?.toLowerCase().includes('bucket')) { bucketMissing = true; break; }
+        failed++;
+      }
+    }
+
+    if (newLinks.length) {
+      setLinks(p => [...newLinks, ...p]);
+      setCurrentStorageMb(Math.round(runningStorageMb * 10) / 10);
+    }
+
+    // Soft notices (limits hit) → amber info; hard failures → red error.
+    if (skippedSize)    info.push(`${skippedSize} over the ${maxMb}MB ${planLabel} file limit.`);
+    if (skippedStorage) info.push(`${skippedStorage} skipped — storage full.`);
+    if (failed)         errors.push(`${failed} failed to upload.`);
+    if (bucketMissing)  errors.push('Storage bucket not set up — check Supabase.');
+
+    if (uploadedFiles) {
+      const boardSuffix = targetCats.length > 1 ? ` to ${targetCats.length} boards` : '';
+      setSuccessMessage(`${uploadedFiles} file${uploadedFiles !== 1 ? 's' : ''} uploaded${boardSuffix}!`);
+      setTimeout(() => setSuccessMessage(''), 2500);
+      if (info.length === 0 && errors.length === 0) { setShowAddModal(false); setAddBoards(new Set()); }
+    }
+    if (info.length)   setInfoMessage(info.join(' '));
+    if (errors.length) setErrorMessage(errors.join(' '));
+    if ((skippedSize || skippedStorage) && !isPro) setShowUpgrade(true);
+
+    setIsAdding(false); setIsUploading(false); clearInput();
   };
 
   const handleUpdateCategory  = async (id: string, cat: string) => { await supabase.from('links').update({ category: cat }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, category: cat } : l)); };
@@ -959,7 +1084,33 @@ function AppContent() {
             </div>
 
             {errorMessage && <p className="text-[12px] text-red-500/90 mb-3 px-1">{errorMessage}</p>}
+            {infoMessage && <p className="text-[12px] text-amber-600/90 mb-3 px-1">{infoMessage}</p>}
             {successMessage && <p className="text-[12px] text-green-600/90 mb-3 px-1">{successMessage}</p>}
+
+            {/* Board picker — select one or more boards to copy into */}
+            {categories.length > 0 && (
+              <div className="mb-4">
+                <p className="text-[11px] font-semibold mb-1.5 px-1" style={{ color: t.modalSubtitle }}>
+                  Add to board{addBoards.size > 1 ? `s · ${addBoards.size} selected` : ''}
+                </p>
+                <div className="flex flex-wrap gap-1.5 max-h-[96px] overflow-y-auto">
+                  {categories.map(cat => {
+                    const on = addBoards.has(cat);
+                    return (
+                      <button key={cat} type="button"
+                        onClick={() => setAddBoards(prev => { const s = new Set(prev); s.has(cat) ? s.delete(cat) : s.add(cat); return s; })}
+                        className="px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all flex items-center gap-1"
+                        style={on
+                          ? { background: t.accentBg, color: '#fff' }
+                          : { background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText }}>
+                        {on && <Check className="w-3 h-3" />}
+                        {cat}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex gap-2">
@@ -990,7 +1141,7 @@ function AppContent() {
       )}
 
       {/* Hidden PDF input */}
-      <input ref={fileInputRef} type="file" className="hidden" accept="image/*,application/pdf,.pdf,.doc,.docx,.txt" onChange={handleFileUpload} />
+      <input ref={fileInputRef} type="file" multiple className="hidden" accept="image/*,application/pdf,.pdf,.doc,.docx,.txt" onChange={handleFileUpload} />
 
       {/* Upload-in-progress overlay (shows regardless of which trigger started the upload) */}
       {isUploading && (
@@ -1261,6 +1412,8 @@ function AppContent() {
           userEmail={user?.email}
           isPro={isPro}
           onPurchaseSuccess={refreshSubscription}
+          onShowTerms={() => setShowTerms(true)}
+          onShowPrivacy={() => setShowPrivacy(true)}
         />
       )}
 

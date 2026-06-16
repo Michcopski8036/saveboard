@@ -24,6 +24,16 @@ interface SharedBoard {
   synced_at: string | null;
 }
 
+// Keep in sync with FREE_LIMITS.links in UpgradePage.tsx (not imported here to
+// keep the public share-page bundle from pulling in the upgrade UI).
+const FREE_SAVE_LIMIT = 30;
+
+// Real links dedup by URL; memos/notes share url '#', so fall back to title.
+const importDedupKey = (l: { url?: string; title?: string }): string => {
+  const u = (l.url ?? '').trim();
+  return u && u !== '#' ? `u:${u}` : `t:${(l.title ?? '').trim().toLowerCase()}`;
+};
+
 function domain(url: string): string {
   try { return new URL(url).hostname.replace('www.', ''); } catch { return url; }
 }
@@ -44,7 +54,7 @@ export function SharedBoardPage() {
   const [user, setUser] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [skippedCount, setSkippedCount] = useState(0);
+  const [result, setResult] = useState<{ added: number; skippedExisting: number; limited: number } | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -61,15 +71,10 @@ export function SharedBoardPage() {
       setBoard(data);
       setLoading(false);
 
-      // Record view with viewer info (fire and forget)
-      const { data: { user: viewer } } = await supabase.auth.getUser();
-      supabase.from('shared_board_views').insert({
-        token,
-        viewer_id: viewer?.id ?? null,
-        viewer_email: viewer?.email ?? null,
-      }).then(() => {});
-
-      supabase.rpc('increment_board_view', { p_token: token }).then(() => {});
+      // Record view + bump the counter in one definer RPC (fire and forget).
+      // Viewer id/email are derived server-side from the JWT, so they can't be
+      // spoofed by the client; this also avoids a second round trip.
+      supabase.rpc('record_board_view', { p_token: token }).then(() => {});
     })();
   }, [token]);
 
@@ -84,44 +89,66 @@ export function SharedBoardPage() {
     try {
       const catName = board!.category;
 
-      const { data: existingCat } = await supabase
-        .from('categories')
-        .select('name')
-        .eq('name', catName)
-        .eq('user_id', user.id)
-        .single();
+      // Ensure the target board exists, and in parallel gather what we need to
+      // dedup (links already in THIS board), enforce the Free saves limit
+      // (total link count), and detect the plan.
+      const [{ data: existingCat }, { data: boardLinks }, { count: totalCount }, { data: sub }] = await Promise.all([
+        supabase.from('categories').select('name').eq('name', catName).eq('user_id', user.id).maybeSingle(),
+        supabase.from('links').select('url, title').eq('user_id', user.id).eq('category', catName),
+        supabase.from('links').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('subscriptions').select('plan, status').eq('user_id', user.id).maybeSingle(),
+      ]);
 
       if (!existingCat) {
         await supabase.from('categories').insert({ name: catName, user_id: user.id });
       }
 
-      const { data: existingLinks } = await supabase
-        .from('links')
-        .select('url')
-        .eq('user_id', user.id);
-      const existingUrls = new Set((existingLinks ?? []).map((l: any) => l.url));
+      const isPro = sub?.status === 'active' && (sub?.plan === 'pro' || sub?.plan === 'team');
 
-      const newLinks = board!.links_snapshot
-        .filter(l => !existingUrls.has(l.url))
-        .map(l => ({
-          id: crypto.randomUUID(),
-          user_id: user.id,
-          url: l.url,
-          title: l.title,
-          description: l.description || '',
-          image: l.image || '',
-          category: catName,
-          created_at: Date.now(),
-        }));
+      // Dedup within the target board only (so a link already saved in a
+      // different board still gets copied here), keyed so memos don't collapse.
+      const seen = new Set((boardLinks ?? []).map((l: any) => importDedupKey(l)));
+      const candidates = board!.links_snapshot.filter(l => {
+        const k = importDedupKey(l);
+        if (seen.has(k)) return false;
+        seen.add(k);  // also dedup duplicates within the snapshot itself
+        return true;
+      });
+      const skippedExisting = board!.links_snapshot.length - candidates.length;
+
+      // Respect the Free plan saves limit.
+      let toImport = candidates;
+      let limited = 0;
+      if (!isPro) {
+        const remaining = Math.max(0, FREE_SAVE_LIMIT - (totalCount ?? 0));
+        if (candidates.length > remaining) {
+          toImport = candidates.slice(0, remaining);
+          limited = candidates.length - remaining;
+        }
+      }
+
+      const newLinks = toImport.map(l => ({
+        id: crypto.randomUUID(),
+        user_id: user.id,
+        url: l.url,
+        title: l.title,
+        description: l.description || '',
+        image: l.image || '',
+        category: catName,
+        created_at: Date.now(),
+      }));
 
       if (newLinks.length > 0) await supabase.from('links').insert(newLinks);
-      const skipped = board!.links_snapshot.length - newLinks.length;
+      setResult({ added: newLinks.length, skippedExisting, limited });
       setSaved(true);
-      setSkippedCount(skipped);
-      // Auto-redirect to the board in the app
-      setTimeout(() => {
-        window.location.href = `${window.location.origin}?board=${encodeURIComponent(catName)}`;
-      }, 1200);
+
+      // Clean all-added result → auto-redirect into the app. Otherwise stay so
+      // the user can read the summary (what was skipped / limited) and choose.
+      if (skippedExisting === 0 && limited === 0) {
+        setTimeout(() => {
+          window.location.href = `${window.location.origin}?board=${encodeURIComponent(catName)}`;
+        }, 1200);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -204,7 +231,7 @@ export function SharedBoardPage() {
               className="flex items-center gap-2 px-5 py-3 rounded-2xl text-[14px] font-semibold text-white shrink-0 mt-2 hover:opacity-90 active:scale-95 transition-all shadow-lg"
               style={{ background: '#6ECA97', boxShadow: '0 8px 24px rgba(110,202,151,0.30)' }}>
               <Check className="w-4 h-4" />
-              Saved!{skippedCount > 0 ? ` (${skippedCount} skipped)` : ''}
+              Go to my board
             </a>
           ) : (
             <button
@@ -221,6 +248,40 @@ export function SharedBoardPage() {
           )
         )}
       </div>
+
+      {/* Save result summary */}
+      {saved && result && (result.skippedExisting > 0 || result.limited > 0) && (
+        <div className="max-w-5xl mx-auto px-5 -mt-2 mb-6">
+          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+            <p className="text-[14px] font-semibold text-gray-900 mb-2">
+              Saved to your “{board!.category}” board
+            </p>
+            <ul className="space-y-1 text-[13px]">
+              <li className="flex items-center gap-2 text-gray-600">
+                <Check className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                {result.added} new {result.added === 1 ? 'item' : 'items'} added
+              </li>
+              {result.skippedExisting > 0 && (
+                <li className="text-gray-400 pl-[22px]">
+                  {result.skippedExisting} already in this board — skipped
+                </li>
+              )}
+              {result.limited > 0 && (
+                <li className="text-amber-600 pl-[22px]">
+                  {result.limited} not added — Free plan limit ({FREE_SAVE_LIMIT} saves) reached
+                </li>
+              )}
+            </ul>
+            {result.limited > 0 && (
+              <a
+                href={`${window.location.origin}?board=${encodeURIComponent(board!.category)}`}
+                className="inline-block mt-3 text-[13px] font-semibold text-purple-600 hover:text-purple-700">
+                Upgrade for more saves →
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Links grid */}
       <div className="max-w-5xl mx-auto px-5 pb-32">
@@ -315,7 +376,7 @@ export function SharedBoardPage() {
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all shadow-lg"
                 style={{ background: '#6ECA97', boxShadow: '0 8px 24px rgba(110,202,151,0.30)' }}>
                 <Check className="w-4 h-4" />
-                Saved!{skippedCount > 0 ? ` (${skippedCount} skipped)` : ''}
+                Go to my board
               </a>
             ) : (
               <button

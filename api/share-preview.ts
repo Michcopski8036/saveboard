@@ -18,10 +18,6 @@ function domain(url: string): string {
   try { return new URL(url).hostname.replace('www.', ''); } catch { return url; }
 }
 
-function article(word: string): string {
-  return /^[aeiou]/i.test(word.trim()) ? 'an' : 'a';
-}
-
 const BOT_UA = /bot|crawl|spider|facebookexternalhit|facebookcatalog|whatsapp|telegram|discord|slackbot|twitterbot|linkedinbot|pinterest|prerender|preview|iMessage|google|bing|yahoo|applebot/i;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -68,8 +64,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const links     = Array.isArray((board as any).links_snapshot) ? (board as any).links_snapshot : [];
   const count     = links.length;
 
-  const ogTitle = `${ownerName} wants to share ${article(category)} ${category} Board with you | SaveBoard`;
-  const ogDesc  = `Check out ${ownerName}'s ${category} Board — ${count} save${count !== 1 ? 's' : ''}, all in one place on SaveBoard.`;
+  // Lead with the board name so it stays visible even when link-preview UIs
+  // (iMessage, WhatsApp, etc.) truncate the title after ~1-2 lines.
+  const ogTitle = `“${category}” · shared by ${ownerName} on SaveBoard`;
+  const ogDesc  = `${ownerName} shared the “${category}” board with you — ${count} save${count !== 1 ? 's' : ''}, all in one place on SaveBoard.`;
 
   const linksHtml = (links as any[]).slice(0, 9).map(l => `
     <a href="${esc(l.url)}" class="card" target="_blank" rel="noopener noreferrer">

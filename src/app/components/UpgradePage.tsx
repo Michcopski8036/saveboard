@@ -15,6 +15,8 @@ interface UpgradePageProps {
   userEmail?: string;
   isPro?: boolean;
   onPurchaseSuccess?: () => void;
+  onShowTerms?: () => void;
+  onShowPrivacy?: () => void;
 }
 
 export const FREE_LIMITS = { links: 30, boards: 5, fileSizeMb: 5, storageMb: 50 };
@@ -64,11 +66,13 @@ async function startCheckout(plan: 'pro' | 'team', interval: 'monthly' | 'yearly
 
 // ── iOS IAP view ─────────────────────────────────────────────────────────────
 
-function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess }: {
+function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms, onShowPrivacy }: {
   userId?: string;
   isPro?: boolean;
   onClose: () => void;
   onPurchaseSuccess?: () => void;
+  onShowTerms?: () => void;
+  onShowPrivacy?: () => void;
 }) {
   const [products, setProducts] = useState<StoreProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,21 +149,34 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess }: {
             <button
               disabled={!!purchasingId || isPro}
               onClick={() => handlePurchase(IAP_PRODUCTS.proMonthly)}
-              className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-60"
+              className="w-full py-3.5 px-5 rounded-2xl text-white flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-60"
               style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-              {purchasingId === IAP_PRODUCTS.proMonthly ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              {monthly.displayPrice} / month
+              {purchasingId === IAP_PRODUCTS.proMonthly ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                <span className="flex w-full items-center justify-between">
+                  <span className="text-left">
+                    <span className="block text-[15px] font-semibold">SaveBoard Pro — Monthly</span>
+                    <span className="block text-[11px] font-normal text-white/70">1 month · auto-renews</span>
+                  </span>
+                  <span className="text-[16px] font-bold whitespace-nowrap">{monthly.displayPrice}/mo</span>
+                </span>
+              )}
             </button>
           )}
           {yearly && (
             <button
               disabled={!!purchasingId || isPro}
               onClick={() => handlePurchase(IAP_PRODUCTS.proYearly)}
-              className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-60"
+              className="w-full py-3.5 px-5 rounded-2xl text-white flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-60"
               style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-              {purchasingId === IAP_PRODUCTS.proYearly ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              {yearly.displayPrice} / year
-              <span className="text-white/70 text-[12px]">save 47%</span>
+              {purchasingId === IAP_PRODUCTS.proYearly ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                <span className="flex w-full items-center justify-between">
+                  <span className="text-left">
+                    <span className="block text-[15px] font-semibold">SaveBoard Pro — Yearly</span>
+                    <span className="block text-[11px] font-normal text-white/70">12 months · auto-renews · save 47%</span>
+                  </span>
+                  <span className="text-[16px] font-bold whitespace-nowrap">{yearly.displayPrice}/yr</span>
+                </span>
+              )}
             </button>
           )}
           {isPro && (
@@ -173,6 +190,16 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess }: {
       <p className="text-center text-[10px] text-gray-400 leading-relaxed">
         Prices are shown in your local currency as determined by your App Store region. Payment will be charged to your Apple ID. Subscription renews automatically unless cancelled at least 24 hours before the end of the current period. Manage in Apple ID settings.
       </p>
+
+      <div className="flex items-center justify-center gap-3 text-[11px]">
+        <button type="button" onClick={onShowTerms} className="text-purple-600 underline underline-offset-2">
+          Terms of Use (EULA)
+        </button>
+        <span className="text-gray-300">·</span>
+        <button type="button" onClick={onShowPrivacy} className="text-purple-600 underline underline-offset-2">
+          Privacy Policy
+        </button>
+      </div>
 
       {/* Team plan — coming soon */}
       <div className="rounded-2xl p-4 opacity-60" style={{ border: '1px dashed #D1D5DB' }}>
@@ -191,7 +218,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess }: {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function UpgradePage({ onClose, currentLinks, currentBoards, currentStorageMb = 0, userId, userEmail, isPro = false, onPurchaseSuccess }: UpgradePageProps) {
+export function UpgradePage({ onClose, currentLinks, currentBoards, currentStorageMb = 0, userId, userEmail, isPro = false, onPurchaseSuccess, onShowTerms, onShowPrivacy }: UpgradePageProps) {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const isNative = Capacitor.isNativePlatform();
 
@@ -269,6 +296,8 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 isPro={isPro}
                 onClose={onClose}
                 onPurchaseSuccess={onPurchaseSuccess}
+                onShowTerms={onShowTerms}
+                onShowPrivacy={onShowPrivacy}
               />
             ) : (
               <>
