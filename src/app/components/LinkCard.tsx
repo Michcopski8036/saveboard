@@ -69,6 +69,8 @@ interface LinkCardProps {
   onDelete?: (linkId: string) => void;
   onAddCategory?: (category: string) => void;
   onRenameCategory?: (oldName: string, newName: string) => void;
+  onDeleteCategory?: (cat: string) => void;
+  onReorderCategory?: (dragCat: string, dropCat: string) => void;
   onUpdateNotes?: (linkId: string, notes: string) => void;
   onUpdateLink?: (linkId: string, title: string, description: string) => void;
   onUpdateTags?: (linkId: string, tags: string[]) => void;
@@ -296,7 +298,7 @@ function AiTag({ label, type }: { label: string; type: string }) {
 }
 
 export function LinkCard({
-  link, onUpdateCategory, onDelete, onAddCategory, onRenameCategory, onUpdateNotes, onUpdateLink, onUpdateTags,
+  link, onUpdateCategory, onDelete, onAddCategory, onRenameCategory, onDeleteCategory, onReorderCategory, onUpdateNotes, onUpdateLink, onUpdateTags,
   onToggleSelect, onToggleFavorite, onShowUpgrade, onMoveCard, categories = [], suggestedTags = [], selectMode = false,
   isSelected = false, isFavorited = false, listMode = false, compact = false, isPro = false,
 }: LinkCardProps) {
@@ -519,7 +521,8 @@ export function LinkCard({
   const categoryPortal = showCategoryPopup ? createPortal(
     <CategoryPopup currentCategory={link.category} onClose={() => setShowCategoryPopup(false)}
       onSelectCategory={c => { onUpdateCategory?.(link.id, c); }} onAddCategory={onAddCategory}
-      onRenameCategory={onRenameCategory} categories={categories} />,
+      onRenameCategory={onRenameCategory} onDeleteCategory={onDeleteCategory}
+      onReorderCategory={onReorderCategory} categories={categories} />,
     document.body
   ) : null;
 

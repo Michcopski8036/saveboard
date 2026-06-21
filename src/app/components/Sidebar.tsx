@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bookmark, Home, Clock, Heart, Inbox, Plus, Sparkles, Zap, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2, Layers } from 'lucide-react';
-import { useDrop } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import type { LinkData } from './LinkCard';
 import { TAG_COLORS, deriveAiTags, LINK_DRAG_TYPE } from './LinkCard';
+
+const BOARD_DRAG_TYPE = 'BOARD';
 
 const PALETTE = ['#8B5CF6','#6366F1','#3B82F6','#0EA5E9','#10B981','#F59E0B','#EF4444','#EC4899'];
 function dotColor(n: string): string { const i = [...n].reduce((a,c) => a+c.charCodeAt(0), 0) % PALETTE.length; return PALETTE[i]; }
@@ -22,6 +24,7 @@ interface SidebarProps {
   onDeleteCategory?: (cat: string) => void;
   onShareCategory?: (cat: string) => void;
   onUpdateCategory?: (linkId: string, cat: string) => void;
+  onReorderCategory?: (dragCat: string, dropCat: string) => void;
   sidebarOpen: boolean;
   onToggleSidebar?: () => void;
 }
@@ -53,21 +56,41 @@ interface BoardDropItemProps {
   startRename: (cat: string) => void;
   onShareCategory?: (cat: string) => void;
   onDeleteCategory?: (cat: string) => void;
+  onReorderCategory?: (dragCat: string, dropCat: string) => void;
 }
 
-function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isMenuOpen, menuRef, t, onSelect, onUpdateCategory, setRenameValue, commitRename, setRenamingCat, setMenuCat, startRename, onShareCategory, onDeleteCategory }: BoardDropItemProps) {
-  const [{ isOver }, dropRef] = useDrop({
-    accept: LINK_DRAG_TYPE,
-    drop: (item: { id: string }) => { onUpdateCategory?.(item.id, cat); },
-    collect: monitor => ({ isOver: monitor.isOver() }),
+function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isMenuOpen, menuRef, t, onSelect, onUpdateCategory, setRenameValue, commitRename, setRenamingCat, setMenuCat, startRename, onShareCategory, onDeleteCategory, onReorderCategory }: BoardDropItemProps) {
+  const [{ isDragging }, dragRef] = useDrag({
+    type: BOARD_DRAG_TYPE,
+    item: { cat },
+    collect: monitor => ({ isDragging: monitor.isDragging() }),
   });
+  const [{ isOver, overType }, dropRef] = useDrop({
+    accept: [LINK_DRAG_TYPE, BOARD_DRAG_TYPE],
+    drop: (item: any, monitor) => {
+      if (monitor.getItemType() === BOARD_DRAG_TYPE) {
+        if (item.cat !== cat) onReorderCategory?.(item.cat, cat);
+      } else {
+        onUpdateCategory?.(item.id, cat);
+      }
+    },
+    collect: monitor => ({
+      isOver: monitor.isOver() && monitor.canDrop(),
+      overType: monitor.getItemType() as string | null,
+    }),
+  });
+  const overLink = isOver && overType === LINK_DRAG_TYPE;
+  const overBoard = isOver && overType === BOARD_DRAG_TYPE;
 
   return (
-    <div ref={dropRef} className="group relative flex items-center rounded-xl transition-all duration-150"
+    <div ref={node => dragRef(dropRef(node))} className="group relative flex items-center rounded-xl transition-all duration-150"
       style={{
-        background: isOver ? `${color}22` : active ? t.boardActiveBg : 'transparent',
-        border: isOver ? `1.5px solid ${color}66` : active ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent',
-        transform: isOver ? 'scale(1.02)' : 'scale(1)',
+        background: overLink ? `${color}22` : active ? t.boardActiveBg : 'transparent',
+        border: overLink ? `1.5px solid ${color}66` : active ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent',
+        borderTop: overBoard ? `2px solid ${color}` : undefined,
+        transform: overLink ? 'scale(1.02)' : 'scale(1)',
+        opacity: isDragging ? 0.4 : 1,
+        cursor: 'grab',
         zIndex: isMenuOpen ? 50 : undefined,
       }}>
       <button onClick={() => onSelect(`cat:${cat}`)}
@@ -86,7 +109,7 @@ function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isM
         ) : (
           <span className="flex-1 text-[13px] font-medium truncate">{cat}</span>
         )}
-        {isOver && !isRenaming && (
+        {overLink && !isRenaming && (
           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: color, color: 'white' }}>Drop</span>
         )}
       </button>
@@ -145,7 +168,7 @@ function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isM
   );
 }
 
-export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, onUpdateCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
+export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, onUpdateCategory, onReorderCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
   const { t } = useTheme();
   const { tr } = useLanguage();
 
@@ -347,6 +370,7 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
                   startRename={startRename}
                   onShareCategory={onShareCategory}
                   onDeleteCategory={onDeleteCategory}
+                  onReorderCategory={onReorderCategory}
                 />
               ))}
             </div>

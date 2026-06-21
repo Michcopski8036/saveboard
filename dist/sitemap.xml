@@ -2,19 +2,19 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.saveboard.app/</loc>
-    <lastmod>2026-05-17</lastmod>
+    <lastmod>2026-06-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.saveboard.app/privacy</loc>
-    <lastmod>2026-05-17</lastmod>
+    <lastmod>2026-05-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://www.saveboard.app/terms</loc>
-    <lastmod>2026-05-17</lastmod>
+    <lastmod>2026-05-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -25,20 +25,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.saveboard.app/blog/save-links-from-whatsapp</loc>
-    <lastmod>2026-05-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/blog/sports-parent-organise-links</loc>
-    <lastmod>2026-05-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/blog/best-link-saver-apps-2026</loc>
-    <lastmod>2026-05-21</lastmod>
+    <loc>https://www.saveboard.app/blog/visual-bookmarks-better-than-url-list</loc>
+    <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -49,8 +37,20 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.saveboard.app/blog/visual-bookmarks-better-than-url-list</loc>
-    <lastmod>2026-05-23</lastmod>
+    <loc>https://www.saveboard.app/blog/best-link-saver-apps-2026</loc>
+    <lastmod>2026-05-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.saveboard.app/blog/sports-parent-organise-links</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.saveboard.app/blog/save-links-from-whatsapp</loc>
+    <lastmod>2026-05-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

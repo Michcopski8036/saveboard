@@ -91,6 +91,14 @@ function AppContent() {
   const [infoMessage, setInfoMessage] = useState('');
   const [selected, setSelected]         = useState<Collection>('all');
   const [viewMode, setViewMode]         = useState<ViewMode>('masonry');
+  // On phones we always show the simple horizontal list (no detail/gallery panel).
+  const [isMobile, setIsMobile]         = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
   const [sortOption, setSortOption]     = useState<SortOption>('newest');
   const [favorites, setFavorites]       = useState<Set<string>>(new Set());
   const [selectMode, setSelectMode]     = useState(false);
@@ -138,6 +146,11 @@ function AppContent() {
     let appUrlListener: { remove: () => void } | null = null;
     if (Capacitor.isNativePlatform()) {
       CapApp.addListener('appUrlOpen', async ({ url }) => {
+        // Shared-board deep link (opened from a share page stuck in an in-app browser):
+        // open it inside the app, where the user is already signed in so "Save" works.
+        const shareMatch = url.match(/\/\/share\/([^?#/]+)/);
+        if (shareMatch) { window.location.href = `/share/${shareMatch[1]}`; return; }
+
         if (!url.includes('login-callback')) return;
         await Browser.close();
 
@@ -366,7 +379,7 @@ function AppContent() {
         setLinks(mapped);
         setFavorites(new Set(ld.filter(l => l.is_favorite).map((l: any) => l.id)));
       }
-      const { data: cd } = await supabase.from('categories').select('name').eq('user_id', user!.id).order('created_at', { ascending: true });
+      const { data: cd } = await supabase.from('categories').select('name, sort_order').eq('user_id', user!.id).order('sort_order', { ascending: true, nullsFirst: false }).order('created_at', { ascending: true });
       if (cd?.length) setCategories(cd.map(c => c.name));
       else await supabase.from('categories').insert(defaultCategories.map(name => ({ name, user_id: user!.id })));
     } catch (e) { console.error(e); }
@@ -619,7 +632,24 @@ function AppContent() {
     const t = name.trim();
     if (!t || categories.includes(t)) return;
     if (!isPro && categories.length >= FREE_LIMITS.boards) { setShowUpgrade(true); return; }
-    await supabase.from('categories').insert({ name: t, user_id: user!.id }); setCategories(p => [...p, t]);
+    await supabase.from('categories').insert({ name: t, user_id: user!.id, sort_order: categories.length }); setCategories(p => [...p, t]);
+  };
+  // Drag-reorder boards; persists sort_order per board (synced across devices).
+  const handleReorderCategory = async (dragCat: string, dropCat: string) => {
+    if (dragCat === dropCat || !user) return;
+    let next: string[] = [];
+    setCategories(prev => {
+      const arr = [...prev];
+      const from = arr.indexOf(dragCat), to = arr.indexOf(dropCat);
+      if (from === -1 || to === -1) return prev;
+      arr.splice(from, 1);
+      arr.splice(to, 0, dragCat);
+      next = arr;
+      return arr;
+    });
+    await Promise.all(next.map((name, i) =>
+      supabase.from('categories').update({ sort_order: i }).eq('name', name).eq('user_id', user.id)
+    ));
   };
   const handleRenameCategory = async (old: string, neu: string) => {
     const t = neu.trim();
@@ -738,6 +768,7 @@ function AppContent() {
     link,
     onUpdateCategory: handleUpdateCategory, onDelete: handleDeleteLink,
     onAddCategory: handleAddCategory, onRenameCategory: handleRenameCategory,
+    onDeleteCategory: handleDeleteCategory, onReorderCategory: handleReorderCategory,
     onUpdateNotes: handleUpdateNotes, onUpdateLink: handleUpdateLink, onUpdateTags: handleUpdateTags, onToggleSelect: handleToggleSelect,
     onToggleFavorite: handleToggleFavorite, onShowUpgrade: () => setShowUpgrade(true), onMoveCard: moveCard,
     categories, isPro, suggestedTags,
@@ -794,6 +825,7 @@ function AppContent() {
         links={links}
         favorites={favorites}
         onAddCategory={handleAddCategory}
+        onReorderCategory={handleReorderCategory}
         onRenameCategory={handleRenameCategory}
         onDeleteCategory={handleDeleteCategory}
         onShareCategory={cat => setShareCategory(cat)}
@@ -808,7 +840,7 @@ function AppContent() {
       )}
 
       {/* ── Main area ──────────────────────────────────────────────────── */}
-      <div className={`flex-1 min-w-0 ml-0 md:ml-16 xl:ml-[260px] flex flex-col ${viewMode === 'gallery' ? 'h-screen overflow-hidden' : 'min-h-screen'}`} style={{ background: t.pageBg }}>
+      <div className={`flex-1 min-w-0 ml-0 md:ml-16 xl:ml-[260px] flex flex-col ${!isMobile && viewMode === 'gallery' ? 'h-screen overflow-hidden' : 'min-h-screen'}`} style={{ background: t.pageBg }}>
 
         {/* Header */}
         <header className="sticky top-0 z-10" style={{ background: t.headerBg, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${t.headerBorder}` }}>
@@ -985,7 +1017,7 @@ function AppContent() {
         </header>
 
         {/* ── Content ────────────────────────────────────────────────── */}
-        <main className={`flex-1 pb-24 md:pb-5 ${selected === 'all' ? 'px-4 sm:px-6 py-5' : viewMode === 'gallery' ? 'flex flex-col overflow-hidden px-4 sm:px-6 py-4' : 'px-4 sm:px-6 py-5'}`}>
+        <main className={`flex-1 pb-24 md:pb-5 ${selected === 'all' ? 'px-4 sm:px-6 py-5' : !isMobile && viewMode === 'gallery' ? 'flex flex-col overflow-hidden px-4 sm:px-6 py-4' : 'px-4 sm:px-6 py-5'}`}>
           {selected === 'all' ? (
             <HomePage
               links={links}
@@ -1011,6 +1043,11 @@ function AppContent() {
               </div>
               <p className="text-[15px] font-semibold" style={{ color: t.emptyTitle }}>{tr('nothingHere')}</p>
               <p className="text-[13px] mt-1.5" style={{ color: t.emptySub }}>{tr('addFirstLink')}</p>
+            </div>
+          ) : isMobile ? (
+            // Phones: always the simple horizontal list (image left), no detail page.
+            <div className="flex flex-col gap-2">
+              {filtered.map(link => <LinkCard key={link.id} {...cardProps(link)} listMode />)}
             </div>
           ) : viewMode === 'kanban' ? (
             <KanbanView

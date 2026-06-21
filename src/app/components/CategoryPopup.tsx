@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Trash2, GripVertical } from 'lucide-react';
+import { useDrag, useDrop } from 'react-dnd';
+
+const POPUP_BOARD_DRAG = 'POPUP_BOARD';
 
 interface CategoryPopupProps {
   currentCategory: string;
@@ -7,6 +10,8 @@ interface CategoryPopupProps {
   onSelectCategory: (category: string) => void;
   onAddCategory?: (category: string) => void;
   onRenameCategory?: (oldName: string, newName: string) => void;
+  onDeleteCategory?: (cat: string) => void;
+  onReorderCategory?: (dragCat: string, dropCat: string) => void;
   categories: string[];
 }
 
@@ -39,9 +44,99 @@ function CategoryAvatar({ name }: { name: string }) {
   );
 }
 
-export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAddCategory, onRenameCategory, categories }: CategoryPopupProps) {
+interface BoardRowProps {
+  name: string;
+  isEditing: boolean;
+  anyEditing: boolean;
+  editValue: string;
+  setEditValue: (v: string) => void;
+  onCommitRename: () => void;
+  onKeyDown: (e: React.KeyboardEvent) => void;
+  onStartEdit: (name: string) => void;
+  onSelect: (name: string) => void;
+  onDelete?: (name: string) => void;
+  onReorder?: (dragCat: string, dropCat: string) => void;
+}
+
+function BoardRow({
+  name, isEditing, anyEditing, editValue, setEditValue, onCommitRename, onKeyDown,
+  onStartEdit, onSelect, onDelete, onReorder,
+}: BoardRowProps) {
+  const [hovered, setHovered] = useState(false);
+  const [{ isDragging }, dragRef, previewRef] = useDrag({
+    type: POPUP_BOARD_DRAG,
+    item: { cat: name },
+    collect: m => ({ isDragging: m.isDragging() }),
+  });
+  const [{ isOver }, dropRef] = useDrop({
+    accept: POPUP_BOARD_DRAG,
+    drop: (item: { cat: string }) => { if (item.cat !== name) onReorder?.(item.cat, name); },
+    collect: m => ({ isOver: m.isOver() && m.canDrop() }),
+  });
+
+  return (
+    <div
+      ref={node => { previewRef(dropRef(node)); }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={() => !anyEditing && onSelect(name)}
+      className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 rounded-[10px] transition-colors cursor-pointer"
+      style={{ opacity: isDragging ? 0.4 : 1, borderTop: isOver ? '2px solid #A259FF' : '2px solid transparent' }}
+    >
+      <span
+        ref={node => { dragRef(node); }}
+        onClick={e => e.stopPropagation()}
+        className="shrink-0 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none"
+        title="Drag to reorder"
+      >
+        <GripVertical className="w-4 h-4" />
+      </span>
+      <CategoryAvatar name={name} />
+      {isEditing ? (
+        <input
+          type="text"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={onCommitRename}
+          onKeyDown={onKeyDown}
+          onClick={(e) => e.stopPropagation()}
+          autoFocus
+          className="flex-1 bg-transparent border-b-2 border-[#A259FF] outline-none px-1"
+          style={{ fontSize: '16px' }}
+        />
+      ) : (
+        <span
+          className="text-base flex-1 text-left truncate"
+          onDoubleClick={(e) => { e.stopPropagation(); onStartEdit(name); }}
+        >
+          {name}
+        </span>
+      )}
+      {hovered && !isEditing && (
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={(e) => { e.stopPropagation(); onSelect(name); }}
+            className="px-3 py-1.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white text-sm rounded-full hover:opacity-90 transition-opacity"
+          >
+            Select
+          </button>
+          {onDelete && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(name); }}
+              className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+              title="Delete board"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAddCategory, onRenameCategory, onDeleteCategory, onReorderCategory, categories }: CategoryPopupProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -83,6 +178,11 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
     else if (e.key === 'Escape') { setEditingCategory(null); setEditValue(''); }
   };
 
+  const handleDelete = (name: string) => {
+    onDeleteCategory?.(name);
+    onClose();
+  };
+
   return (
     <>
       <div className="fixed inset-0 z-[9998] bg-black/50" onClick={onClose} />
@@ -109,45 +209,22 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
 
         <div className="flex-1 overflow-y-auto px-4">
           <div className="mb-2">
-            <h3 className="text-xs text-gray-400 mb-2">All boards</h3>
+            <h3 className="text-xs text-gray-400 mb-2">All boards · drag to reorder, double-tap to rename</h3>
             {filteredCategories.map((name, index) => (
-              <div
+              <BoardRow
                 key={`${name}-${index}`}
-                onMouseEnter={() => setHoveredCategory(`${name}-${index}`)}
-                onMouseLeave={() => setHoveredCategory(null)}
-                onClick={() => !editingCategory && handleCategoryClick(name)}
-                className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-[10px] transition-colors cursor-pointer"
-              >
-                <CategoryAvatar name={name} />
-                {editingCategory === name ? (
-                  <input
-                    type="text"
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    onBlur={handleRename}
-                    onKeyDown={handleKeyDown}
-                    onClick={(e) => e.stopPropagation()}
-                    autoFocus
-                    className="flex-1 bg-transparent border-b-2 border-[#A259FF] outline-none px-1"
-                style={{ fontSize: '16px' }}
-                  />
-                ) : (
-                  <span
-                    className="text-base flex-1 text-left"
-                    onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(name); }}
-                  >
-                    {name}
-                  </span>
-                )}
-                {hoveredCategory === `${name}-${index}` && !editingCategory && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleCategoryClick(name); }}
-                    className="px-4 py-1.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white text-sm rounded-full hover:opacity-90 transition-opacity shrink-0"
-                  >
-                    Select
-                  </button>
-                )}
-              </div>
+                name={name}
+                isEditing={editingCategory === name}
+                anyEditing={editingCategory !== null}
+                editValue={editValue}
+                setEditValue={setEditValue}
+                onCommitRename={handleRename}
+                onKeyDown={handleKeyDown}
+                onStartEdit={handleDoubleClick}
+                onSelect={handleCategoryClick}
+                onDelete={onDeleteCategory ? handleDelete : undefined}
+                onReorder={searchQuery ? undefined : onReorderCategory}
+              />
             ))}
           </div>
         </div>

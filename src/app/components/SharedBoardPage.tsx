@@ -46,6 +46,27 @@ function timeAgo(iso: string): string {
   return `${Math.floor(s / 86400)}d ago`;
 }
 
+// In-app browsers (KakaoTalk, Line, Instagram, Facebook…) block Google OAuth
+// ("disallowed_useragent") and don't persist the login session, so sign-in can
+// never complete there. Detect them so we can route the user to the app/browser.
+function isInAppBrowser(): boolean {
+  const ua = navigator.userAgent || '';
+  return /KAKAOTALK|Line\/|NAVER|DaumApps|FBAN|FBAV|Instagram|Threads|Snapchat|musical_ly/i.test(ua);
+}
+// Break out of the in-app browser into the real system browser.
+function openExternalBrowser(url: string) {
+  const ua = navigator.userAgent || '';
+  if (/KAKAOTALK/i.test(ua)) {
+    window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url);
+  } else if (/Line\//i.test(ua)) {
+    window.location.href = url + (url.includes('?') ? '&' : '?') + 'openExternalBrowser=1';
+  } else if (/Android/i.test(ua)) {
+    window.location.href = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+  } else {
+    alert('Open this page in Safari or Chrome to sign in:\nTap the ⋯ / share menu → "Open in browser".');
+  }
+}
+
 export function SharedBoardPage() {
   const { token } = useParams<{ token: string }>();
   const [board, setBoard] = useState<SharedBoard | null>(null);
@@ -80,6 +101,12 @@ export function SharedBoardPage() {
 
   const handleSaveBoard = async () => {
     if (!user) {
+      if (isInAppBrowser()) {
+        // Google sign-in is blocked in in-app browsers; open the board in the
+        // SaveBoard app (recipient is already signed in there) so the save works.
+        window.location.href = `app.saveboard.saveboard://share/${token}`;
+        return;
+      }
       localStorage.setItem('saveboard-pending-import', token!);
       window.location.href = `${window.location.origin}?auth=1`;
       return;
@@ -378,6 +405,23 @@ export function SharedBoardPage() {
                 <Check className="w-4 h-4" />
                 Go to my board
               </a>
+            ) : isInAppBrowser() ? (
+              <div className="space-y-2">
+                <p className="text-[12px] text-center text-gray-500 leading-snug">
+                  Sign-in is blocked in in-app browsers (KakaoTalk, etc.). Open it in the app or your browser to save.
+                </p>
+                <button
+                  onClick={() => { window.location.href = `app.saveboard.saveboard://share/${token}`; }}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[14px] font-semibold text-white active:scale-95 transition-all shadow-lg shadow-purple-200"
+                  style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
+                  <BookmarkPlus className="w-4 h-4" /> Open in SaveBoard app
+                </button>
+                <button
+                  onClick={() => openExternalBrowser(window.location.href)}
+                  className="w-full py-2.5 rounded-2xl text-[13px] font-semibold text-gray-700 bg-gray-100 active:scale-95 transition-all">
+                  Open in browser
+                </button>
+              </div>
             ) : (
               <button
                 onClick={handleSaveBoard}
