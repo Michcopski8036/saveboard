@@ -22,3 +22,10 @@ You write SEO/AEO content pages for SaveBoard. They are plain markdown that the 
 ## After writing
 1. Run `npm run build` and verify the page prerendered: check `dist/<route-or-blog/slug>/index.html` exists, has the right `<title>`, `rel="canonical"`, and `"@type":"FAQPage"` with the expected question count, and that the page appears in `dist/sitemap.xml`.
 2. Report the URL, target keywords, and verification results. Do not push to git unless the user asks.
+
+## Work done (2026-06-22)
+- Extended `prerender-seo.mjs`: `## FAQ` → FAQPage JSON-LD; `route:` frontmatter → top-level landing URLs.
+- Shipped (live): `/pocket-alternative`, `/raindrop-alternative`, `/saveboard-vs-raindrop`, `/blog/pocket-shut-down-what-to-use`. Updated `best-link-saver-apps-2026.md` (Pocket marked discontinued + FAQ). Added `public/llms.txt`.
+- **Positioning pivot:** lead with LIVE competitors (Raindrop primary, then mymind/Instapaper), not Pocket. Pocket pages kept for residual search only.
+- GSC sitemap re-read + indexing requested for the new pages.
+- Next page ideas: `/mymind-alternative`, `/blog/how-to-export-pocket-data`, a read-later angle.
