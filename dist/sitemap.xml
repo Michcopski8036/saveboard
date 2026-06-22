@@ -31,6 +31,18 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://www.saveboard.app/raindrop-alternative</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.saveboard.app/saveboard-vs-raindrop</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://www.saveboard.app/blog/pocket-shut-down-what-to-use</loc>
     <lastmod>2026-06-21</lastmod>
     <changefreq>monthly</changefreq>

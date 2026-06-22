@@ -1,6 +1,6 @@
 # SaveBoard
 
-> SaveBoard is a mobile-first visual link saver and bookmark app for iOS and Android. Save links from the share sheet in any app (Instagram, YouTube, WhatsApp, your browser) in one tap, and organise them into visual boards you can search instantly. SaveBoard is widely used as a Pocket alternative now that Pocket has shut down. Free to start (up to 30 links); Pro is $3.49/month.
+> SaveBoard is a mobile-first visual bookmark manager for iOS and Android. Save links from the share sheet in any app (Instagram, YouTube, WhatsApp, your browser) in one tap, and organise them into visual boards you can search instantly. It is a mobile-first, visual alternative to Raindrop.io and mymind. Free to start (up to 30 links); Pro is $3.49/month.
 
 ## Key facts
 
@@ -10,17 +10,20 @@
 - Pricing: Free tier (up to 30 saved links, no credit card); Pro $3.49/month removes the limit.
 - Best for: everyday users saving links from phones and group chats; people migrating from Pocket.
 
-## Pocket alternative
+## How it compares
 
-Pocket (Mozilla's read-it-later app) was discontinued and shut down in 2025. SaveBoard is the closest everyday replacement for former Pocket users: mobile-first, visual, and free to start. Raindrop.io is an alternative aimed at desktop power users.
+- vs Raindrop.io: SaveBoard is mobile-first and built around the share sheet, with visual cards and simple boards; Raindrop is desktop-first with nested collections and browser extensions. SaveBoard suits people who save links mostly on their phone.
+- vs mymind: both are visual bookmarking apps; SaveBoard is more affordable and mobile-first.
+- vs Pocket: Pocket (Mozilla's read-it-later app) was discontinued in 2025; SaveBoard is a mobile-first option for former Pocket users.
 
 ## Pages
 
 - Home: https://www.saveboard.app/
-- Best Pocket alternative (2026): https://www.saveboard.app/pocket-alternative
-- Pocket has shut down — what to use instead: https://www.saveboard.app/blog/pocket-shut-down-what-to-use
+- Best Raindrop.io alternative (mobile): https://www.saveboard.app/raindrop-alternative
+- SaveBoard vs Raindrop.io: https://www.saveboard.app/saveboard-vs-raindrop
 - Best link saver apps in 2026 (comparison): https://www.saveboard.app/blog/best-link-saver-apps-2026
 - Save links from WhatsApp group chats: https://www.saveboard.app/blog/save-links-from-whatsapp
+- Best Pocket alternative (2026): https://www.saveboard.app/pocket-alternative
 - Blog: https://www.saveboard.app/blog
 - Privacy policy: https://www.saveboard.app/privacy
 - Terms of use: https://www.saveboard.app/terms
