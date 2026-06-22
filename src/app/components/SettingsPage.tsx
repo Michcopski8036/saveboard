@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { X, Download, Upload, HelpCircle, LogOut, ChevronRight, Mail, Zap, Shield, FileText, Trash2, Loader2 } from 'lucide-react';
+import { X, Download, Upload, HelpCircle, LogOut, ChevronRight, Mail, Zap, Shield, FileText, Trash2, Loader2, Star } from 'lucide-react';
 import { useTheme, type ThemeMode } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
@@ -14,6 +14,7 @@ interface SettingsPageProps {
   onShowUpgrade: () => void;
   onShowContact: () => void;
   onShowHelp: () => void;
+  onRate?: () => void;
   onShowPrivacy: () => void;
   onShowTerms: () => void;
   linkCount: number;
@@ -46,7 +47,7 @@ function RowBtn({ icon: Icon, label, right, onClick, danger }: {
   );
 }
 
-export function SettingsPage({ onClose, user, onExport, onImport, onSignOut, onDeleteAccount, onShowUpgrade, onShowContact, onShowHelp, onShowPrivacy, onShowTerms, linkCount, boardCount, isPro }: SettingsPageProps) {
+export function SettingsPage({ onClose, user, onExport, onImport, onSignOut, onDeleteAccount, onShowUpgrade, onShowContact, onShowHelp, onRate, onShowPrivacy, onShowTerms, linkCount, boardCount, isPro }: SettingsPageProps) {
   const { theme, setTheme } = useTheme();
   const { tr } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -144,6 +145,10 @@ export function SettingsPage({ onClose, user, onExport, onImport, onSignOut, onD
 
             {/* Support */}
             <Section title={tr('support')}>
+              {onRate && (
+                <RowBtn icon={Star} label="Rate SaveBoard"
+                  onClick={() => { onClose(); onRate(); }} />
+              )}
               <RowBtn icon={Mail} label={tr('contactUs')}
                 onClick={() => { onClose(); onShowContact(); }} />
               <RowBtn icon={HelpCircle} label={tr('getHelp')}

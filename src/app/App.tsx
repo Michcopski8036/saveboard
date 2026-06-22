@@ -24,6 +24,7 @@ import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { SendIntent } from 'send-intent';
+import { InAppReview } from '@capacitor-community/in-app-review';
 import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -467,6 +468,26 @@ function AppContent() {
   // ── Handlers ───────────────────────────────────────────────────────────────
   const closeModal = () => { setShowAddModal(false); setUrlInput(''); setErrorMessage(''); setSuccessMessage(''); setInfoMessage(''); setAddBoards(new Set()); };
 
+  // Ask for a store rating at a positive moment (50+ links saved, or 5+ boards),
+  // once per user. Native in-app review dialog — no app exit. No-op on web.
+  const maybeAskReview = async (totalLinks: number, totalBoards: number) => {
+    if (!Capacitor.isNativePlatform()) return;
+    if (localStorage.getItem('sb_review_asked') === '1') return;
+    if (totalLinks < 50 && totalBoards < 5) return;
+    localStorage.setItem('sb_review_asked', '1');
+    try { await InAppReview.requestReview(); } catch { /* unsupported on device — ignore */ }
+  };
+
+  // Explicit "Rate SaveBoard" action (Settings) — opens the store's review page.
+  const handleRate = async () => {
+    const ios = Capacitor.getPlatform() === 'ios';
+    const url = ios
+      ? 'https://apps.apple.com/app/id6770486850?action=write-review'
+      : 'https://play.google.com/store/apps/details?id=app.saveboard.saveboard';
+    if (Capacitor.isNativePlatform()) { try { await Browser.open({ url }); return; } catch { /* fall through */ } }
+    window.open(url, '_blank');
+  };
+
   const handleHeaderSave = async () => {
     const val = headerUrl.trim();
     if (!val) return;
@@ -504,7 +525,7 @@ function AppContent() {
       const embedData = parseEmbedCode(input);
       if (embedData) {
         const n = await insertInto({ user_id: user.id, url: embedData.url, title: embedData.title || 'Embedded Content', description: embedData.description || '', image: embedData.image || 'placeholder:default' }, targetCats);
-        setUrlInput(''); setSuccessMessage(`Added${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.(); return;
+        setUrlInput(''); setSuccessMessage(`Added${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.(); maybeAskReview(links.length + n, categories.length); return;
       }
 
       const looksLikeUrl = /^https?:\/\//i.test(input) || /^www\./i.test(input);
@@ -523,6 +544,7 @@ function AppContent() {
       const meta = await fetchMetadata(url);
       const n = await insertInto({ user_id: user.id, url, title: meta.title || 'Web Page', description: meta.description || '', image: meta.image || 'placeholder:default' }, cats);
       setUrlInput(''); setSuccessMessage(`Link added${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.();
+      maybeAskReview(links.length + n, categories.length);
     } catch { setErrorMessage('Failed. Please try again.'); }
     finally { setIsAdding(false); }
   };
@@ -656,6 +678,7 @@ function AppContent() {
     if (!t || categories.includes(t)) return;
     if (!isPro && categories.length >= FREE_LIMITS.boards) { setShowUpgrade(true); return; }
     await supabase.from('categories').insert({ name: t, user_id: user!.id, sort_order: categories.length }); setCategories(p => [...p, t]);
+    maybeAskReview(links.length, categories.length + 1);
   };
   // Drag-reorder boards; persists sort_order per board (synced across devices).
   const handleReorderCategory = async (dragCat: string, dropCat: string) => {
@@ -1517,6 +1540,7 @@ function AppContent() {
           onShowUpgrade={() => { setShowSettings(false); setShowUpgrade(true); }}
           onShowContact={() => setShowContact(true)}
           onShowHelp={() => setShowHelp(true)}
+          onRate={handleRate}
           onShowPrivacy={() => setShowPrivacy(true)}
           onShowTerms={() => setShowTerms(true)}
           linkCount={links.length}
