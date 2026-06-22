@@ -32,6 +32,15 @@
                 <data android:scheme="app.saveboard.saveboard" />
             </intent-filter>
 
+            <!-- Share target: lets SaveBoard appear in the system share sheet when a
+                 user shares a link/text from another app. Received via the send-intent
+                 plugin (checkSendIntentReceived in App.tsx) which opens the Add modal. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+
         </activity>
 
         <provider

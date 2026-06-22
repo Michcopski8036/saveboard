@@ -23,6 +23,7 @@ function GalleryIcon({ className }: { className?: string }) {
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
+import { SendIntent } from 'send-intent';
 import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -144,6 +145,7 @@ function AppContent() {
 
     // Handle OAuth deep link callback (native only)
     let appUrlListener: { remove: () => void } | null = null;
+    let sendIntentCleanup: (() => void) | null = null;
     if (Capacitor.isNativePlatform()) {
       CapApp.addListener('appUrlOpen', async ({ url }) => {
         // Shared-board deep link (opened from a share page stuck in an in-app browser):
@@ -169,11 +171,32 @@ function AppContent() {
           if (error) console.error('setSession error:', error.message);
         }
       }).then(l => { appUrlListener = l; });
+
+      // Android share-target: when a link/text is shared into SaveBoard from
+      // another app's share sheet, open the Add modal pre-filled with the URL.
+      const handleSendIntent = () => {
+        SendIntent.checkSendIntentReceived()
+          .then((result: { title?: string; url?: string } | undefined) => {
+            if (!result) return;
+            const raw = result.url || result.title || '';
+            if (!raw) return;
+            let shared = raw;
+            try { shared = decodeURIComponent(raw); } catch { /* keep raw */ }
+            const urlMatch = shared.match(/https?:\/\/[^\s]+/);
+            setUrlInput(urlMatch ? urlMatch[0] : shared.trim());
+            setShowAddModal(true);
+          })
+          .catch(() => { /* nothing shared */ });
+      };
+      handleSendIntent(); // cold start: app launched directly from a share
+      window.addEventListener('sendIntentReceived', handleSendIntent);
+      sendIntentCleanup = () => window.removeEventListener('sendIntentReceived', handleSendIntent);
     }
 
     return () => {
       subscription.unsubscribe();
       appUrlListener?.remove();
+      sendIntentCleanup?.();
     };
   }, []);
 

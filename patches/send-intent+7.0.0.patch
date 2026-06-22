@@ -1,0 +1,1455 @@
+diff --git a/node_modules/send-intent/android/build.gradle b/node_modules/send-intent/android/build.gradle
+index 78bb52f..d28ddb2 100644
+--- a/node_modules/send-intent/android/build.gradle
++++ b/node_modules/send-intent/android/build.gradle
+@@ -21,11 +21,11 @@ apply plugin: 'com.android.library'
+ 
+ android {
+     namespace "de.mindlib.sendIntent.sendintent"
+-    compileSdkVersion 35
++    compileSdkVersion project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 35
+ 
+     defaultConfig {
+         minSdkVersion 23
+-        targetSdkVersion 35
++        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 35
+         versionCode 1
+         versionName "1.0"
+         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+diff --git a/node_modules/send-intent/android/build/.transforms/1925491f97886755728d294d372f1204/results.bin b/node_modules/send-intent/android/build/.transforms/1925491f97886755728d294d372f1204/results.bin
+new file mode 100644
+index 0000000..0d259dd
+--- /dev/null
++++ b/node_modules/send-intent/android/build/.transforms/1925491f97886755728d294d372f1204/results.bin
+@@ -0,0 +1 @@
++o/classes
+diff --git a/node_modules/send-intent/android/build/.transforms/1925491f97886755728d294d372f1204/transformed/classes/classes_dex/classes.dex b/node_modules/send-intent/android/build/.transforms/1925491f97886755728d294d372f1204/transformed/classes/classes_dex/classes.dex
+new file mode 100644
+index 0000000..41f0894
+Binary files /dev/null and b/node_modules/send-intent/android/build/.transforms/1925491f97886755728d294d372f1204/transformed/classes/classes_dex/classes.dex differ
+diff --git a/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/results.bin b/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/results.bin
+new file mode 100644
+index 0000000..e1640c9
+--- /dev/null
++++ b/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/results.bin
+@@ -0,0 +1 @@
++o/bundleLibRuntimeToDirRelease
+diff --git a/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/transformed/bundleLibRuntimeToDirRelease/bundleLibRuntimeToDirRelease_dex/de/mindlib/sendIntent/SendIntent.dex b/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/transformed/bundleLibRuntimeToDirRelease/bundleLibRuntimeToDirRelease_dex/de/mindlib/sendIntent/SendIntent.dex
+new file mode 100644
+index 0000000..eca170d
+Binary files /dev/null and b/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/transformed/bundleLibRuntimeToDirRelease/bundleLibRuntimeToDirRelease_dex/de/mindlib/sendIntent/SendIntent.dex differ
+diff --git a/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/transformed/bundleLibRuntimeToDirRelease/bundleLibRuntimeToDirRelease_dex/de/mindlib/sendIntent/SendIntentActivity.dex b/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/transformed/bundleLibRuntimeToDirRelease/bundleLibRuntimeToDirRelease_dex/de/mindlib/sendIntent/SendIntentActivity.dex
+new file mode 100644
+index 0000000..996e03b
+Binary files /dev/null and b/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/transformed/bundleLibRuntimeToDirRelease/bundleLibRuntimeToDirRelease_dex/de/mindlib/sendIntent/SendIntentActivity.dex differ
+diff --git a/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/transformed/bundleLibRuntimeToDirRelease/desugar_graph.bin b/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/transformed/bundleLibRuntimeToDirRelease/desugar_graph.bin
+new file mode 100644
+index 0000000..601f245
+Binary files /dev/null and b/node_modules/send-intent/android/build/.transforms/4982b67b1cf711e4ad7e7a28372f868d/transformed/bundleLibRuntimeToDirRelease/desugar_graph.bin differ
+diff --git a/node_modules/send-intent/android/build/intermediates/aapt_friendly_merged_manifests/release/processReleaseManifest/aapt/AndroidManifest.xml b/node_modules/send-intent/android/build/intermediates/aapt_friendly_merged_manifests/release/processReleaseManifest/aapt/AndroidManifest.xml
+new file mode 100644
+index 0000000..9866e1e
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/aapt_friendly_merged_manifests/release/processReleaseManifest/aapt/AndroidManifest.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="de.mindlib.sendIntent.sendintent" >
++
++    <uses-sdk android:minSdkVersion="23" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/aapt_friendly_merged_manifests/release/processReleaseManifest/aapt/output-metadata.json b/node_modules/send-intent/android/build/intermediates/aapt_friendly_merged_manifests/release/processReleaseManifest/aapt/output-metadata.json
+new file mode 100644
+index 0000000..3166936
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/aapt_friendly_merged_manifests/release/processReleaseManifest/aapt/output-metadata.json
+@@ -0,0 +1,18 @@
++{
++  "version": 3,
++  "artifactType": {
++    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
++    "kind": "Directory"
++  },
++  "applicationId": "de.mindlib.sendIntent.sendintent",
++  "variantName": "release",
++  "elements": [
++    {
++      "type": "SINGLE",
++      "filters": [],
++      "attributes": [],
++      "outputFile": "AndroidManifest.xml"
++    }
++  ],
++  "elementType": "File"
++}
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/aar_metadata/release/writeReleaseAarMetadata/aar-metadata.properties b/node_modules/send-intent/android/build/intermediates/aar_metadata/release/writeReleaseAarMetadata/aar-metadata.properties
+new file mode 100644
+index 0000000..1211b1e
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/aar_metadata/release/writeReleaseAarMetadata/aar-metadata.properties
+@@ -0,0 +1,6 @@
++aarFormatVersion=1.0
++aarMetadataVersion=1.0
++minCompileSdk=1
++minCompileSdkExtension=0
++minAndroidGradlePluginVersion=1.0.0
++coreLibraryDesugaringEnabled=false
+diff --git a/node_modules/send-intent/android/build/intermediates/annotation_processor_list/release/javaPreCompileRelease/annotationProcessors.json b/node_modules/send-intent/android/build/intermediates/annotation_processor_list/release/javaPreCompileRelease/annotationProcessors.json
+new file mode 100644
+index 0000000..9e26dfe
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/annotation_processor_list/release/javaPreCompileRelease/annotationProcessors.json
+@@ -0,0 +1 @@
++{}
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/annotations_typedef_file/release/extractReleaseAnnotations/typedefs.txt b/node_modules/send-intent/android/build/intermediates/annotations_typedef_file/release/extractReleaseAnnotations/typedefs.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/send-intent/android/build/intermediates/compile_library_classes_jar/release/bundleLibCompileToJarRelease/classes.jar b/node_modules/send-intent/android/build/intermediates/compile_library_classes_jar/release/bundleLibCompileToJarRelease/classes.jar
+new file mode 100644
+index 0000000..65a01ff
+Binary files /dev/null and b/node_modules/send-intent/android/build/intermediates/compile_library_classes_jar/release/bundleLibCompileToJarRelease/classes.jar differ
+diff --git a/node_modules/send-intent/android/build/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar b/node_modules/send-intent/android/build/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar
+new file mode 100644
+index 0000000..6991e88
+Binary files /dev/null and b/node_modules/send-intent/android/build/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar differ
+diff --git a/node_modules/send-intent/android/build/intermediates/compile_symbol_list/release/generateReleaseRFile/R.txt b/node_modules/send-intent/android/build/intermediates/compile_symbol_list/release/generateReleaseRFile/R.txt
+new file mode 100644
+index 0000000..f7ac549
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/compile_symbol_list/release/generateReleaseRFile/R.txt
+@@ -0,0 +1,3 @@
++int id webview 0x0
++int layout bridge_layout_main 0x0
++int string my_string 0x0
+diff --git a/node_modules/send-intent/android/build/intermediates/compiled_local_resources/release/compileReleaseLibraryResources/out/layout_bridge_layout_main.xml.flat b/node_modules/send-intent/android/build/intermediates/compiled_local_resources/release/compileReleaseLibraryResources/out/layout_bridge_layout_main.xml.flat
+new file mode 100644
+index 0000000..bb41b60
+Binary files /dev/null and b/node_modules/send-intent/android/build/intermediates/compiled_local_resources/release/compileReleaseLibraryResources/out/layout_bridge_layout_main.xml.flat differ
+diff --git a/node_modules/send-intent/android/build/intermediates/default_proguard_files/global/proguard-android-optimize.txt-8.13.0 b/node_modules/send-intent/android/build/intermediates/default_proguard_files/global/proguard-android-optimize.txt-8.13.0
+new file mode 100644
+index 0000000..5a3e3a5
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/default_proguard_files/global/proguard-android-optimize.txt-8.13.0
+@@ -0,0 +1,89 @@
++# This is a configuration file for ProGuard.
++# http://proguard.sourceforge.net/index.html#manual/usage.html
++#
++# Starting with version 2.2 of the Android plugin for Gradle, this file is distributed together with
++# the plugin and unpacked at build-time. The files in $ANDROID_HOME are no longer maintained and
++# will be ignored by new version of the Android plugin for Gradle.
++
++# Optimizations: If you don't want to optimize, use the proguard-android.txt configuration file
++# instead of this one, which turns off the optimization flags.
++-allowaccessmodification
++
++# Preserve some attributes that may be required for reflection.
++-keepattributes AnnotationDefault,
++                EnclosingMethod,
++                InnerClasses,
++                RuntimeVisibleAnnotations,
++                RuntimeVisibleParameterAnnotations,
++                RuntimeVisibleTypeAnnotations,
++                Signature
++
++-keep public class com.google.vending.licensing.ILicensingService
++-keep public class com.android.vending.licensing.ILicensingService
++-keep public class com.google.android.vending.licensing.ILicensingService
++-dontnote com.android.vending.licensing.ILicensingService
++-dontnote com.google.vending.licensing.ILicensingService
++-dontnote com.google.android.vending.licensing.ILicensingService
++
++# For native methods, see https://www.guardsquare.com/manual/configuration/examples#native
++-keepclasseswithmembernames,includedescriptorclasses class * {
++    native <methods>;
++}
++
++# Keep setters in Views so that animations can still work.
++-keepclassmembers public class * extends android.view.View {
++    void set*(***);
++    *** get*();
++}
++
++# We want to keep methods in Activity that could be used in the XML attribute onClick.
++-keepclassmembers class * extends android.app.Activity {
++    public void *(android.view.View);
++}
++
++# For enumeration classes, see https://www.guardsquare.com/manual/configuration/examples#enumerations
++-keepclassmembers enum * {
++    public static **[] values();
++    public static ** valueOf(java.lang.String);
++}
++
++-keepclassmembers class * implements android.os.Parcelable {
++    public static final ** CREATOR;
++}
++
++# Preserve annotated Javascript interface methods.
++-keepclassmembers class * {
++    @android.webkit.JavascriptInterface <methods>;
++}
++
++# The support libraries contains references to newer platform versions.
++# Don't warn about those in case this app is linking against an older
++# platform version. We know about them, and they are safe.
++-dontnote android.support.**
++-dontnote androidx.**
++-dontwarn android.support.**
++-dontwarn androidx.**
++
++# Understand the @Keep support annotation.
++-keep class android.support.annotation.Keep
++
++-keep @android.support.annotation.Keep class * {*;}
++
++-keepclasseswithmembers class * {
++    @android.support.annotation.Keep <methods>;
++}
++
++-keepclasseswithmembers class * {
++    @android.support.annotation.Keep <fields>;
++}
++
++-keepclasseswithmembers class * {
++    @android.support.annotation.Keep <init>(...);
++}
++
++# These classes are duplicated between android.jar and org.apache.http.legacy.jar.
++-dontnote org.apache.http.**
++-dontnote android.net.http.**
++
++# These classes are duplicated between android.jar and core-lambda-stubs.jar.
++-dontnote java.lang.invoke.**
+diff --git a/node_modules/send-intent/android/build/intermediates/default_proguard_files/global/proguard-android.txt-8.13.0 b/node_modules/send-intent/android/build/intermediates/default_proguard_files/global/proguard-android.txt-8.13.0
+new file mode 100644
+index 0000000..6f7e4ef
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/default_proguard_files/global/proguard-android.txt-8.13.0
+@@ -0,0 +1,95 @@
++# This is a configuration file for ProGuard.
++# http://proguard.sourceforge.net/index.html#manual/usage.html
++#
++# Starting with version 2.2 of the Android plugin for Gradle, this file is distributed together with
++# the plugin and unpacked at build-time. The files in $ANDROID_HOME are no longer maintained and
++# will be ignored by new version of the Android plugin for Gradle.
++
++# Optimization is turned off by default. Dex does not like code run
++# through the ProGuard optimize steps (and performs some
++# of these optimizations on its own).
++# Note that if you want to enable optimization, you cannot just
++# include optimization flags in your own project configuration file;
++# instead you will need to point to the
++# "proguard-android-optimize.txt" file instead of this one from your
++# project.properties file.
++-dontoptimize
++
++# Preserve some attributes that may be required for reflection.
++-keepattributes AnnotationDefault,
++                EnclosingMethod,
++                InnerClasses,
++                RuntimeVisibleAnnotations,
++                RuntimeVisibleParameterAnnotations,
++                RuntimeVisibleTypeAnnotations,
++                Signature
++
++-keep public class com.google.vending.licensing.ILicensingService
++-keep public class com.android.vending.licensing.ILicensingService
++-keep public class com.google.android.vending.licensing.ILicensingService
++-dontnote com.android.vending.licensing.ILicensingService
++-dontnote com.google.vending.licensing.ILicensingService
++-dontnote com.google.android.vending.licensing.ILicensingService
++
++# For native methods, see https://www.guardsquare.com/manual/configuration/examples#native
++-keepclasseswithmembernames,includedescriptorclasses class * {
++    native <methods>;
++}
++
++# Keep setters in Views so that animations can still work.
++-keepclassmembers public class * extends android.view.View {
++    void set*(***);
++    *** get*();
++}
++
++# We want to keep methods in Activity that could be used in the XML attribute onClick.
++-keepclassmembers class * extends android.app.Activity {
++    public void *(android.view.View);
++}
++
++# For enumeration classes, see https://www.guardsquare.com/manual/configuration/examples#enumerations
++-keepclassmembers enum * {
++    public static **[] values();
++    public static ** valueOf(java.lang.String);
++}
++
++-keepclassmembers class * implements android.os.Parcelable {
++    public static final ** CREATOR;
++}
++
++# Preserve annotated Javascript interface methods.
++-keepclassmembers class * {
++    @android.webkit.JavascriptInterface <methods>;
++}
++
++# The support libraries contains references to newer platform versions.
++# Don't warn about those in case this app is linking against an older
++# platform version. We know about them, and they are safe.
++-dontnote android.support.**
++-dontnote androidx.**
++-dontwarn android.support.**
++-dontwarn androidx.**
++
++# Understand the @Keep support annotation.
++-keep class android.support.annotation.Keep
++
++-keep @android.support.annotation.Keep class * {*;}
++
++-keepclasseswithmembers class * {
++    @android.support.annotation.Keep <methods>;
++}
++
++-keepclasseswithmembers class * {
++    @android.support.annotation.Keep <fields>;
++}
++
++-keepclasseswithmembers class * {
++    @android.support.annotation.Keep <init>(...);
++}
++
++# These classes are duplicated between android.jar and org.apache.http.legacy.jar.
++-dontnote org.apache.http.**
++-dontnote android.net.http.**
++
++# These classes are duplicated between android.jar and core-lambda-stubs.jar.
++-dontnote java.lang.invoke.**
+diff --git a/node_modules/send-intent/android/build/intermediates/default_proguard_files/global/proguard-defaults.txt-8.13.0 b/node_modules/send-intent/android/build/intermediates/default_proguard_files/global/proguard-defaults.txt-8.13.0
+new file mode 100644
+index 0000000..7bbb228
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/default_proguard_files/global/proguard-defaults.txt-8.13.0
+@@ -0,0 +1,89 @@
++# This is a configuration file for ProGuard.
++# http://proguard.sourceforge.net/index.html#manual/usage.html
++#
++# Starting with version 2.2 of the Android plugin for Gradle, this file is distributed together with
++# the plugin and unpacked at build-time. The files in $ANDROID_HOME are no longer maintained and
++# will be ignored by new version of the Android plugin for Gradle.
++
++# Optimizations can be turned on and off in the 'postProcessing' DSL block.
++# The configuration below is applied if optimizations are enabled.
++-allowaccessmodification
++
++# Preserve some attributes that may be required for reflection.
++-keepattributes AnnotationDefault,
++                EnclosingMethod,
++                InnerClasses,
++                RuntimeVisibleAnnotations,
++                RuntimeVisibleParameterAnnotations,
++                RuntimeVisibleTypeAnnotations,
++                Signature
++
++-keep public class com.google.vending.licensing.ILicensingService
++-keep public class com.android.vending.licensing.ILicensingService
++-keep public class com.google.android.vending.licensing.ILicensingService
++-dontnote com.android.vending.licensing.ILicensingService
++-dontnote com.google.vending.licensing.ILicensingService
++-dontnote com.google.android.vending.licensing.ILicensingService
++
++# For native methods, see https://www.guardsquare.com/manual/configuration/examples#native
++-keepclasseswithmembernames,includedescriptorclasses class * {
++    native <methods>;
++}
++
++# Keep setters in Views so that animations can still work.
++-keepclassmembers public class * extends android.view.View {
++    void set*(***);
++    *** get*();
++}
++
++# We want to keep methods in Activity that could be used in the XML attribute onClick.
++-keepclassmembers class * extends android.app.Activity {
++    public void *(android.view.View);
++}
++
++# For enumeration classes, see https://www.guardsquare.com/manual/configuration/examples#enumerations
++-keepclassmembers enum * {
++    public static **[] values();
++    public static ** valueOf(java.lang.String);
++}
++
++-keepclassmembers class * implements android.os.Parcelable {
++    public static final ** CREATOR;
++}
++
++# Preserve annotated Javascript interface methods.
++-keepclassmembers class * {
++    @android.webkit.JavascriptInterface <methods>;
++}
++
++# The support libraries contains references to newer platform versions.
++# Don't warn about those in case this app is linking against an older
++# platform version. We know about them, and they are safe.
++-dontnote android.support.**
++-dontnote androidx.**
++-dontwarn android.support.**
++-dontwarn androidx.**
++
++# Understand the @Keep support annotation.
++-keep class android.support.annotation.Keep
++
++-keep @android.support.annotation.Keep class * {*;}
++
++-keepclasseswithmembers class * {
++    @android.support.annotation.Keep <methods>;
++}
++
++-keepclasseswithmembers class * {
++    @android.support.annotation.Keep <fields>;
++}
++
++-keepclasseswithmembers class * {
++    @android.support.annotation.Keep <init>(...);
++}
++
++# These classes are duplicated between android.jar and org.apache.http.legacy.jar.
++-dontnote org.apache.http.**
++-dontnote android.net.http.**
++
++# These classes are duplicated between android.jar and core-lambda-stubs.jar.
++-dontnote java.lang.invoke.**
+diff --git a/node_modules/send-intent/android/build/intermediates/full_jar/release/createFullJarRelease/full.jar b/node_modules/send-intent/android/build/intermediates/full_jar/release/createFullJarRelease/full.jar
+new file mode 100644
+index 0000000..5eb211c
+Binary files /dev/null and b/node_modules/send-intent/android/build/intermediates/full_jar/release/createFullJarRelease/full.jar differ
+diff --git a/node_modules/send-intent/android/build/intermediates/incremental/mergeReleaseAssets/merger.xml b/node_modules/send-intent/android/build/intermediates/incremental/mergeReleaseAssets/merger.xml
+new file mode 100644
+index 0000000..ef64f12
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/incremental/mergeReleaseAssets/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/cl/saveboard/node_modules/send-intent/android/src/main/assets"/></dataSet><dataSet config="release" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/cl/saveboard/node_modules/send-intent/android/src/release/assets"/></dataSet><dataSet config="generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/cl/saveboard/node_modules/send-intent/android/build/intermediates/shader_assets/release/compileReleaseShaders/out"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/incremental/mergeReleaseJniLibFolders/merger.xml b/node_modules/send-intent/android/build/intermediates/incremental/mergeReleaseJniLibFolders/merger.xml
+new file mode 100644
+index 0000000..1852eb5
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/incremental/mergeReleaseJniLibFolders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/cl/saveboard/node_modules/send-intent/android/src/main/jniLibs"/></dataSet><dataSet config="release" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/cl/saveboard/node_modules/send-intent/android/src/release/jniLibs"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/incremental/mergeReleaseShaders/merger.xml b/node_modules/send-intent/android/build/intermediates/incremental/mergeReleaseShaders/merger.xml
+new file mode 100644
+index 0000000..cfc76ef
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/incremental/mergeReleaseShaders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/cl/saveboard/node_modules/send-intent/android/src/main/shaders"/></dataSet><dataSet config="release" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/cl/saveboard/node_modules/send-intent/android/src/release/shaders"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/incremental/release/packageReleaseResources/compile-file-map.properties b/node_modules/send-intent/android/build/intermediates/incremental/release/packageReleaseResources/compile-file-map.properties
+new file mode 100644
+index 0000000..5bdb089
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/incremental/release/packageReleaseResources/compile-file-map.properties
+@@ -0,0 +1,2 @@
++#Mon Jun 22 10:27:33 AWST 2026
++de.mindlib.sendIntent.sendintent.send-intent-main-5\:/layout/bridge_layout_main.xml=/Users/cl/saveboard/node_modules/send-intent/android/build/intermediates/packaged_res/release/packageReleaseResources/layout/bridge_layout_main.xml
+diff --git a/node_modules/send-intent/android/build/intermediates/incremental/release/packageReleaseResources/merged.dir/values/values.xml b/node_modules/send-intent/android/build/intermediates/incremental/release/packageReleaseResources/merged.dir/values/values.xml
+new file mode 100644
+index 0000000..e95bf66
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/incremental/release/packageReleaseResources/merged.dir/values/values.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="my_string">Just a simple string</string>
++</resources>
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/incremental/release/packageReleaseResources/merger.xml b/node_modules/send-intent/android/build/intermediates/incremental/release/packageReleaseResources/merger.xml
+new file mode 100644
+index 0000000..969dff6
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/incremental/release/packageReleaseResources/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/cl/saveboard/node_modules/send-intent/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/Users/cl/saveboard/node_modules/send-intent/android/src/main/res"><file name="bridge_layout_main" path="/Users/cl/saveboard/node_modules/send-intent/android/src/main/res/layout/bridge_layout_main.xml" qualifiers="" type="layout"/><file path="/Users/cl/saveboard/node_modules/send-intent/android/src/main/res/values/colors.xml" qualifiers=""/><file path="/Users/cl/saveboard/node_modules/send-intent/android/src/main/res/values/styles.xml" qualifiers=""/><file path="/Users/cl/saveboard/node_modules/send-intent/android/src/main/res/values/strings.xml" qualifiers=""><string name="my_string">Just a simple string</string></file></source></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="release$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/cl/saveboard/node_modules/send-intent/android/src/release/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="release" generated-set="release$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/Users/cl/saveboard/node_modules/send-intent/android/src/release/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/cl/saveboard/node_modules/send-intent/android/build/generated/res/resValues/release"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/Users/cl/saveboard/node_modules/send-intent/android/build/generated/res/resValues/release"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes/de/mindlib/sendIntent/SendIntent.class b/node_modules/send-intent/android/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes/de/mindlib/sendIntent/SendIntent.class
+new file mode 100644
+index 0000000..1086f4f
+Binary files /dev/null and b/node_modules/send-intent/android/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes/de/mindlib/sendIntent/SendIntent.class differ
+diff --git a/node_modules/send-intent/android/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes/de/mindlib/sendIntent/SendIntentActivity.class b/node_modules/send-intent/android/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes/de/mindlib/sendIntent/SendIntentActivity.class
+new file mode 100644
+index 0000000..07143b0
+Binary files /dev/null and b/node_modules/send-intent/android/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes/de/mindlib/sendIntent/SendIntentActivity.class differ
+diff --git a/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/module.xml b/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/module.xml
+new file mode 100644
+index 0000000..6c5d381
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/module.xml
+@@ -0,0 +1,18 @@
++<lint-module
++    format="1"
++    dir="/Users/cl/saveboard/node_modules/send-intent/android"
++    name=":send-intent"
++    type="LIBRARY"
++    maven="android:send-intent:unspecified"
++    agpVersion="8.13.0"
++    buildFolder="build"
++    bootClassPath="/Users/cl/Library/Android/sdk/platforms/android-35/android.jar:/Users/cl/Library/Android/sdk/build-tools/35.0.0/core-lambda-stubs.jar"
++    javaSourceLevel="21"
++    compileTarget="android-35"
++    neverShrinking="true">
++  <lintOptions
++      absolutePaths="true"
++      checkReleaseBuilds="true"
++      explainIssues="true"/>
++  <variant name="release"/>
++</lint-module>
+diff --git a/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/release-artifact-dependencies.xml b/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/release-artifact-dependencies.xml
+new file mode 100644
+index 0000000..918541e
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/release-artifact-dependencies.xml
+@@ -0,0 +1,260 @@
++<dependencies>
++  <compile
++      roots="commons-io:commons-io:2.5@jar,:@@:capacitor-android::release,androidx.appcompat:appcompat-resources:1.7.1@aar,androidx.appcompat:appcompat:1.7.1@aar,androidx.fragment:fragment:1.8.9@aar,androidx.activity:activity:1.11.0@aar,androidx.drawerlayout:drawerlayout:1.0.0@aar,androidx.vectordrawable:vectordrawable-animated:1.1.0@aar,androidx.vectordrawable:vectordrawable:1.1.0@aar,androidx.loader:loader:1.0.0@aar,androidx.lifecycle:lifecycle-livedata:2.6.2@aar,androidx.lifecycle:lifecycle-livedata-core:2.6.2@aar,androidx.lifecycle:lifecycle-viewmodel:2.6.2@aar,androidx.lifecycle:lifecycle-viewmodel:2.6.2@aar,androidx.lifecycle:lifecycle-runtime:2.6.2@aar,androidx.lifecycle:lifecycle-common:2.6.2@jar,androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.2@aar,androidx.core:core-ktx:1.17.0@aar,androidx.viewpager:viewpager:1.0.0@aar,androidx.customview:customview:1.0.0@aar,androidx.core:core:1.17.0@aar,androidx.core:core:1.17.0@aar,androidx.cursoradapter:cursoradapter:1.0.0@aar,androidx.savedstate:savedstate:1.2.1@aar,androidx.versionedparcelable:versionedparcelable:1.1.1@aar,androidx.interpolator:interpolator:1.0.0@aar,androidx.arch.core:core-runtime:2.2.0@aar,androidx.arch.core:core-common:2.2.0@jar,androidx.collection:collection-jvm:1.4.2@jar,androidx.annotation:annotation-jvm:1.8.1@jar,androidx.core:core-viewtree:1.0.0@aar,androidx.annotation:annotation-experimental:1.4.1@aar,org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1@jar,org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1@jar,org.jetbrains.kotlin:kotlin-stdlib:2.0.21@jar,org.jetbrains:annotations:23.0.0@jar,com.google.guava:listenablefuture:1.0@jar,org.jspecify:jspecify:1.0.0@jar">
++    <dependency
++        name="commons-io:commons-io:2.5@jar"
++        simpleName="commons-io:commons-io"/>
++    <dependency
++        name=":@@:capacitor-android::release"
++        simpleName="artifacts::capacitor-android"/>
++    <dependency
++        name="androidx.appcompat:appcompat-resources:1.7.1@aar"
++        simpleName="androidx.appcompat:appcompat-resources"/>
++    <dependency
++        name="androidx.appcompat:appcompat:1.7.1@aar"
++        simpleName="androidx.appcompat:appcompat"/>
++    <dependency
++        name="androidx.fragment:fragment:1.8.9@aar"
++        simpleName="androidx.fragment:fragment"/>
++    <dependency
++        name="androidx.activity:activity:1.11.0@aar"
++        simpleName="androidx.activity:activity"/>
++    <dependency
++        name="androidx.drawerlayout:drawerlayout:1.0.0@aar"
++        simpleName="androidx.drawerlayout:drawerlayout"/>
++    <dependency
++        name="androidx.vectordrawable:vectordrawable-animated:1.1.0@aar"
++        simpleName="androidx.vectordrawable:vectordrawable-animated"/>
++    <dependency
++        name="androidx.vectordrawable:vectordrawable:1.1.0@aar"
++        simpleName="androidx.vectordrawable:vectordrawable"/>
++    <dependency
++        name="androidx.loader:loader:1.0.0@aar"
++        simpleName="androidx.loader:loader"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-livedata:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-livedata"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-livedata-core:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-livedata-core"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-viewmodel:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-viewmodel"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-runtime:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-runtime"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-common:2.6.2@jar"
++        simpleName="androidx.lifecycle:lifecycle-common"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-viewmodel-savedstate"/>
++    <dependency
++        name="androidx.core:core-ktx:1.17.0@aar"
++        simpleName="androidx.core:core-ktx"/>
++    <dependency
++        name="androidx.viewpager:viewpager:1.0.0@aar"
++        simpleName="androidx.viewpager:viewpager"/>
++    <dependency
++        name="androidx.customview:customview:1.0.0@aar"
++        simpleName="androidx.customview:customview"/>
++    <dependency
++        name="androidx.core:core:1.17.0@aar"
++        simpleName="androidx.core:core"/>
++    <dependency
++        name="androidx.cursoradapter:cursoradapter:1.0.0@aar"
++        simpleName="androidx.cursoradapter:cursoradapter"/>
++    <dependency
++        name="androidx.savedstate:savedstate:1.2.1@aar"
++        simpleName="androidx.savedstate:savedstate"/>
++    <dependency
++        name="androidx.versionedparcelable:versionedparcelable:1.1.1@aar"
++        simpleName="androidx.versionedparcelable:versionedparcelable"/>
++    <dependency
++        name="androidx.interpolator:interpolator:1.0.0@aar"
++        simpleName="androidx.interpolator:interpolator"/>
++    <dependency
++        name="androidx.arch.core:core-runtime:2.2.0@aar"
++        simpleName="androidx.arch.core:core-runtime"/>
++    <dependency
++        name="androidx.arch.core:core-common:2.2.0@jar"
++        simpleName="androidx.arch.core:core-common"/>
++    <dependency
++        name="androidx.collection:collection-jvm:1.4.2@jar"
++        simpleName="androidx.collection:collection-jvm"/>
++    <dependency
++        name="androidx.annotation:annotation-jvm:1.8.1@jar"
++        simpleName="androidx.annotation:annotation-jvm"/>
++    <dependency
++        name="androidx.core:core-viewtree:1.0.0@aar"
++        simpleName="androidx.core:core-viewtree"/>
++    <dependency
++        name="androidx.annotation:annotation-experimental:1.4.1@aar"
++        simpleName="androidx.annotation:annotation-experimental"/>
++    <dependency
++        name="org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1@jar"
++        simpleName="org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"/>
++    <dependency
++        name="org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1@jar"
++        simpleName="org.jetbrains.kotlinx:kotlinx-coroutines-android"/>
++    <dependency
++        name="org.jetbrains.kotlin:kotlin-stdlib:2.0.21@jar"
++        simpleName="org.jetbrains.kotlin:kotlin-stdlib"/>
++    <dependency
++        name="org.jetbrains:annotations:23.0.0@jar"
++        simpleName="org.jetbrains:annotations"/>
++    <dependency
++        name="com.google.guava:listenablefuture:1.0@jar"
++        simpleName="com.google.guava:listenablefuture"/>
++    <dependency
++        name="org.jspecify:jspecify:1.0.0@jar"
++        simpleName="org.jspecify:jspecify"/>
++  </compile>
++  <package
++      roots="commons-io:commons-io:2.5@jar,:@@:capacitor-android::release,org.apache.cordova:framework:14.0.1@aar,androidx.appcompat:appcompat-resources:1.7.1@aar,androidx.appcompat:appcompat:1.7.1@aar,androidx.coordinatorlayout:coordinatorlayout:1.3.0@aar,androidx.webkit:webkit:1.14.0@aar,androidx.drawerlayout:drawerlayout:1.0.0@aar,androidx.emoji2:emoji2-views-helper:1.3.0@aar,androidx.emoji2:emoji2:1.3.0@aar,androidx.fragment:fragment:1.8.9@aar,androidx.activity:activity:1.11.0@aar,androidx.savedstate:savedstate:1.2.1@aar,androidx.loader:loader:1.0.0@aar,androidx.lifecycle:lifecycle-livedata:2.6.2@aar,androidx.lifecycle:lifecycle-viewmodel:2.6.2@aar,androidx.lifecycle:lifecycle-viewmodel:2.6.2@aar,androidx.lifecycle:lifecycle-process:2.6.2@aar,androidx.lifecycle:lifecycle-livedata-core:2.6.2@aar,androidx.lifecycle:lifecycle-common:2.6.2@jar,androidx.lifecycle:lifecycle-runtime:2.6.2@aar,androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.2@aar,androidx.core:core-ktx:1.17.0@aar,androidx.viewpager:viewpager:1.0.0@aar,androidx.customview:customview:1.0.0@aar,androidx.vectordrawable:vectordrawable-animated:1.1.0@aar,androidx.vectordrawable:vectordrawable:1.1.0@aar,androidx.core:core:1.17.0@aar,androidx.core:core:1.17.0@aar,androidx.cursoradapter:cursoradapter:1.0.0@aar,androidx.resourceinspection:resourceinspection-annotation:1.0.1@jar,androidx.interpolator:interpolator:1.0.0@aar,androidx.profileinstaller:profileinstaller:1.4.0@aar,androidx.startup:startup-runtime:1.1.1@aar,androidx.tracing:tracing:1.2.0@aar,androidx.versionedparcelable:versionedparcelable:1.1.1@aar,androidx.core:core-splashscreen:1.0.1@aar,androidx.collection:collection-jvm:1.4.2@jar,androidx.arch.core:core-runtime:2.2.0@aar,androidx.arch.core:core-common:2.2.0@jar,androidx.concurrent:concurrent-futures:1.1.0@jar,androidx.annotation:annotation-experimental:1.4.1@aar,androidx.core:core-viewtree:1.0.0@aar,androidx.annotation:annotation-jvm:1.8.1@jar,org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1@jar,org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1@jar,org.jetbrains.kotlin:kotlin-stdlib:2.0.21@jar,com.google.guava:listenablefuture:1.0@jar,org.jspecify:jspecify:1.0.0@jar,org.jetbrains:annotations:23.0.0@jar">
++    <dependency
++        name="commons-io:commons-io:2.5@jar"
++        simpleName="commons-io:commons-io"/>
++    <dependency
++        name=":@@:capacitor-android::release"
++        simpleName="artifacts::capacitor-android"/>
++    <dependency
++        name="org.apache.cordova:framework:14.0.1@aar"
++        simpleName="org.apache.cordova:framework"/>
++    <dependency
++        name="androidx.appcompat:appcompat-resources:1.7.1@aar"
++        simpleName="androidx.appcompat:appcompat-resources"/>
++    <dependency
++        name="androidx.appcompat:appcompat:1.7.1@aar"
++        simpleName="androidx.appcompat:appcompat"/>
++    <dependency
++        name="androidx.coordinatorlayout:coordinatorlayout:1.3.0@aar"
++        simpleName="androidx.coordinatorlayout:coordinatorlayout"/>
++    <dependency
++        name="androidx.webkit:webkit:1.14.0@aar"
++        simpleName="androidx.webkit:webkit"/>
++    <dependency
++        name="androidx.drawerlayout:drawerlayout:1.0.0@aar"
++        simpleName="androidx.drawerlayout:drawerlayout"/>
++    <dependency
++        name="androidx.emoji2:emoji2-views-helper:1.3.0@aar"
++        simpleName="androidx.emoji2:emoji2-views-helper"/>
++    <dependency
++        name="androidx.emoji2:emoji2:1.3.0@aar"
++        simpleName="androidx.emoji2:emoji2"/>
++    <dependency
++        name="androidx.fragment:fragment:1.8.9@aar"
++        simpleName="androidx.fragment:fragment"/>
++    <dependency
++        name="androidx.activity:activity:1.11.0@aar"
++        simpleName="androidx.activity:activity"/>
++    <dependency
++        name="androidx.savedstate:savedstate:1.2.1@aar"
++        simpleName="androidx.savedstate:savedstate"/>
++    <dependency
++        name="androidx.loader:loader:1.0.0@aar"
++        simpleName="androidx.loader:loader"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-livedata:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-livedata"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-viewmodel:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-viewmodel"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-process:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-process"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-livedata-core:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-livedata-core"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-common:2.6.2@jar"
++        simpleName="androidx.lifecycle:lifecycle-common"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-runtime:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-runtime"/>
++    <dependency
++        name="androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.2@aar"
++        simpleName="androidx.lifecycle:lifecycle-viewmodel-savedstate"/>
++    <dependency
++        name="androidx.core:core-ktx:1.17.0@aar"
++        simpleName="androidx.core:core-ktx"/>
++    <dependency
++        name="androidx.viewpager:viewpager:1.0.0@aar"
++        simpleName="androidx.viewpager:viewpager"/>
++    <dependency
++        name="androidx.customview:customview:1.0.0@aar"
++        simpleName="androidx.customview:customview"/>
++    <dependency
++        name="androidx.vectordrawable:vectordrawable-animated:1.1.0@aar"
++        simpleName="androidx.vectordrawable:vectordrawable-animated"/>
++    <dependency
++        name="androidx.vectordrawable:vectordrawable:1.1.0@aar"
++        simpleName="androidx.vectordrawable:vectordrawable"/>
++    <dependency
++        name="androidx.core:core:1.17.0@aar"
++        simpleName="androidx.core:core"/>
++    <dependency
++        name="androidx.cursoradapter:cursoradapter:1.0.0@aar"
++        simpleName="androidx.cursoradapter:cursoradapter"/>
++    <dependency
++        name="androidx.resourceinspection:resourceinspection-annotation:1.0.1@jar"
++        simpleName="androidx.resourceinspection:resourceinspection-annotation"/>
++    <dependency
++        name="androidx.interpolator:interpolator:1.0.0@aar"
++        simpleName="androidx.interpolator:interpolator"/>
++    <dependency
++        name="androidx.profileinstaller:profileinstaller:1.4.0@aar"
++        simpleName="androidx.profileinstaller:profileinstaller"/>
++    <dependency
++        name="androidx.startup:startup-runtime:1.1.1@aar"
++        simpleName="androidx.startup:startup-runtime"/>
++    <dependency
++        name="androidx.tracing:tracing:1.2.0@aar"
++        simpleName="androidx.tracing:tracing"/>
++    <dependency
++        name="androidx.versionedparcelable:versionedparcelable:1.1.1@aar"
++        simpleName="androidx.versionedparcelable:versionedparcelable"/>
++    <dependency
++        name="androidx.core:core-splashscreen:1.0.1@aar"
++        simpleName="androidx.core:core-splashscreen"/>
++    <dependency
++        name="androidx.collection:collection-jvm:1.4.2@jar"
++        simpleName="androidx.collection:collection-jvm"/>
++    <dependency
++        name="androidx.arch.core:core-runtime:2.2.0@aar"
++        simpleName="androidx.arch.core:core-runtime"/>
++    <dependency
++        name="androidx.arch.core:core-common:2.2.0@jar"
++        simpleName="androidx.arch.core:core-common"/>
++    <dependency
++        name="androidx.concurrent:concurrent-futures:1.1.0@jar"
++        simpleName="androidx.concurrent:concurrent-futures"/>
++    <dependency
++        name="androidx.annotation:annotation-experimental:1.4.1@aar"
++        simpleName="androidx.annotation:annotation-experimental"/>
++    <dependency
++        name="androidx.core:core-viewtree:1.0.0@aar"
++        simpleName="androidx.core:core-viewtree"/>
++    <dependency
++        name="androidx.annotation:annotation-jvm:1.8.1@jar"
++        simpleName="androidx.annotation:annotation-jvm"/>
++    <dependency
++        name="org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1@jar"
++        simpleName="org.jetbrains.kotlinx:kotlinx-coroutines-android"/>
++    <dependency
++        name="org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1@jar"
++        simpleName="org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"/>
++    <dependency
++        name="org.jetbrains.kotlin:kotlin-stdlib:2.0.21@jar"
++        simpleName="org.jetbrains.kotlin:kotlin-stdlib"/>
++    <dependency
++        name="com.google.guava:listenablefuture:1.0@jar"
++        simpleName="com.google.guava:listenablefuture"/>
++    <dependency
++        name="org.jspecify:jspecify:1.0.0@jar"
++        simpleName="org.jspecify:jspecify"/>
++    <dependency
++        name="org.jetbrains:annotations:23.0.0@jar"
++        simpleName="org.jetbrains:annotations"/>
++  </package>
++</dependencies>
+diff --git a/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/release-artifact-libraries.xml b/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/release-artifact-libraries.xml
+new file mode 100644
+index 0000000..16e88ce
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/release-artifact-libraries.xml
+@@ -0,0 +1,499 @@
++<libraries>
++  <library
++      name="commons-io:commons-io:2.5@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/2.5/2852e6e05fbb95076fc091f6d1780f1f8fe35e0f/commons-io-2.5.jar"
++      resolved="commons-io:commons-io:2.5"/>
++  <library
++      name=":@@:capacitor-android::release"
++      project=":capacitor-android"/>
++  <library
++      name="androidx.appcompat:appcompat-resources:1.7.1@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/bee8f78bb28e6cb788edd05c601f4778/transformed/appcompat-resources-1.7.1/jars/classes.jar"
++      resolved="androidx.appcompat:appcompat-resources:1.7.1"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/bee8f78bb28e6cb788edd05c601f4778/transformed/appcompat-resources-1.7.1"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.appcompat:appcompat:1.7.1@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/c3f09e8abd8bb01c9314454bd06bb337/transformed/appcompat-1.7.1/jars/classes.jar"
++      resolved="androidx.appcompat:appcompat:1.7.1"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/c3f09e8abd8bb01c9314454bd06bb337/transformed/appcompat-1.7.1"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.fragment:fragment:1.8.9@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/754c4f1b691d2a1223e4f8f413992fee/transformed/fragment-1.8.9/jars/classes.jar"
++      resolved="androidx.fragment:fragment:1.8.9"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/754c4f1b691d2a1223e4f8f413992fee/transformed/fragment-1.8.9"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.activity:activity:1.11.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/4ce00e85fb17003296e7add5523825c1/transformed/activity-1.11.0/jars/classes.jar"
++      resolved="androidx.activity:activity:1.11.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/4ce00e85fb17003296e7add5523825c1/transformed/activity-1.11.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.drawerlayout:drawerlayout:1.0.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/f570623fbaea2df5386d3e48ada25a61/transformed/drawerlayout-1.0.0/jars/classes.jar"
++      resolved="androidx.drawerlayout:drawerlayout:1.0.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/f570623fbaea2df5386d3e48ada25a61/transformed/drawerlayout-1.0.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.vectordrawable:vectordrawable-animated:1.1.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/dbca2f6d95f7d2f69dee86e3f7b328a8/transformed/vectordrawable-animated-1.1.0/jars/classes.jar"
++      resolved="androidx.vectordrawable:vectordrawable-animated:1.1.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/dbca2f6d95f7d2f69dee86e3f7b328a8/transformed/vectordrawable-animated-1.1.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.vectordrawable:vectordrawable:1.1.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/98eaa2f86c1e52fdab04ff44c25cd64f/transformed/vectordrawable-1.1.0/jars/classes.jar"
++      resolved="androidx.vectordrawable:vectordrawable:1.1.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/98eaa2f86c1e52fdab04ff44c25cd64f/transformed/vectordrawable-1.1.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.loader:loader:1.0.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/c0a22850032ed8caa67b3d94a8173736/transformed/loader-1.0.0/jars/classes.jar"
++      resolved="androidx.loader:loader:1.0.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/c0a22850032ed8caa67b3d94a8173736/transformed/loader-1.0.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.lifecycle:lifecycle-livedata:2.6.2@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/8d83e436f29a9ad9858ae8c630f3448b/transformed/lifecycle-livedata-2.6.2/jars/classes.jar"
++      resolved="androidx.lifecycle:lifecycle-livedata:2.6.2"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/8d83e436f29a9ad9858ae8c630f3448b/transformed/lifecycle-livedata-2.6.2"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.lifecycle:lifecycle-livedata-core:2.6.2@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/b5655c5df44c26433ffde34d45e6b2a4/transformed/lifecycle-livedata-core-2.6.2/jars/classes.jar"
++      resolved="androidx.lifecycle:lifecycle-livedata-core:2.6.2"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/b5655c5df44c26433ffde34d45e6b2a4/transformed/lifecycle-livedata-core-2.6.2"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.lifecycle:lifecycle-viewmodel:2.6.2@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/ab32e4c3e2bf096654fd9e14504854dc/transformed/lifecycle-viewmodel-2.6.2/jars/classes.jar"
++      resolved="androidx.lifecycle:lifecycle-viewmodel:2.6.2"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/ab32e4c3e2bf096654fd9e14504854dc/transformed/lifecycle-viewmodel-2.6.2"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.lifecycle:lifecycle-runtime:2.6.2@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/ebf9360ba611f1d20f2bddac6f1045ca/transformed/lifecycle-runtime-2.6.2/jars/classes.jar"
++      resolved="androidx.lifecycle:lifecycle-runtime:2.6.2"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/ebf9360ba611f1d20f2bddac6f1045ca/transformed/lifecycle-runtime-2.6.2"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.lifecycle:lifecycle-common:2.6.2@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/androidx.lifecycle/lifecycle-common/2.6.2/10f354fdb64868baecd67128560c5a0d6312c495/lifecycle-common-2.6.2.jar"
++      resolved="androidx.lifecycle:lifecycle-common:2.6.2"/>
++  <library
++      name="androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.2@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/de2a1b5c01db4d02ef6d13f0f4e2cf96/transformed/lifecycle-viewmodel-savedstate-2.6.2/jars/classes.jar"
++      resolved="androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.2"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/de2a1b5c01db4d02ef6d13f0f4e2cf96/transformed/lifecycle-viewmodel-savedstate-2.6.2"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.core:core-ktx:1.17.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/6443194ff2cd53b8a19f0de2b31832a0/transformed/core-ktx-1.17.0/jars/classes.jar"
++      resolved="androidx.core:core-ktx:1.17.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/6443194ff2cd53b8a19f0de2b31832a0/transformed/core-ktx-1.17.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.viewpager:viewpager:1.0.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/5c150d65e548acad3954bacf90b47f66/transformed/viewpager-1.0.0/jars/classes.jar"
++      resolved="androidx.viewpager:viewpager:1.0.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/5c150d65e548acad3954bacf90b47f66/transformed/viewpager-1.0.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.customview:customview:1.0.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/596ab941bf00b590daff3ec7eb267457/transformed/customview-1.0.0/jars/classes.jar"
++      resolved="androidx.customview:customview:1.0.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/596ab941bf00b590daff3ec7eb267457/transformed/customview-1.0.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.core:core:1.17.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/11094a199bb7945826b161d8a9c17beb/transformed/core-1.17.0/jars/classes.jar"
++      resolved="androidx.core:core:1.17.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/11094a199bb7945826b161d8a9c17beb/transformed/core-1.17.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.cursoradapter:cursoradapter:1.0.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/1e3e5961ccf37b13ee8a7c0a81228664/transformed/cursoradapter-1.0.0/jars/classes.jar"
++      resolved="androidx.cursoradapter:cursoradapter:1.0.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/1e3e5961ccf37b13ee8a7c0a81228664/transformed/cursoradapter-1.0.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.savedstate:savedstate:1.2.1@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/3f2ab0b27a59a3dfe1466c241ece8334/transformed/savedstate-1.2.1/jars/classes.jar"
++      resolved="androidx.savedstate:savedstate:1.2.1"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/3f2ab0b27a59a3dfe1466c241ece8334/transformed/savedstate-1.2.1"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.versionedparcelable:versionedparcelable:1.1.1@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/b26bfd9a484ffd5014f872ac1684c434/transformed/versionedparcelable-1.1.1/jars/classes.jar"
++      resolved="androidx.versionedparcelable:versionedparcelable:1.1.1"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/b26bfd9a484ffd5014f872ac1684c434/transformed/versionedparcelable-1.1.1"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.interpolator:interpolator:1.0.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/a927f34fced1647a8adc4ec57dcbe539/transformed/interpolator-1.0.0/jars/classes.jar"
++      resolved="androidx.interpolator:interpolator:1.0.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/a927f34fced1647a8adc4ec57dcbe539/transformed/interpolator-1.0.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.arch.core:core-runtime:2.2.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/56c299ca5cc1351fb9b11d94695125dc/transformed/core-runtime-2.2.0/jars/classes.jar"
++      resolved="androidx.arch.core:core-runtime:2.2.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/56c299ca5cc1351fb9b11d94695125dc/transformed/core-runtime-2.2.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.arch.core:core-common:2.2.0@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/androidx.arch.core/core-common/2.2.0/5e1b8b81dfd5f52c56a8d53b18ca759c19a301f3/core-common-2.2.0.jar"
++      resolved="androidx.arch.core:core-common:2.2.0"/>
++  <library
++      name="androidx.collection:collection-jvm:1.4.2@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/androidx.collection/collection-jvm/1.4.2/bc60b5568a66d765a9fe8e266fd0c6c727e0b50b/collection-jvm-1.4.2.jar"
++      resolved="androidx.collection:collection-jvm:1.4.2"/>
++  <library
++      name="androidx.annotation:annotation-jvm:1.8.1@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/androidx.annotation/annotation-jvm/1.8.1/b8a16fe526014b7941c1debaccaf9c5153692dbb/annotation-jvm-1.8.1.jar"
++      resolved="androidx.annotation:annotation-jvm:1.8.1"/>
++  <library
++      name="androidx.core:core-viewtree:1.0.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/9275faa7fc56368462609e8a34802ec7/transformed/core-viewtree-1.0.0/jars/classes.jar"
++      resolved="androidx.core:core-viewtree:1.0.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/9275faa7fc56368462609e8a34802ec7/transformed/core-viewtree-1.0.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.annotation:annotation-experimental:1.4.1@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/1d9ef0194f51a6e0da4e440575587814/transformed/annotation-experimental-1.4.1/jars/classes.jar"
++      resolved="androidx.annotation:annotation-experimental:1.4.1"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/1d9ef0194f51a6e0da4e440575587814/transformed/annotation-experimental-1.4.1"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core-jvm/1.8.1/bb0e192bd7c2b6b8217440d36e9758e377e450/kotlinx-coroutines-core-jvm-1.8.1.jar"
++      resolved="org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1"/>
++  <library
++      name="org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-android/1.8.1/73e2acdd18df99dd4849d99f188dff529fc0afe0/kotlinx-coroutines-android-1.8.1.jar"
++      resolved="org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"/>
++  <library
++      name="org.jetbrains.kotlin:kotlin-stdlib:2.0.21@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.0.21/618b539767b4899b4660a83006e052b63f1db551/kotlin-stdlib-2.0.21.jar"
++      resolved="org.jetbrains.kotlin:kotlin-stdlib:2.0.21"/>
++  <library
++      name="org.jetbrains:annotations:23.0.0@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/23.0.0/8cc20c07506ec18e0834947b84a864bfc094484e/annotations-23.0.0.jar"
++      resolved="org.jetbrains:annotations:23.0.0"/>
++  <library
++      name="com.google.guava:listenablefuture:1.0@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/com.google.guava/listenablefuture/1.0/c949a840a6acbc5268d088e47b04177bf90b3cad/listenablefuture-1.0.jar"
++      resolved="com.google.guava:listenablefuture:1.0"/>
++  <library
++      name="org.jspecify:jspecify:1.0.0@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/org.jspecify/jspecify/1.0.0/7425a601c1c7ec76645a78d22b8c6a627edee507/jspecify-1.0.0.jar"
++      resolved="org.jspecify:jspecify:1.0.0"/>
++  <library
++      name="org.apache.cordova:framework:14.0.1@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/e47013dec160bb8e8e78795049f410c2/transformed/framework-14.0.1/jars/classes.jar"
++      resolved="org.apache.cordova:framework:14.0.1"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/e47013dec160bb8e8e78795049f410c2/transformed/framework-14.0.1"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.coordinatorlayout:coordinatorlayout:1.3.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/ef97883a45eaa5cc79115d450cce1dbe/transformed/coordinatorlayout-1.3.0/jars/classes.jar"
++      resolved="androidx.coordinatorlayout:coordinatorlayout:1.3.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/ef97883a45eaa5cc79115d450cce1dbe/transformed/coordinatorlayout-1.3.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.webkit:webkit:1.14.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/c2f70b51baa62bcee94ea5c7e05791a1/transformed/webkit-1.14.0/jars/classes.jar"
++      resolved="androidx.webkit:webkit:1.14.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/c2f70b51baa62bcee94ea5c7e05791a1/transformed/webkit-1.14.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.emoji2:emoji2-views-helper:1.3.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/25a881cfd51f0b690442a74b496782fd/transformed/emoji2-views-helper-1.3.0/jars/classes.jar"
++      resolved="androidx.emoji2:emoji2-views-helper:1.3.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/25a881cfd51f0b690442a74b496782fd/transformed/emoji2-views-helper-1.3.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.emoji2:emoji2:1.3.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/353d69426d62513a7e19e841051a3a44/transformed/emoji2-1.3.0/jars/classes.jar:/Users/cl/.gradle/caches/8.14.3/transforms/353d69426d62513a7e19e841051a3a44/transformed/emoji2-1.3.0/jars/libs/repackaged.jar"
++      resolved="androidx.emoji2:emoji2:1.3.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/353d69426d62513a7e19e841051a3a44/transformed/emoji2-1.3.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.lifecycle:lifecycle-process:2.6.2@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/14a3b51da1167f75215e7e32d2231e74/transformed/lifecycle-process-2.6.2/jars/classes.jar"
++      resolved="androidx.lifecycle:lifecycle-process:2.6.2"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/14a3b51da1167f75215e7e32d2231e74/transformed/lifecycle-process-2.6.2"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.resourceinspection:resourceinspection-annotation:1.0.1@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/androidx.resourceinspection/resourceinspection-annotation/1.0.1/8c21f8ff5d96d5d52c948707f7e4d6ca6773feef/resourceinspection-annotation-1.0.1.jar"
++      resolved="androidx.resourceinspection:resourceinspection-annotation:1.0.1"/>
++  <library
++      name="androidx.profileinstaller:profileinstaller:1.4.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/jars/classes.jar"
++      resolved="androidx.profileinstaller:profileinstaller:1.4.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.startup:startup-runtime:1.1.1@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/7179ce4c01b9a0b75718a869351620f5/transformed/startup-runtime-1.1.1/jars/classes.jar"
++      resolved="androidx.startup:startup-runtime:1.1.1"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/7179ce4c01b9a0b75718a869351620f5/transformed/startup-runtime-1.1.1"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.tracing:tracing:1.2.0@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/dcfd9b438b7b1dc562c63a5efe9cf4a0/transformed/tracing-1.2.0/jars/classes.jar"
++      resolved="androidx.tracing:tracing:1.2.0"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/dcfd9b438b7b1dc562c63a5efe9cf4a0/transformed/tracing-1.2.0"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.core:core-splashscreen:1.0.1@aar"
++      jars="/Users/cl/.gradle/caches/8.14.3/transforms/15aeab60cf2a4104bd5f96b5fa10e38e/transformed/core-splashscreen-1.0.1/jars/classes.jar"
++      resolved="androidx.core:core-splashscreen:1.0.1"
++      folder="/Users/cl/.gradle/caches/8.14.3/transforms/15aeab60cf2a4104bd5f96b5fa10e38e/transformed/core-splashscreen-1.0.1"
++      manifest="AndroidManifest.xml"
++      resFolder="res"
++      assetsFolder="assets"
++      lintJar="lint.jar"
++      publicResources="public.txt"
++      symbolFile="R.txt"
++      externalAnnotations="annotations.zip"
++      proguardRules="proguard.txt"/>
++  <library
++      name="androidx.concurrent:concurrent-futures:1.1.0@jar"
++      jars="/Users/cl/.gradle/caches/modules-2/files-2.1/androidx.concurrent/concurrent-futures/1.1.0/50b7fb98350d5f42a4e49704b03278542293ba48/concurrent-futures-1.1.0.jar"
++      resolved="androidx.concurrent:concurrent-futures:1.1.0"/>
++</libraries>
+diff --git a/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/release.xml b/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/release.xml
+new file mode 100644
+index 0000000..8e1ecca
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/lint_model/release/generateReleaseLintModel/release.xml
+@@ -0,0 +1,31 @@
++<variant
++    name="release"
++    package="de.mindlib.sendIntent.sendintent"
++    minSdkVersion="23"
++    targetSdkVersion="35"
++    mergedManifest="build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml"
++    manifestMergeReport="build/outputs/logs/manifest-merger-release-report.txt"
++    proguardFiles="build/intermediates/default_proguard_files/global/proguard-android.txt-8.13.0:proguard-rules.pro"
++    partialResultsDir="build/intermediates/lint_partial_results/release/lintAnalyzeRelease/out">
++  <buildFeatures
++      namespacing="REQUIRED"/>
++  <sourceProviders>
++    <sourceProvider
++        manifests="src/main/AndroidManifest.xml"
++        javaDirectories="src/main/java:src/release/java:src/main/kotlin:src/release/kotlin"
++        resDirectories="src/main/res:src/release/res"
++        assetsDirectories="src/main/assets:src/release/assets"/>
++  </sourceProviders>
++  <testSourceProviders>
++  </testSourceProviders>
++  <testFixturesSourceProviders>
++  </testFixturesSourceProviders>
++  <artifact
++      classOutputs="build/intermediates/javac/release/compileReleaseJavaWithJavac/classes:build/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar"
++      type="MAIN"
++      applicationId="de.mindlib.sendIntent.sendintent"
++      generatedSourceFolders="build/generated/ap_generated_sources/release/out"
++      generatedResourceFolders="build/generated/res/resValues/release"
++      desugaredMethodsFiles="/Users/cl/.gradle/caches/8.14.3/transforms/5e9b2427cc19ffb807e2b5fb940d68e2/transformed/D8BackportedDesugaredMethods.txt">
++  </artifact>
++</variant>
+diff --git a/node_modules/send-intent/android/build/intermediates/local_only_symbol_list/release/parseReleaseLocalResources/R-def.txt b/node_modules/send-intent/android/build/intermediates/local_only_symbol_list/release/parseReleaseLocalResources/R-def.txt
+new file mode 100644
+index 0000000..80ec5cb
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/local_only_symbol_list/release/parseReleaseLocalResources/R-def.txt
+@@ -0,0 +1,5 @@
++R_DEF: Internal format may change without notice
++local
++id webview
++layout bridge_layout_main
++string my_string
+diff --git a/node_modules/send-intent/android/build/intermediates/manifest_merge_blame_file/release/processReleaseManifest/manifest-merger-blame-release-report.txt b/node_modules/send-intent/android/build/intermediates/manifest_merge_blame_file/release/processReleaseManifest/manifest-merger-blame-release-report.txt
+new file mode 100644
+index 0000000..be846b9
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/manifest_merge_blame_file/release/processReleaseManifest/manifest-merger-blame-release-report.txt
+@@ -0,0 +1,7 @@
++1<?xml version="1.0" encoding="utf-8"?>
++2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++3    package="de.mindlib.sendIntent.sendintent" >
++4
++5    <uses-sdk android:minSdkVersion="23" />
++6
++7</manifest>
+diff --git a/node_modules/send-intent/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml b/node_modules/send-intent/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml
+new file mode 100644
+index 0000000..9866e1e
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="de.mindlib.sendIntent.sendintent" >
++
++    <uses-sdk android:minSdkVersion="23" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/navigation_json/release/extractDeepLinksRelease/navigation.json b/node_modules/send-intent/android/build/intermediates/navigation_json/release/extractDeepLinksRelease/navigation.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/navigation_json/release/extractDeepLinksRelease/navigation.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/nested_resources_validation_report/release/generateReleaseResources/nestedResourcesValidationReport.txt b/node_modules/send-intent/android/build/intermediates/nested_resources_validation_report/release/generateReleaseResources/nestedResourcesValidationReport.txt
+new file mode 100644
+index 0000000..08f4ebe
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/nested_resources_validation_report/release/generateReleaseResources/nestedResourcesValidationReport.txt
+@@ -0,0 +1 @@
++0 Warning/Error
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/packaged_res/release/packageReleaseResources/layout/bridge_layout_main.xml b/node_modules/send-intent/android/build/intermediates/packaged_res/release/packageReleaseResources/layout/bridge_layout_main.xml
+new file mode 100644
+index 0000000..56fec15
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/packaged_res/release/packageReleaseResources/layout/bridge_layout_main.xml
+@@ -0,0 +1,15 @@
++<?xml version="1.0" encoding="utf-8"?>
++<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:app="http://schemas.android.com/apk/res-auto"
++    xmlns:tools="http://schemas.android.com/tools"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent"
++    tools:context="com.getcapacitor.BridgeActivity"
++    >
++
++    <WebView
++        android:id="@+id/webview"
++        android:layout_width="fill_parent"
++        android:layout_height="fill_parent" />
++
++</androidx.coordinatorlayout.widget.CoordinatorLayout>
+diff --git a/node_modules/send-intent/android/build/intermediates/packaged_res/release/packageReleaseResources/values/values.xml b/node_modules/send-intent/android/build/intermediates/packaged_res/release/packageReleaseResources/values/values.xml
+new file mode 100644
+index 0000000..e95bf66
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/packaged_res/release/packageReleaseResources/values/values.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="my_string">Just a simple string</string>
++</resources>
+\ No newline at end of file
+diff --git a/node_modules/send-intent/android/build/intermediates/runtime_library_classes_dir/release/bundleLibRuntimeToDirRelease/de/mindlib/sendIntent/SendIntent.class b/node_modules/send-intent/android/build/intermediates/runtime_library_classes_dir/release/bundleLibRuntimeToDirRelease/de/mindlib/sendIntent/SendIntent.class
+new file mode 100644
+index 0000000..1086f4f
+Binary files /dev/null and b/node_modules/send-intent/android/build/intermediates/runtime_library_classes_dir/release/bundleLibRuntimeToDirRelease/de/mindlib/sendIntent/SendIntent.class differ
+diff --git a/node_modules/send-intent/android/build/intermediates/runtime_library_classes_dir/release/bundleLibRuntimeToDirRelease/de/mindlib/sendIntent/SendIntentActivity.class b/node_modules/send-intent/android/build/intermediates/runtime_library_classes_dir/release/bundleLibRuntimeToDirRelease/de/mindlib/sendIntent/SendIntentActivity.class
+new file mode 100644
+index 0000000..07143b0
+Binary files /dev/null and b/node_modules/send-intent/android/build/intermediates/runtime_library_classes_dir/release/bundleLibRuntimeToDirRelease/de/mindlib/sendIntent/SendIntentActivity.class differ
+diff --git a/node_modules/send-intent/android/build/intermediates/runtime_library_classes_jar/release/bundleLibRuntimeToJarRelease/classes.jar b/node_modules/send-intent/android/build/intermediates/runtime_library_classes_jar/release/bundleLibRuntimeToJarRelease/classes.jar
+new file mode 100644
+index 0000000..bc65356
+Binary files /dev/null and b/node_modules/send-intent/android/build/intermediates/runtime_library_classes_jar/release/bundleLibRuntimeToJarRelease/classes.jar differ
+diff --git a/node_modules/send-intent/android/build/intermediates/symbol_list_with_package_name/release/generateReleaseRFile/package-aware-r.txt b/node_modules/send-intent/android/build/intermediates/symbol_list_with_package_name/release/generateReleaseRFile/package-aware-r.txt
+new file mode 100644
+index 0000000..33551c1
+--- /dev/null
++++ b/node_modules/send-intent/android/build/intermediates/symbol_list_with_package_name/release/generateReleaseRFile/package-aware-r.txt
+@@ -0,0 +1,4 @@
++de.mindlib.sendIntent.sendintent
++id webview
++layout bridge_layout_main
++string my_string
+diff --git a/node_modules/send-intent/android/build/outputs/logs/manifest-merger-release-report.txt b/node_modules/send-intent/android/build/outputs/logs/manifest-merger-release-report.txt
+new file mode 100644
+index 0000000..3491c57
+--- /dev/null
++++ b/node_modules/send-intent/android/build/outputs/logs/manifest-merger-release-report.txt
+@@ -0,0 +1,16 @@
++-- Merging decision tree log ---
++manifest
++ADDED from /Users/cl/saveboard/node_modules/send-intent/android/src/main/AndroidManifest.xml:2:3-3:14
++INJECTED from /Users/cl/saveboard/node_modules/send-intent/android/src/main/AndroidManifest.xml:2:3-3:14
++	package
++		INJECTED from /Users/cl/saveboard/node_modules/send-intent/android/src/main/AndroidManifest.xml
++	xmlns:android
++		ADDED from /Users/cl/saveboard/node_modules/send-intent/android/src/main/AndroidManifest.xml:2:13-71
++uses-sdk
++INJECTED from /Users/cl/saveboard/node_modules/send-intent/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
++INJECTED from /Users/cl/saveboard/node_modules/send-intent/android/src/main/AndroidManifest.xml
++INJECTED from /Users/cl/saveboard/node_modules/send-intent/android/src/main/AndroidManifest.xml
++	android:targetSdkVersion
++		INJECTED from /Users/cl/saveboard/node_modules/send-intent/android/src/main/AndroidManifest.xml
++	android:minSdkVersion
++		INJECTED from /Users/cl/saveboard/node_modules/send-intent/android/src/main/AndroidManifest.xml
+diff --git a/node_modules/send-intent/android/build/tmp/compileReleaseJavaWithJavac/previous-compilation-data.bin b/node_modules/send-intent/android/build/tmp/compileReleaseJavaWithJavac/previous-compilation-data.bin
+new file mode 100644
+index 0000000..f58d3ab
+Binary files /dev/null and b/node_modules/send-intent/android/build/tmp/compileReleaseJavaWithJavac/previous-compilation-data.bin differ
