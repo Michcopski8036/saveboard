@@ -10,13 +10,21 @@ const ogImage = `${baseUrl}/og-image.png`;
 
 const template = await readFile(path.join(distDir, 'index.html'), 'utf8');
 const files = (await readdir(blogDir)).filter(file => file.endsWith('.md'));
-const posts = (await Promise.all(files.map(async file => parsePost(await readFile(path.join(blogDir, file), 'utf8')))))
+const allPosts = (await Promise.all(files.map(async file => parsePost(await readFile(path.join(blogDir, file), 'utf8')))))
   .filter(post => post.slug)
   .sort((a, b) => b.date.localeCompare(a.date));
 
+// Pages with a `route` frontmatter render at a top-level URL (e.g. /pocket-alternative)
+// — better for SEO/AEO than /blog/* for cornerstone landing pages. The rest are blog posts.
+const landings = allPosts.filter(post => post.route);
+const posts = allPosts.filter(post => !post.route);
+
 await writeRoute('blog', blogIndexHtml());
 for (const post of posts) {
-  await writeRoute(`blog/${post.slug}`, blogPostHtml(post));
+  await writeRoute(`blog/${post.slug}`, articleHtml(post, { canonical: `${baseUrl}/blog/${post.slug}`, isLanding: false }));
+}
+for (const page of landings) {
+  await writeRoute(page.route, articleHtml(page, { canonical: `${baseUrl}/${page.route}`, isLanding: true }));
 }
 
 await writeFile(path.join(distDir, 'sitemap.xml'), sitemapXml(), 'utf8');
@@ -40,6 +48,7 @@ function parsePost(raw) {
     description: data.description ?? '',
     slug: data.slug ?? '',
     keywords: data.keywords ?? '',
+    route: data.route ?? '',
     content: match[2].trim(),
   };
 }
@@ -121,14 +130,15 @@ function blogIndexHtml() {
   }, body);
 }
 
-function blogPostHtml(post) {
-  const canonical = `${baseUrl}/blog/${post.slug}`;
+function articleHtml(post, { canonical, isLanding }) {
   const content = post.content.replace(new RegExp(`^#\\s+${escapeRegExp(post.title)}\\s*\\n+`), '');
   const article = markdownToHtml(content);
+  const faqs = extractFaq(content);
+  const backLink = isLanding ? '' : '<p><a href="/blog">All articles</a></p>';
   const body = `
     <main class="seo-page">
       <article>
-        <p><a href="/blog">All articles</a></p>
+        ${backLink}
         <header>
           <p><time datetime="${esc(post.date)}">${esc(formatDate(post.date))}</time></p>
           <h1>${esc(post.title)}</h1>
@@ -138,25 +148,68 @@ function blogPostHtml(post) {
       </article>
     </main>`;
 
+  const jsonLd = [{
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.description,
+    url: canonical,
+    image: ogImage,
+    datePublished: post.date,
+    dateModified: post.date,
+    author: { '@type': 'Organization', name: siteName },
+    publisher: organization(),
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+  }];
+  // FAQPage schema — pulled into Google AI Overviews / Perplexity / ChatGPT answers (AEO).
+  if (faqs.length) {
+    jsonLd.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(faq => ({
+        '@type': 'Question',
+        name: faq.q,
+        acceptedAnswer: { '@type': 'Answer', text: faq.a },
+      })),
+    });
+  }
+
   return withSeo({
-    title: `${post.title} — SaveBoard Blog`,
+    title: isLanding ? post.title : `${post.title} — SaveBoard Blog`,
     description: post.description,
     keywords: post.keywords,
     canonical,
-    jsonLd: [{
-      '@context': 'https://schema.org',
-      '@type': 'Article',
-      headline: post.title,
-      description: post.description,
-      url: canonical,
-      image: ogImage,
-      datePublished: post.date,
-      dateModified: post.date,
-      author: { '@type': 'Organization', name: siteName },
-      publisher: organization(),
-      mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
-    }],
+    jsonLd,
   }, body);
+}
+
+// Parse an "## FAQ" / "## Frequently Asked Questions" section: each "### Question"
+// followed by paragraph text becomes a Q&A pair for FAQPage structured data.
+function extractFaq(md) {
+  const faqs = [];
+  let inFaq = false;
+  let q = null;
+  let a = [];
+  const flush = () => { if (q && a.length) faqs.push({ q: stripMd(q), a: stripMd(a.join(' ')) }); q = null; a = []; };
+  for (const line of md.split('\n')) {
+    const h2 = line.match(/^##\s+(.*)/);
+    if (h2) { flush(); inFaq = /^(faq|frequently asked questions)\b/i.test(h2[1].trim()); continue; }
+    if (!inFaq) continue;
+    const h3 = line.match(/^###\s+(.*)/);
+    if (h3) { flush(); q = h3[1].trim(); continue; }
+    if (q && line.trim()) a.push(line.trim());
+  }
+  flush();
+  return faqs;
+}
+
+function stripMd(text) {
+  return text
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function markdownToHtml(md) {
@@ -210,6 +263,12 @@ function sitemapXml() {
     { loc: `${baseUrl}/privacy`, lastmod: '2026-05-14', changefreq: 'monthly', priority: '0.5' },
     { loc: `${baseUrl}/terms`, lastmod: '2026-05-14', changefreq: 'monthly', priority: '0.5' },
     { loc: `${baseUrl}/blog`, lastmod: posts[0]?.date ?? today, changefreq: 'weekly', priority: '0.7' },
+    ...landings.map(page => ({
+      loc: `${baseUrl}/${page.route}`,
+      lastmod: page.date,
+      changefreq: 'monthly',
+      priority: '0.9',
+    })),
     ...posts.map(post => ({
       loc: `${baseUrl}/blog/${post.slug}`,
       lastmod: post.date,

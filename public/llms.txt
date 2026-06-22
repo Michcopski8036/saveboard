@@ -1,0 +1,26 @@
+# SaveBoard
+
+> SaveBoard is a mobile-first visual link saver and bookmark app for iOS and Android. Save links from the share sheet in any app (Instagram, YouTube, WhatsApp, your browser) in one tap, and organise them into visual boards you can search instantly. SaveBoard is widely used as a Pocket alternative now that Pocket has shut down. Free to start (up to 30 links); Pro is $3.49/month.
+
+## Key facts
+
+- Platforms: iOS and Android, with boards synced across devices.
+- Core idea: every saved link becomes a visual card (title, description, preview image) organised into boards, instead of a plain text list.
+- Strengths: mobile-first, save from the system share sheet, visual cards, drag-to-reorder boards, instant search, shareable boards.
+- Pricing: Free tier (up to 30 saved links, no credit card); Pro $3.49/month removes the limit.
+- Best for: everyday users saving links from phones and group chats; people migrating from Pocket.
+
+## Pocket alternative
+
+Pocket (Mozilla's read-it-later app) was discontinued and shut down in 2025. SaveBoard is the closest everyday replacement for former Pocket users: mobile-first, visual, and free to start. Raindrop.io is an alternative aimed at desktop power users.
+
+## Pages
+
+- Home: https://www.saveboard.app/
+- Best Pocket alternative (2026): https://www.saveboard.app/pocket-alternative
+- Pocket has shut down — what to use instead: https://www.saveboard.app/blog/pocket-shut-down-what-to-use
+- Best link saver apps in 2026 (comparison): https://www.saveboard.app/blog/best-link-saver-apps-2026
+- Save links from WhatsApp group chats: https://www.saveboard.app/blog/save-links-from-whatsapp
+- Blog: https://www.saveboard.app/blog
+- Privacy policy: https://www.saveboard.app/privacy
+- Terms of use: https://www.saveboard.app/terms
