@@ -5,6 +5,8 @@ import { LinkCard, LinkData } from './components/LinkCard';
 import { Sidebar, type Collection } from './components/Sidebar';
 import { KanbanView } from './components/KanbanView';
 import { GalleryView } from './components/GalleryView';
+import { CollabBoardView } from './components/CollabBoardView';
+import { listMyCollabBoards, createCollabBoard, joinCollabBoard, type CollabBoard } from './lib/collab';
 import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
@@ -83,6 +85,8 @@ function AppContent() {
   const [showAuth, setShowAuth]         = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [links, setLinks]               = useState<LinkData[]>([]);
   const [categories, setCategories]     = useState<string[]>([]);
+  const [collabBoards, setCollabBoards] = useState<CollabBoard[]>([]);
+  const [selectedCollab, setSelectedCollab] = useState<CollabBoard | null>(null);
   const [isLoading, setIsLoading]       = useState(false);
   const [isAdding, setIsAdding]         = useState(false);
   const [isUploading, setIsUploading]   = useState(false);
@@ -311,7 +315,7 @@ function AppContent() {
   }, [user]);
 
   useEffect(() => {
-    if (!user) { setLinks([]); setCategories([]); return; }
+    if (!user) { setLinks([]); setCategories([]); setCollabBoards([]); setSelectedCollab(null); return; }
     loadData().then(() => {
       handlePendingImport();
       const params = new URLSearchParams(window.location.search);
@@ -321,6 +325,19 @@ function AppContent() {
         window.history.replaceState({}, '', window.location.pathname);
       }
     });
+    // Team (collaborative) boards: auto-join a pending invite, load my boards, open ?team=<id>.
+    (async () => {
+      const pend = localStorage.getItem('saveboard-pending-team');
+      if (pend) { localStorage.removeItem('saveboard-pending-team'); try { await joinCollabBoard(pend); } catch { /* */ } }
+      const boards = await listMyCollabBoards();
+      setCollabBoards(boards);
+      const team = new URLSearchParams(window.location.search).get('team');
+      if (team) {
+        const b = boards.find(x => x.id === team);
+        if (b) setSelectedCollab(b);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    })();
   }, [user]);
 
   const handlePendingImport = async () => {
@@ -810,6 +827,19 @@ function AppContent() {
     return Object.entries(map).map(([label, type]) => ({ label, type })).sort((a, b) => a.label.localeCompare(b.label));
   })();
 
+  const handleNewCollab = async () => {
+    const name = window.prompt('Team board name:')?.trim();
+    if (!name) return;
+    const { board, error } = await createCollabBoard(name);
+    if (error) {
+      if (/free_limit_boards/.test(error)) setShowUpgrade(true);
+      else setErrorMessage('Could not create the board. Please try again.');
+      return;
+    }
+    if (board) { setCollabBoards(p => [...p, board]); setSelectedCollab(board); }
+  };
+  const selectCollab = (id: string) => { const b = collabBoards.find(x => x.id === id); if (b) setSelectedCollab(b); };
+
   const cardProps = (link: LinkData) => ({
     link,
     onUpdateCategory: handleUpdateCategory, onDelete: handleDeleteLink,
@@ -867,7 +897,7 @@ function AppContent() {
       <Sidebar
         categories={categories}
         selected={selected}
-        onSelect={(id) => { setSelected(id); setSidebarOpen(false); }}
+        onSelect={(id) => { setSelectedCollab(null); setSelected(id); setSidebarOpen(false); }}
         links={links}
         favorites={favorites}
         onAddCategory={handleAddCategory}
@@ -876,6 +906,10 @@ function AppContent() {
         onDeleteCategory={handleDeleteCategory}
         onShareCategory={cat => setShareCategory(cat)}
         onUpdateCategory={handleUpdateCategory}
+        collabBoards={collabBoards}
+        selectedCollabId={selectedCollab?.id ?? null}
+        onSelectCollab={(id) => { selectCollab(id); setSidebarOpen(false); }}
+        onNewCollab={handleNewCollab}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(p => !p)}
       />
@@ -1064,7 +1098,9 @@ function AppContent() {
 
         {/* ── Content ────────────────────────────────────────────────── */}
         <main className={`flex-1 pb-24 md:pb-5 ${selected === 'all' ? 'px-4 sm:px-6 py-5' : !isMobile && viewMode === 'gallery' ? 'flex flex-col overflow-hidden px-4 sm:px-6 py-4' : 'px-4 sm:px-6 py-5'}`}>
-          {selected === 'all' ? (
+          {selectedCollab && user ? (
+            <CollabBoardView board={selectedCollab} currentUserId={user.id} onExit={() => { setSelectedCollab(null); setSelected('all'); listMyCollabBoards().then(setCollabBoards); }} />
+          ) : selected === 'all' ? (
             <HomePage
               links={links}
               categories={categories}

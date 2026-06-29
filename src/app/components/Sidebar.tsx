@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bookmark, Home, Clock, Heart, Inbox, Plus, Sparkles, Zap, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2, Layers } from 'lucide-react';
+import { Bookmark, Home, Clock, Heart, Inbox, Plus, Sparkles, Zap, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2, Layers, Users } from 'lucide-react';
 import { useDrag, useDrop } from 'react-dnd';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -25,6 +25,10 @@ interface SidebarProps {
   onShareCategory?: (cat: string) => void;
   onUpdateCategory?: (linkId: string, cat: string) => void;
   onReorderCategory?: (dragCat: string, dropCat: string) => void;
+  collabBoards?: { id: string; name: string }[];
+  selectedCollabId?: string | null;
+  onSelectCollab?: (id: string) => void;
+  onNewCollab?: () => void;
   sidebarOpen: boolean;
   onToggleSidebar?: () => void;
 }
@@ -168,7 +172,7 @@ function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isM
   );
 }
 
-export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, onUpdateCategory, onReorderCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
+export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, onUpdateCategory, onReorderCategory, collabBoards, selectedCollabId, onSelectCollab, onNewCollab, sidebarOpen, onToggleSidebar }: SidebarProps) {
   const { t } = useTheme();
   const { tr } = useLanguage();
 
@@ -385,6 +389,35 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
                   style={{ background: t.boardInputBg, border: `1px solid ${t.boardInputBorder}`, color: t.boardInputText, fontSize: '16px' }}
                   onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(124,58,237,0.10)'; }}
                 />
+              </div>
+            )}
+          </section>
+
+          {/* Team boards (collaborative) */}
+          <section>
+            <div className="flex items-center justify-between px-2 mb-2">
+              <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: t.navSectionLabel }}>Team Boards</p>
+              <button title="New team board" onClick={() => onNewCollab?.()} className="p-0.5 rounded-md" style={{ color: t.navSectionLabel }}>
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            {(!collabBoards || collabBoards.length === 0) ? (
+              <p className="px-2 text-[11px] leading-relaxed" style={{ color: t.textFaint }}>
+                Boards your team edits together. Tap + to start one.
+              </p>
+            ) : (
+              <div className="space-y-0.5">
+                {collabBoards.map(b => {
+                  const active = selectedCollabId === b.id;
+                  return (
+                    <button key={b.id} onClick={() => onSelectCollab?.(b.id)}
+                      className="w-full flex items-center gap-2.5 px-2.5 py-[9px] rounded-xl text-left"
+                      style={{ color: active ? t.boardActiveText : t.boardInactiveText, fontWeight: active ? 600 : 500 }}>
+                      <Users className="w-3.5 h-3.5 shrink-0" />
+                      <span className="flex-1 text-[13px] truncate">{b.name}</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </section>
