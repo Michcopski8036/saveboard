@@ -1091,10 +1091,12 @@ function AppContent() {
               <p className="text-[13px] mt-1.5" style={{ color: t.emptySub }}>{tr('addFirstLink')}</p>
             </div>
           ) : isMobile ? (
-            // Phones: always the simple horizontal list (image left), no detail page.
-            <div className="flex flex-col gap-2">
-              {filtered.map(link => <LinkCard key={link.id} {...cardProps(link)} listMode />)}
-            </div>
+            // Phones: Pinterest-style 2-column card grid.
+            <ResponsiveMasonry columnsCountBreakPoints={{ 0: 2 }}>
+              <Masonry gutter="12px">
+                {filtered.map(link => <LinkCard key={link.id} {...cardProps(link)} />)}
+              </Masonry>
+            </ResponsiveMasonry>
           ) : viewMode === 'kanban' ? (
             <KanbanView
               links={links}

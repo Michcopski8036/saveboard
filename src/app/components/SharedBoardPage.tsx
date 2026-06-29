@@ -3,6 +3,7 @@ import { useParams } from 'react-router';
 import { supabase } from '../lib/supabase';
 import { Bookmark, ExternalLink, Clock, BookmarkPlus, Check, Loader2 } from 'lucide-react';
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
+import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 interface SharedLink {
   id: string;
@@ -315,7 +316,8 @@ export function SharedBoardPage() {
         {links.length === 0 ? (
           <div className="text-center py-20 text-gray-400 text-[15px]">No saves in this board yet.</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <ResponsiveMasonry columnsCountBreakPoints={{ 0: 2, 1024: 3 }}>
+            <Masonry gutter="16px">
             {links.map(link => {
               const isMemo = link.image === 'placeholder:memo';
               const isPdf  = link.image === 'placeholder:pdf';
@@ -339,17 +341,13 @@ export function SharedBoardPage() {
                       className="w-full aspect-video"
                     />
                   ) : showImage ? (
-                    <div className="w-full aspect-video shrink-0 overflow-hidden bg-gray-50">
-                      <img
-                        src={link.image!}
-                        alt={link.title}
-                        className="w-full h-full object-cover"
-                        onError={e => {
-                          const wrapper = e.currentTarget.closest('.aspect-video') as HTMLElement | null;
-                          if (wrapper) wrapper.style.display = 'none';
-                        }}
-                      />
-                    </div>
+                    <img
+                      src={link.image!}
+                      alt={link.title}
+                      loading="lazy"
+                      className="w-full h-auto block bg-gray-50"
+                      onError={e => { e.currentTarget.style.display = 'none'; }}
+                    />
                   ) : null}
 
                   {/* Info */}
@@ -389,7 +387,8 @@ export function SharedBoardPage() {
                 </a>
               );
             })}
-          </div>
+            </Masonry>
+          </ResponsiveMasonry>
         )}
       </div>
 
