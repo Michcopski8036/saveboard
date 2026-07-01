@@ -33,6 +33,8 @@ const comparisonRows: { feature: string; free: boolean | string; pro: boolean | 
   { feature: 'Kanban view',      free: true,         pro: true,        team: true        },
   { feature: 'Export saves',     free: true,         pro: true,        team: true        },
   { feature: 'Shared boards',    free: true,         pro: true,        team: true        },
+  { feature: 'Team boards (collaborative)', free: '1 · 5 members', pro: '1 · 5 members', team: 'Unlimited' },
+  { feature: 'Invite members',   free: '5 max',      pro: '5 max',     team: 'Unlimited' },
 ];
 
 function Cell({ value, highlight }: { value: boolean | string; highlight?: boolean }) {
