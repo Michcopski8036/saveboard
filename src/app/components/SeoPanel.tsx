@@ -53,12 +53,9 @@ export function SeoPanel({ accessToken }: Props) {
     if (!accessToken) return;
     setLoading(true); setError(null);
     try {
-      const [seoRes, botRes] = await Promise.all([
-        fetch('/api/seo-check', { headers: { Authorization: `Bearer ${accessToken}` } }),
-        fetch('/api/bot-stats', { headers: { Authorization: `Bearer ${accessToken}` } }),
-      ]);
-      if (seoRes.ok) setSeo(await seoRes.json());
-      if (botRes.ok) { const d = await botRes.json(); setBots(d.bots ?? []); }
+      // /api/bot-stats was merged into /api/seo-check (Vercel Hobby 12-function limit).
+      const seoRes = await fetch('/api/seo-check', { headers: { Authorization: `Bearer ${accessToken}` } });
+      if (seoRes.ok) { const d = await seoRes.json(); setSeo(d); setBots(d.bots ?? []); }
     } catch (e: any) {
       setError(e.message);
     } finally {

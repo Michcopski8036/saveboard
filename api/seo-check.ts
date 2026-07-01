@@ -1,4 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://mchikdltrcbovhdzdhhf.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -77,5 +83,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const passed = checks.filter(c => c.pass).length;
   const score  = Math.round((passed / checks.length) * 100);
 
-  return res.status(200).json({ score, passed, total: checks.length, checks, checkedAt: new Date().toISOString() });
+  // Bot visits — merged in from the old /api/bot-stats to stay under Vercel Hobby's 12-function limit.
+  const { data: botRows } = await supabase
+    .from('bot_visits').select('bot_name, visited_at').order('visited_at', { ascending: false });
+  const botMap: Record<string, { lastSeen: string; count: number }> = {};
+  for (const row of (botRows ?? [])) {
+    if (!botMap[row.bot_name]) botMap[row.bot_name] = { lastSeen: row.visited_at, count: 0 };
+    botMap[row.bot_name].count++;
+  }
+  const bots = ['ChatGPT', 'Claude', 'Gemini', 'Perplexity', 'Meta AI', 'Copilot'].map(name => ({
+    name, lastSeen: botMap[name]?.lastSeen ?? null, count: botMap[name]?.count ?? 0,
+  }));
+
+  return res.status(200).json({ score, passed, total: checks.length, checks, checkedAt: new Date().toISOString(), bots });
 }
