@@ -112,6 +112,27 @@ export async function deleteCollabBoard(boardId: string): Promise<void> {
   await supabase.from('collab_boards').delete().eq('id', boardId);
 }
 
+/** Send a branded invite email via the Resend-backed API. Returns ok:false if
+ *  the service isn't configured / errors (caller can fall back to mailto). */
+export async function sendTeamInviteEmail(email: string, boardId: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch('https://www.saveboard.app/api/send-team-invite', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+      },
+      body: JSON.stringify({ email, boardId }),
+    });
+    if (res.ok) return { ok: true };
+    const j = await res.json().catch(() => ({} as any));
+    return { ok: false, error: j.error || `http_${res.status}` };
+  } catch (e: any) {
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+
 export function inviteUrl(token: string): string {
   const base = typeof window !== 'undefined' ? window.location.origin : 'https://saveboard.app';
   return `${base}/team/${token}`;

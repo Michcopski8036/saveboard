@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { LinkCard, LinkData } from './LinkCard';
 import {
   CollabBoard, CollabMember, loadCollabLinks, loadCollabMembers, addCollabLink,
-  deleteCollabLink, updateCollabLink, leaveCollabBoard, deleteCollabBoard, inviteUrl,
+  deleteCollabLink, updateCollabLink, leaveCollabBoard, deleteCollabBoard, inviteUrl, sendTeamInviteEmail,
 } from '../lib/collab';
 
 // Self-contained view for a collaborative ("Team") board. Live-ish: refreshes on
@@ -46,14 +46,18 @@ export function CollabBoardView({ board, currentUserId, onExit }: {
   const handleUpdateTags  = async (id: string, tags: string[]) => { await updateCollabLink(id, { tags }); setLinks(p => p.map(l => l.id === id ? { ...l, tags } : l)); };
   const handleUpdateNotes = async (id: string, notes: string) => { await updateCollabLink(id, { notes }); setLinks(p => p.map(l => l.id === id ? { ...l, notes } : l)); };
   const copyInvite = async () => { try { await navigator.clipboard.writeText(inviteUrl(board.invite_token)); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* */ } };
-  const sendInvite = () => {
+  const sendInvite = async () => {
     const email = inviteEmail.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setInviteMsg('Enter a valid email address.'); return; }
+    setInviteMsg('Sending…');
+    // Try the branded email (Resend) first; fall back to the mail app if unavailable.
+    const { ok } = await sendTeamInviteEmail(email, board.id);
+    if (ok) { setInviteMsg(`Invite sent to ${email} ✓`); setInviteEmail(''); return; }
     const link = inviteUrl(board.invite_token);
     const subject = `Join my "${board.name}" board on SaveBoard`;
     const body = `Hi!\n\nI'd like you to join my team board "${board.name}" on SaveBoard so we can save links together — it's free for members.\n\nJoin here:\n${link}\n\nSee you there!`;
     window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setInviteMsg(`Invite email opened for ${email}.`);
+    setInviteMsg(`Opened your mail app to invite ${email}.`);
     setInviteEmail('');
   };
   const handleLeaveOrDelete = async () => {
