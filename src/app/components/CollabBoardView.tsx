@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import { Users, Link2, Plus, RefreshCw, Copy, Check, LogOut, Trash2 } from 'lucide-react';
+import { Users, Link2, Plus, RefreshCw, Copy, Check, LogOut, Trash2, Mail, Send } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { LinkCard, LinkData } from './LinkCard';
 import {
@@ -22,6 +22,9 @@ export function CollabBoardView({ board, currentUserId, onExit }: {
   const [url, setUrl]         = useState('');
   const [adding, setAdding]   = useState(false);
   const [copied, setCopied]   = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteMsg, setInviteMsg] = useState('');
   const isOwner = board.owner_id === currentUserId;
 
   const refresh = async () => {
@@ -43,6 +46,16 @@ export function CollabBoardView({ board, currentUserId, onExit }: {
   const handleUpdateTags  = async (id: string, tags: string[]) => { await updateCollabLink(id, { tags }); setLinks(p => p.map(l => l.id === id ? { ...l, tags } : l)); };
   const handleUpdateNotes = async (id: string, notes: string) => { await updateCollabLink(id, { notes }); setLinks(p => p.map(l => l.id === id ? { ...l, notes } : l)); };
   const copyInvite = async () => { try { await navigator.clipboard.writeText(inviteUrl(board.invite_token)); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* */ } };
+  const sendInvite = () => {
+    const email = inviteEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setInviteMsg('Enter a valid email address.'); return; }
+    const link = inviteUrl(board.invite_token);
+    const subject = `Join my "${board.name}" board on SaveBoard`;
+    const body = `Hi!\n\nI'd like you to join my team board "${board.name}" on SaveBoard so we can save links together — it's free for members.\n\nJoin here:\n${link}\n\nSee you there!`;
+    window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setInviteMsg(`Invite email opened for ${email}.`);
+    setInviteEmail('');
+  };
   const handleLeaveOrDelete = async () => {
     if (isOwner) { if (!confirm('Delete this team board for everyone? This cannot be undone.')) return; await deleteCollabBoard(board.id); }
     else { if (!confirm('Leave this team board?')) return; await leaveCollabBoard(board.id, currentUserId); }
@@ -61,8 +74,8 @@ export function CollabBoardView({ board, currentUserId, onExit }: {
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <button onClick={copyInvite} className="flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-xl" style={{ background: t.accentBg, color: '#fff' }}>
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}{copied ? 'Copied!' : 'Invite'}
+          <button onClick={() => { setShowInvite(v => !v); setInviteMsg(''); }} className="flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-xl" style={{ background: t.accentBg, color: '#fff' }}>
+            <Mail className="w-4 h-4" />Invite
           </button>
           <button onClick={refresh} title="Refresh" className="p-2 rounded-xl" style={{ color: t.controlInactiveColor }}><RefreshCw className="w-4 h-4" /></button>
           <button onClick={handleLeaveOrDelete} title={isOwner ? 'Delete board' : 'Leave board'} className="p-2 rounded-xl" style={{ color: '#EF4444' }}>
@@ -70,6 +83,31 @@ export function CollabBoardView({ board, currentUserId, onExit }: {
           </button>
         </div>
       </div>
+
+      {/* Invite by email */}
+      {showInvite && (
+        <div className="mb-4 p-3 rounded-2xl" style={{ background: t.cardBg, border: `1px solid ${t.controlContainerBorder}` }}>
+          <div className="flex items-center gap-2">
+            <input
+              type="email" value={inviteEmail}
+              onChange={e => { setInviteEmail(e.target.value); setInviteMsg(''); }}
+              onKeyDown={e => { if (e.key === 'Enter') sendInvite(); }}
+              placeholder="teammate@email.com"
+              className="flex-1 px-3 py-2 rounded-xl text-[14px] outline-none"
+              style={{ background: t.pageBg, color: t.body, border: `1px solid ${t.controlContainerBorder}` }}
+            />
+            <button onClick={sendInvite} className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold" style={{ background: t.accentBg, color: '#fff' }}>
+              <Send className="w-4 h-4" />Send
+            </button>
+          </div>
+          <div className="flex items-center justify-between mt-2 gap-2">
+            <button onClick={copyInvite} className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: t.controlInactiveColor }}>
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}{copied ? 'Link copied' : 'or copy invite link'}
+            </button>
+            {inviteMsg && <span className="text-[12px] text-right" style={{ color: t.accentBg }}>{inviteMsg}</span>}
+          </div>
+        </div>
+      )}
 
       {/* Add link */}
       <div className="flex gap-2 mb-5">
