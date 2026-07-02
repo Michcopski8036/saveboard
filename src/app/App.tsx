@@ -784,8 +784,18 @@ function AppContent() {
       setLinks(p => p.map(l => l.boardId === b.id ? { ...l, boardId: null, category: 'None' } : l));
     }
     await deleteBoard(b.id);
+    // Also revoke any public share snapshot for this board (keyed by name) so it
+    // doesn't linger as an orphan card on the home dashboard.
+    await supabase.from('shared_boards').delete().eq('owner_id', user!.id).eq('category', cat);
+    setSharedBoards(p => p.filter(s => s.category !== cat));
     setBoards(p => p.filter(x => x.id !== b.id));
     if (selected === `cat:${cat}`) setSelected('all');
+  };
+
+  // Revoke a public share snapshot directly from the home dashboard card.
+  const handleRevokeShare = async (token: string) => {
+    await supabase.from('shared_boards').delete().eq('token', token);
+    setSharedBoards(p => p.filter(s => s.token !== token));
   };
   const focusSearch = () => { setShowSearch(true); setTimeout(() => searchOverlayRef.current?.focus(), 50); };
 
@@ -1167,6 +1177,7 @@ function AppContent() {
               favorites={favorites}
               userEmail={user?.email}
               sharedBoards={sharedBoards}
+              onRevokeShare={handleRevokeShare}
               onSelect={(id) => { setSelected(id); setSidebarOpen(false); if (id === 'all' && user) fetchSharedBoards(user.id); }}
               cardProps={cardProps}
             />

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Link2, Check, Share2 } from 'lucide-react';
+import { ArrowRight, Link2, Check, Share2, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { LinkCard, type LinkData } from './LinkCard';
 
@@ -26,11 +26,12 @@ interface HomePageProps {
   favorites: Set<string>;
   userEmail?: string;
   sharedBoards?: SharedBoard[];
+  onRevokeShare?: (token: string) => void;
   onSelect: (id: string) => void;
   cardProps: (link: LinkData) => any;
 }
 
-export function HomePage({ links, categories, favorites, userEmail, sharedBoards = [], onSelect, cardProps }: HomePageProps) {
+export function HomePage({ links, categories, favorites, userEmail, sharedBoards = [], onRevokeShare, onSelect, cardProps }: HomePageProps) {
   const { t } = useTheme();
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
@@ -95,8 +96,16 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
                 <div key={board.token} role="button" tabIndex={0}
                   onClick={() => onSelect(`cat:${board.category}`)}
                   onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(`cat:${board.category}`); } }}
-                  className="flex-none w-[148px] rounded-2xl overflow-hidden cursor-pointer transition-transform hover:-translate-y-0.5"
+                  className="group relative flex-none w-[148px] rounded-2xl overflow-hidden cursor-pointer transition-transform hover:-translate-y-0.5"
                   style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                  {onRevokeShare && (
+                    <button title="Remove shared link"
+                      onClick={e => { e.stopPropagation(); if (confirm(`Stop sharing “${board.category}”? The public link will stop working.`)) onRevokeShare(board.token); }}
+                      className="absolute top-1.5 right-1.5 z-10 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: t.badgeBg, color: t.textMuted }}>
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
                   <div className="p-2.5">
                     <p className="text-[12px] font-semibold truncate mb-0.5" style={{ color: t.textPrimary }}>{board.category}</p>
                     <p className="text-[10px] mb-1.5" style={{ color: t.textMuted }}>
