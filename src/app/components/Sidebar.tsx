@@ -110,26 +110,32 @@ function BoardDropItem({ cat, active, count, color, shared, memberCount, isRenam
             style={{ color: active ? t.boardActiveText : t.boardInactiveText, borderColor: color, fontSize: '16px' }}
           />
         ) : (
-          <span className="flex-1 text-[13px] font-medium truncate">{cat}</span>
-        )}
-        {overLink && !isRenaming && (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: color, color: 'white' }}>Drop</span>
+          // Name, then link-count badge, then shared icon — all left-aligned.
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-[13px] font-medium truncate min-w-0">{cat}</span>
+            {overLink ? (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md shrink-0" style={{ background: color, color: 'white' }}>Drop</span>
+            ) : (
+              <>
+                {count > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums shrink-0"
+                    style={{ background: t.boardCountBg, color: t.boardCountText }}>
+                    {count}
+                  </span>
+                )}
+                {shared && (
+                  <span title={(memberCount ?? 0) > 1 ? `Shared · ${memberCount} members` : 'Shared board'}
+                    className="flex items-center shrink-0" style={{ color: t.iconMuted }}>
+                    <Users className="w-3.5 h-3.5" />
+                  </span>
+                )}
+              </>
+            )}
+          </div>
         )}
       </button>
       {!isRenaming && (
         <>
-          {shared && !isOver && (
-            <span title="Shared board" className="flex items-center gap-0.5 text-[9px] font-semibold mr-1 group-hover:hidden"
-              style={{ color: t.iconMuted }}>
-              <Users className="w-3 h-3" />{(memberCount ?? 0) > 1 ? memberCount : ''}
-            </span>
-          )}
-          {!isMenuOpen && count > 0 && !isOver && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums mr-2 group-hover:hidden"
-              style={{ background: t.boardCountBg, color: t.boardCountText }}>
-              {count}
-            </span>
-          )}
           <div className="relative" ref={isMenuOpen ? menuRef : undefined}>
             <button
               onClick={e => { e.stopPropagation(); setMenuCat(isMenuOpen ? null : cat); }}
