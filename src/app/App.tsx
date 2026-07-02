@@ -5,7 +5,7 @@ import { LinkCard, LinkData } from './components/LinkCard';
 import { Sidebar, type Collection } from './components/Sidebar';
 import { KanbanView } from './components/KanbanView';
 import { GalleryView } from './components/GalleryView';
-import { Board, loadBoards, createBoard, joinBoard, deleteBoard } from './lib/boards';
+import { Board, loadBoards, createBoard, joinBoard, removeMember } from './lib/boards';
 import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
@@ -767,9 +767,21 @@ function AppContent() {
     if (selected === `cat:${old}`) setSelected(`cat:${t}`);
   };
   const handleDeleteCategory = (cat: string) => {
+    const b = boardByName.get(cat);
+    // A board you joined (not the owner) can't be deleted — you leave it instead.
+    if (b && b.role !== 'owner') { leaveBoard(b); return; }
     const count = links.filter(l => l.category === cat).length;
     if (count > 0) { setDeleteBoardConfirm({ cat, count }); return; }
     execDeleteCategory(cat, false);
+  };
+
+  // Leave a shared board you're a member of (removes your membership only).
+  const leaveBoard = async (b: Board) => {
+    if (!user || !confirm(`Leave “${b.name}”? You’ll lose access to its links.`)) return;
+    await removeMember(b.id, user.id);
+    setBoards(p => p.filter(x => x.id !== b.id));
+    setLinks(p => p.filter(l => l.boardId !== b.id));
+    if (selected === `cat:${b.name}`) setSelected('all');
   };
 
   const execDeleteCategory = async (cat: string, deleteSaves: boolean) => {
@@ -783,7 +795,8 @@ function AppContent() {
       await supabase.from('links').update({ board_id: null }).eq('board_id', b.id);
       setLinks(p => p.map(l => l.boardId === b.id ? { ...l, boardId: null, category: 'None' } : l));
     }
-    await deleteBoard(b.id);
+    const { error } = await supabase.from('boards').delete().eq('id', b.id);
+    if (error) { setErrorMessage('Could not delete this board.'); return; }
     // Also revoke any public share snapshot for this board (keyed by name) so it
     // doesn't linger as an orphan card on the home dashboard.
     await supabase.from('shared_boards').delete().eq('owner_id', user!.id).eq('category', cat);
