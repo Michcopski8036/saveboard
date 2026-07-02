@@ -10,19 +10,22 @@
 -- ⚠️ DESTRUCTIVE. Back up (export collab_* + categories) first, and run only
 -- AFTER the 3a client changes are deployed to prod.
 
--- ── Tables first: dropping a table drops its RLS policies, which frees the
---    is_collab_* helper functions to be dropped afterwards. Children → parents. ──
+-- ── 1. Functions that RETURN the collab_boards row type must go first — the
+--       table can't be dropped while they depend on its type. ──
+drop function if exists public.create_collab_board(text);
+drop function if exists public.join_collab_board(uuid);
+drop function if exists public.get_collab_board_by_token(uuid);
+drop function if exists public.has_team_plan(uuid);
+
+-- ── 2. Tables (dropping each drops its RLS policies, which frees the
+--       is_collab_* helpers). Children → parents. ──
 drop table if exists public.collab_links;
 drop table if exists public.collab_board_members;
 drop table if exists public.collab_boards;
 
--- Dead categories table (boards is the source of truth now).
-drop table if exists public.categories;
-
--- ── Now the orphaned collab functions ───────────────────────────────────────
-drop function if exists public.create_collab_board(text);
-drop function if exists public.join_collab_board(uuid);
-drop function if exists public.get_collab_board_by_token(uuid);
+-- ── 3. Helper functions, now unreferenced ───────────────────────────────────
 drop function if exists public.is_collab_member(uuid);
 drop function if exists public.is_collab_owner(uuid);
-drop function if exists public.has_team_plan(uuid);
+
+-- ── 4. Dead categories table (boards is the source of truth now) ────────────
+drop table if exists public.categories;
