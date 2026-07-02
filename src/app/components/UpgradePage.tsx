@@ -26,15 +26,15 @@ const comparisonRows: { feature: string; free: boolean | string; pro: boolean | 
   { feature: 'Boards',           free: '5 max',      pro: '30',        team: 'Unlimited' },
   { feature: 'Storage',          free: '50MB',       pro: '2GB',       team: '10GB'      },
   { feature: 'File size limit',  free: '5MB',        pro: '20MB',      team: '50MB'      },
+  { feature: 'Team boards (collaborative)', free: '1', pro: '1', team: '25' },
+  { feature: 'Members per board',free: '5',           pro: '5',         team: '25'        },
+  { feature: 'Shared boards',    free: true,         pro: true,        team: true        },
   { feature: 'File uploads',     free: true,         pro: true,        team: true        },
   { feature: 'Notes on cards',   free: true,         pro: true,        team: true        },
   { feature: 'Favorites',        free: true,         pro: true,        team: true        },
   { feature: 'AI tags & summary',free: true,         pro: true,        team: true        },
   { feature: 'Kanban view',      free: true,         pro: true,        team: true        },
   { feature: 'Export saves',     free: true,         pro: true,        team: true        },
-  { feature: 'Shared boards',    free: true,         pro: true,        team: true        },
-  { feature: 'Team boards (collaborative)', free: '1 · 5 members', pro: '1 · 5 members', team: 'Unlimited' },
-  { feature: 'Invite members',   free: '5 max',      pro: '5 max',     team: 'Unlimited' },
 ];
 
 function Cell({ value, highlight }: { value: boolean | string; highlight?: boolean }) {
@@ -379,7 +379,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.teamSeat}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                     <p className="text-[12px] text-gray-400 mb-5">Billed monthly · invited members join free</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {['Collaborative team boards','Invite unlimited members — free','Unlimited saves & boards','10GB storage','All features included'].map(f => (
+                      {['Collaborative team boards','Up to 25 boards, 25 members each','Members join free','Unlimited saves & boards','10GB storage'].map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
                           <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />{f}
                         </li>

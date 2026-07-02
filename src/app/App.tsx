@@ -833,6 +833,7 @@ function AppContent() {
     const { board, error } = await createCollabBoard(name);
     if (error) {
       if (/free_limit_boards/.test(error)) setShowUpgrade(true);
+      else if (/team_limit_boards/.test(error)) setErrorMessage('You’ve reached the Team limit of 25 collaborative boards.');
       else setErrorMessage('Could not create the board. Please try again.');
       return;
     }

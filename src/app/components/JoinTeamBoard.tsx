@@ -34,7 +34,7 @@ export function JoinTeamBoard() {
     setJoining(true);
     const { board: joined, error } = await joinCollabBoard(token!);
     if (error || !joined) {
-      setError(/full/i.test(error || '') ? 'This board is full — the owner can upgrade to Team for more members.' : 'Could not join right now. Please try again.');
+      setError(/limit_members|full/i.test(error || '') ? 'This board is full — it has reached its member limit.' : 'Could not join right now. Please try again.');
       setJoining(false);
       return;
     }
