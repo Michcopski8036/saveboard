@@ -394,6 +394,17 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
                   onReorderCategory={onReorderCategory}
                 />
               ))}
+              {/* Empty state: nudge brand-new users to make their first board */}
+              {categories.length === 0 && !addingBoard && (
+                <button onClick={() => setAddingBoard(true)}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-[9px] rounded-xl text-left transition-colors"
+                  style={{ color: t.textFaint }}
+                  onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <Plus className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-[12px] font-medium">Curate your board</span>
+                </button>
+              )}
             </div>
             {addingBoard && (
               <div className="mt-2 px-1">

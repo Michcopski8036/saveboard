@@ -57,7 +57,6 @@ import { HomePage } from './components/HomePage';
 type ViewMode   = 'masonry' | 'grid' | 'gallery' | 'list' | 'kanban';
 type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a' | 'custom';
 
-const defaultCategories = ['Events', 'Recipes', 'Fitness'];
 
 // Max files accepted in a single upload (e.g. a photo multi-select).
 const MAX_UPLOAD_BATCH = 10;
@@ -416,11 +415,9 @@ function AppContent() {
   const loadData = async (): Promise<Board[]> => {
     setIsLoading(true);
     try {
-      // Boards (source of truth). Seed defaults for a brand-new account.
-      let bs = await loadBoards(user!.id);
-      if (!bs.length) {
-        for (const name of defaultCategories) { const { board } = await createBoard(name); if (board) bs.push(board); }
-      }
+      // Boards (source of truth). Brand-new accounts start with none — the
+      // sidebar shows a "Curate your board" nudge instead of seeded defaults.
+      const bs = await loadBoards(user!.id);
       setBoards(bs);
       const nameById = new Map(bs.map(b => [b.id, b.name] as const));
 
