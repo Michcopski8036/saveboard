@@ -26,8 +26,8 @@ const comparisonRows: { feature: string; free: boolean | string; pro: boolean | 
   { feature: 'Boards',           free: '5 max',      pro: '30',        team: 'Unlimited' },
   { feature: 'Storage',          free: '50MB',       pro: '2GB',       team: '10GB'      },
   { feature: 'File size limit',  free: '5MB',        pro: '20MB',      team: '50MB'      },
-  { feature: 'Team boards (collaborative)', free: '1', pro: '1', team: '25' },
-  { feature: 'Members per board',free: '5',           pro: '5',         team: '25'        },
+  { feature: 'Team boards (collaborative)', free: '1', pro: '5', team: '25' },
+  { feature: 'Members per board',free: '5',           pro: '10',        team: '25'        },
   { feature: 'Shared boards',    free: true,         pro: true,        team: true        },
   { feature: 'File uploads',     free: true,         pro: true,        team: true        },
   { feature: 'Notes on cards',   free: true,         pro: true,        team: true        },
@@ -134,7 +134,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
       </div>
 
       <ul className="space-y-2.5 px-1">
-        {['300 saves', '30 boards', '2GB storage', '20MB file size limit', 'All features included', 'Priority support'].map(f => (
+        {['300 saves', '30 boards', '5 team boards (10 members each)', '2GB storage', '20MB file size limit', 'Priority support'].map(f => (
           <li key={f} className="flex items-center gap-2.5 text-[14px] text-gray-700">
             <Check className="w-4 h-4 text-purple-500 shrink-0" />{f}
           </li>
@@ -338,7 +338,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.proMo}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                     <p className="text-[12px] font-semibold text-purple-600 mb-5">or A${AUD.proYr}/yr — save 47%</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {['300 saves','30 boards','2GB storage','20MB file size limit','All features included','Priority support'].map(f => (
+                      {['300 saves','30 boards','5 team boards (10 members each)','2GB storage','20MB file size limit','Priority support'].map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
                           <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
                         </li>
