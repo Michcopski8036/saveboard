@@ -72,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     supabase.from('shared_board_views').select('id', { count: 'exact', head: true }),
 
     // Board counts per user
-    supabase.from('categories').select('user_id'),
+    supabase.from('boards').select('owner_id'),
   ]);
 
   // ── Users ─────────────────────────────────────────────────────────────────
@@ -175,7 +175,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const userBoardCount: Record<string, number> = {};
   for (const row of (boardsByUserRes.data ?? [])) {
-    userBoardCount[row.user_id] = (userBoardCount[row.user_id] ?? 0) + 1;
+    userBoardCount[row.owner_id] = (userBoardCount[row.owner_id] ?? 0) + 1;
   }
 
   const enrichedUsers = recentUsers.map(u => ({

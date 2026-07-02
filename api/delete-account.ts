@@ -16,7 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Delete all user data in dependency order
     await supabase.from('shared_boards').delete().eq('owner_id', userId);
     await supabase.from('links').delete().eq('user_id', userId);
-    await supabase.from('categories').delete().eq('user_id', userId);
+    await supabase.from('boards').delete().eq('owner_id', userId);
     await supabase.from('subscriptions').delete().eq('user_id', userId);
 
     // Delete storage files
