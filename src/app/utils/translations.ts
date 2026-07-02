@@ -2,7 +2,7 @@ export const translations = {
   en: {
     // Sidebar
     collections: 'COLLECTIONS', home: 'Home', recentlySaved: 'Recently Saved',
-    favorites: 'Favorites', unsorted: 'Unsorted', boards: 'BOARDS', tags: 'TAGS',
+    favorites: 'Favorites', unsorted: 'Unsorted', boards: 'MY BOARDS', tags: 'TAGS',
     quickStats: 'QUICK STATS', totalLinks: 'Total Links', thisWeek: 'This Week',
     all: 'All',
     // Header
@@ -38,7 +38,7 @@ export const translations = {
   },
   ko: {
     collections: '컬렉션', home: '홈', recentlySaved: '최근 저장',
-    favorites: '즐겨찾기', unsorted: '미분류', boards: '보드', tags: '태그',
+    favorites: '즐겨찾기', unsorted: '미분류', boards: '내 보드', tags: '태그',
     quickStats: '빠른 통계', totalLinks: '전체 링크', thisWeek: '이번 주',
     all: '전체',
     placeholder: '링크, 메모 또는 임베드 추가…', save: '저장',
@@ -64,7 +64,7 @@ export const translations = {
   },
   ja: {
     collections: 'コレクション', home: 'ホーム', recentlySaved: '最近保存',
-    favorites: 'お気に入り', unsorted: '未分類', boards: 'ボード', tags: 'タグ',
+    favorites: 'お気に入り', unsorted: '未分類', boards: 'マイボード', tags: 'タグ',
     quickStats: '統計', totalLinks: '総リンク数', thisWeek: '今週',
     all: 'すべて',
     placeholder: 'リンク、メモ、またはエンベッドを追加…', save: '保存',
@@ -90,7 +90,7 @@ export const translations = {
   },
   zh: {
     collections: '收藏夹', home: '首页', recentlySaved: '最近保存',
-    favorites: '收藏', unsorted: '未分类', boards: '看板', tags: '标签',
+    favorites: '收藏', unsorted: '未分类', boards: '我的看板', tags: '标签',
     quickStats: '统计', totalLinks: '总链接数', thisWeek: '本周',
     all: '全部',
     placeholder: '添加链接、笔记或嵌入内容…', save: '保存',
@@ -116,7 +116,7 @@ export const translations = {
   },
   es: {
     collections: 'COLECCIONES', home: 'Inicio', recentlySaved: 'Guardado recientemente',
-    favorites: 'Favoritos', unsorted: 'Sin clasificar', boards: 'TABLEROS', tags: 'ETIQUETAS',
+    favorites: 'Favoritos', unsorted: 'Sin clasificar', boards: 'MIS TABLEROS', tags: 'ETIQUETAS',
     quickStats: 'ESTADÍSTICAS', totalLinks: 'Total enlaces', thisWeek: 'Esta semana',
     all: 'Todos',
     placeholder: 'Añade un enlace, nota o embed…', save: 'Guardar',
@@ -142,7 +142,7 @@ export const translations = {
   },
   fr: {
     collections: 'COLLECTIONS', home: 'Accueil', recentlySaved: 'Récemment sauvegardé',
-    favorites: 'Favoris', unsorted: 'Non trié', boards: 'TABLEAUX', tags: 'TAGS',
+    favorites: 'Favoris', unsorted: 'Non trié', boards: 'MES TABLEAUX', tags: 'TAGS',
     quickStats: 'STATISTIQUES', totalLinks: 'Total des liens', thisWeek: 'Cette semaine',
     all: 'Tous',
     placeholder: 'Ajouter un lien, une note ou un embed…', save: 'Enregistrer',
