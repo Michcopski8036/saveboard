@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import type { LinkData } from './LinkCard';
 import { TAG_COLORS, deriveAiTags, LINK_DRAG_TYPE } from './LinkCard';
+import type { Board } from '../lib/boards';
 
 const BOARD_DRAG_TYPE = 'BOARD';
 
@@ -14,7 +15,7 @@ function dotColor(n: string): string { const i = [...n].reduce((a,c) => a+c.char
 export type Collection = string;
 
 interface SidebarProps {
-  categories: string[];
+  boards: Board[];
   selected: Collection;
   onSelect: (id: Collection) => void;
   links: LinkData[];
@@ -25,10 +26,6 @@ interface SidebarProps {
   onShareCategory?: (cat: string) => void;
   onUpdateCategory?: (linkId: string, cat: string) => void;
   onReorderCategory?: (dragCat: string, dropCat: string) => void;
-  collabBoards?: { id: string; name: string }[];
-  selectedCollabId?: string | null;
-  onSelectCollab?: (id: string) => void;
-  onNewCollab?: () => void;
   sidebarOpen: boolean;
   onToggleSidebar?: () => void;
 }
@@ -46,6 +43,8 @@ interface BoardDropItemProps {
   active: boolean;
   count: number;
   color: string;
+  shared?: boolean;
+  memberCount?: number;
   isRenaming: boolean;
   renameValue: string;
   isMenuOpen: boolean;
@@ -63,7 +62,7 @@ interface BoardDropItemProps {
   onReorderCategory?: (dragCat: string, dropCat: string) => void;
 }
 
-function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isMenuOpen, menuRef, t, onSelect, onUpdateCategory, setRenameValue, commitRename, setRenamingCat, setMenuCat, startRename, onShareCategory, onDeleteCategory, onReorderCategory }: BoardDropItemProps) {
+function BoardDropItem({ cat, active, count, color, shared, memberCount, isRenaming, renameValue, isMenuOpen, menuRef, t, onSelect, onUpdateCategory, setRenameValue, commitRename, setRenamingCat, setMenuCat, startRename, onShareCategory, onDeleteCategory, onReorderCategory }: BoardDropItemProps) {
   const [{ isDragging }, dragRef] = useDrag({
     type: BOARD_DRAG_TYPE,
     item: { cat },
@@ -111,20 +110,32 @@ function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isM
             style={{ color: active ? t.boardActiveText : t.boardInactiveText, borderColor: color, fontSize: '16px' }}
           />
         ) : (
-          <span className="flex-1 text-[13px] font-medium truncate">{cat}</span>
-        )}
-        {overLink && !isRenaming && (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: color, color: 'white' }}>Drop</span>
+          // Name, then link-count badge, then shared icon — all left-aligned.
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-[13px] font-medium truncate min-w-0">{cat}</span>
+            {overLink ? (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md shrink-0" style={{ background: color, color: 'white' }}>Drop</span>
+            ) : (
+              <>
+                {count > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums shrink-0"
+                    style={{ background: t.boardCountBg, color: t.boardCountText }}>
+                    {count}
+                  </span>
+                )}
+                {shared && (
+                  <span title={(memberCount ?? 0) > 1 ? `Shared · ${memberCount} members` : 'Shared board'}
+                    className="flex items-center shrink-0" style={{ color: t.iconMuted }}>
+                    <Users className="w-3.5 h-3.5" />
+                  </span>
+                )}
+              </>
+            )}
+          </div>
         )}
       </button>
       {!isRenaming && (
         <>
-          {!isMenuOpen && count > 0 && !isOver && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold tabular-nums mr-2 group-hover:hidden"
-              style={{ background: t.boardCountBg, color: t.boardCountText }}>
-              {count}
-            </span>
-          )}
           <div className="relative" ref={isMenuOpen ? menuRef : undefined}>
             <button
               onClick={e => { e.stopPropagation(); setMenuCat(isMenuOpen ? null : cat); }}
@@ -172,9 +183,13 @@ function BoardDropItem({ cat, active, count, color, isRenaming, renameValue, isM
   );
 }
 
-export function Sidebar({ categories, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, onUpdateCategory, onReorderCategory, collabBoards, selectedCollabId, onSelectCollab, onNewCollab, sidebarOpen, onToggleSidebar }: SidebarProps) {
+export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, onUpdateCategory, onReorderCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
   const { t } = useTheme();
   const { tr } = useLanguage();
+
+  // The rest of the sidebar keys off board NAMES; boards carry share metadata.
+  const categories = boards.map(b => b.name);
+  const boardByName = new Map(boards.map(b => [b.name, b] as const));
 
   const SMART = SMART_IDS.map(({ id, key, Icon }) => ({ id, label: tr(key), Icon }));
   const [addingBoard, setAddingBoard] = useState(false);
@@ -360,6 +375,8 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
                   active={isActive(`cat:${cat}`)}
                   count={links.filter(l => l.category === cat).length}
                   color={dotColor(cat)}
+                  shared={(() => { const b = boardByName.get(cat); return !!b && (b.role === 'member' || (b.memberCount ?? 1) > 1 || !!b.invite_token); })()}
+                  memberCount={boardByName.get(cat)?.memberCount}
                   isRenaming={renamingCat === cat}
                   renameValue={renameValue}
                   isMenuOpen={menuCat === cat}
@@ -389,35 +406,6 @@ export function Sidebar({ categories, selected, onSelect, links, favorites, onAd
                   style={{ background: t.boardInputBg, border: `1px solid ${t.boardInputBorder}`, color: t.boardInputText, fontSize: '16px' }}
                   onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(124,58,237,0.10)'; }}
                 />
-              </div>
-            )}
-          </section>
-
-          {/* Team boards (collaborative) */}
-          <section>
-            <div className="flex items-center justify-between px-2 mb-2">
-              <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: t.navSectionLabel }}>Team Boards</p>
-              <button title="New team board" onClick={() => onNewCollab?.()} className="p-0.5 rounded-md" style={{ color: t.navSectionLabel }}>
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            {(!collabBoards || collabBoards.length === 0) ? (
-              <p className="px-2 text-[11px] leading-relaxed" style={{ color: t.textFaint }}>
-                Boards your team edits together. Tap + to start one.
-              </p>
-            ) : (
-              <div className="space-y-0.5">
-                {collabBoards.map(b => {
-                  const active = selectedCollabId === b.id;
-                  return (
-                    <button key={b.id} onClick={() => onSelectCollab?.(b.id)}
-                      className="w-full flex items-center gap-2.5 px-2.5 py-[9px] rounded-xl text-left"
-                      style={{ color: active ? t.boardActiveText : t.boardInactiveText, fontWeight: active ? 600 : 500 }}>
-                      <Users className="w-3.5 h-3.5 shrink-0" />
-                      <span className="flex-1 text-[13px] truncate">{b.name}</span>
-                    </button>
-                  );
-                })}
               </div>
             )}
           </section>

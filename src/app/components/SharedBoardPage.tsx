@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { supabase } from '../lib/supabase';
+import { createBoard } from '../lib/boards';
 import { Bookmark, ExternalLink, Clock, BookmarkPlus, Check, Loader2 } from 'lucide-react';
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
@@ -120,15 +121,17 @@ export function SharedBoardPage() {
       // Ensure the target board exists, and in parallel gather what we need to
       // dedup (links already in THIS board), enforce the Free saves limit
       // (total link count), and detect the plan.
-      const [{ data: existingCat }, { data: boardLinks }, { count: totalCount }, { data: sub }] = await Promise.all([
-        supabase.from('categories').select('name').eq('name', catName).eq('user_id', user.id).maybeSingle(),
+      const [{ data: existingBoard }, { data: boardLinks }, { count: totalCount }, { data: sub }] = await Promise.all([
+        supabase.from('boards').select('id').eq('name', catName).eq('owner_id', user.id).maybeSingle(),
         supabase.from('links').select('url, title').eq('user_id', user.id).eq('category', catName),
         supabase.from('links').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('subscriptions').select('plan, status').eq('user_id', user.id).maybeSingle(),
       ]);
 
-      if (!existingCat) {
-        await supabase.from('categories').insert({ name: catName, user_id: user.id });
+      let importBoardId = existingBoard?.id as string | undefined;
+      if (!importBoardId) {
+        const { board } = await createBoard(catName);
+        importBoardId = board?.id;
       }
 
       const isPro = sub?.status === 'active' && (sub?.plan === 'pro' || sub?.plan === 'team');
@@ -163,6 +166,7 @@ export function SharedBoardPage() {
         description: l.description || '',
         image: l.image || '',
         category: catName,
+        board_id: importBoardId ?? null,
         created_at: Date.now(),
       }));
 

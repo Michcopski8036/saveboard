@@ -9,8 +9,15 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const SITE = 'https://www.saveboard.app';
 const FROM = 'SaveBoard <invites@saveboard.app>'; // must be a verified Resend domain
+
+// Build the join link from the incoming request host so preview invites point at
+// the preview deployment and prod invites at prod (falls back to the prod site).
+function siteFromRequest(req: VercelRequest): string {
+  const host = (req.headers['x-forwarded-host'] || req.headers.host) as string | undefined;
+  const proto = ((req.headers['x-forwarded-proto'] as string) || 'https').split(',')[0];
+  return host ? `${proto}://${host}` : 'https://www.saveboard.app';
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -29,18 +36,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (userErr || !uid) return res.status(401).json({ error: 'Not authenticated' });
 
   const { data: membership } = await supabase
-    .from('collab_board_members').select('board_id').eq('board_id', boardId).eq('user_id', uid).maybeSingle();
+    .from('board_members').select('board_id').eq('board_id', boardId).eq('user_id', uid).maybeSingle();
   if (!membership) return res.status(403).json({ error: 'Not a member of this board' });
 
   const { data: board } = await supabase
-    .from('collab_boards').select('name, invite_token, owner_id').eq('id', boardId).maybeSingle();
+    .from('boards').select('name, invite_token, owner_id').eq('id', boardId).maybeSingle();
   if (!board) return res.status(404).json({ error: 'Board not found' });
 
   const inviterName =
     (userData!.user!.user_metadata?.name as string) ||
     (userData!.user!.user_metadata?.full_name as string) ||
     userData!.user!.email || 'A SaveBoard user';
-  const joinUrl = `${SITE}/team/${board.invite_token}`;
+  const joinUrl = `${siteFromRequest(req)}/team/${board.invite_token}`;
   const subject = `${inviterName} invited you to "${board.name}" on SaveBoard`;
   const html = `
   <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#111827">

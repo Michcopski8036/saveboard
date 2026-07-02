@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { supabase } from '../lib/supabase';
-import { getCollabBoardByToken, joinCollabBoard } from '../lib/collab';
+import { getBoardByToken, joinBoard } from '../lib/boards';
 import { Users, Loader2, BookmarkPlus } from 'lucide-react';
 
 // Public invite landing for a Team board: /team/<invite_token>
@@ -17,7 +17,7 @@ export function JoinTeamBoard() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setSignedIn(!!user);
-      const b = await getCollabBoardByToken(token!);
+      const b = await getBoardByToken(token!);
       if (!b) setError('This invite link is invalid or has been removed.');
       else setBoard(b);
       setLoading(false);
@@ -32,7 +32,7 @@ export function JoinTeamBoard() {
       return;
     }
     setJoining(true);
-    const { board: joined, error } = await joinCollabBoard(token!);
+    const { board: joined, error } = await joinBoard(token!);
     if (error || !joined) {
       setError(/limit_members|full/i.test(error || '') ? 'This board is full — it has reached its member limit.' : 'Could not join right now. Please try again.');
       setJoining(false);

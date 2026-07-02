@@ -61,6 +61,7 @@ function renderInline(text: string): React.ReactNode[] {
 export interface LinkData {
   id: string; url: string; title: string; description: string;
   image: string; category: string; savedAt: Date; comments?: string[]; notes?: string; tags?: string[];
+  boardId?: string | null;   // unified boards: which board this link belongs to (null = unsorted)
 }
 
 interface LinkCardProps {
