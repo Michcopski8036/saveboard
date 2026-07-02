@@ -19,12 +19,15 @@ export interface BoardMember { user_id: string; role: string; }
 
 /** Boards the current user owns or has joined, ordered for the sidebar. */
 export async function loadBoards(uid: string): Promise<Board[]> {
-  const { data: bd } = await supabase
+  const { data: bdRaw } = await supabase
     .from('boards')
     .select('id, name, sort_order, invite_token, owner_id')
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true });
-  if (!bd?.length) return [];
+  // 'None' is the unsorted sentinel, not a real board — the Phase 1 backfill
+  // created one from links whose category was literally 'None'. Never surface it.
+  const bd = (bdRaw ?? []).filter((b: any) => b.name !== 'None');
+  if (!bd.length) return [];
 
   // board_members is readable for my own rows + (as owner) every member of my
   // boards, so counts are exact for owned boards and my role is always present.

@@ -435,13 +435,18 @@ function AppContent() {
       [...(ownLd ?? []), ...(sharedLd ?? [])].forEach(l => { if (!byId.has(l.id)) byId.set(l.id, l); });
       const all = Array.from(byId.values());
 
-      // Group/display key = the board's name (null board_id → Unsorted 'None').
-      let mapped = all.map(l => ({
-        ...l,
-        boardId: l.board_id ?? null,
-        category: l.board_id ? (nameById.get(l.board_id) ?? l.category ?? 'None') : 'None',
-        savedAt: new Date(l.created_at),
-      }));
+      // Group/display key = the board's name. A link is Unsorted ('None') when it
+      // has no board_id OR points at a board we don't surface (e.g. the legacy
+      // 'None' board) — in that case we also drop its stale boardId.
+      let mapped = all.map(l => {
+        const known = l.board_id && nameById.has(l.board_id);
+        return {
+          ...l,
+          boardId: known ? l.board_id : null,
+          category: known ? nameById.get(l.board_id) : 'None',
+          savedAt: new Date(l.created_at),
+        };
+      });
       try {
         const stored = localStorage.getItem(`sb_order_${user!.id}`);
         if (stored) {
@@ -1087,6 +1092,14 @@ function AppContent() {
                         {filtered.length}
                       </span>
                     </div>
+                    {(selected as string).startsWith('cat:') && (
+                      <button onClick={() => setShareBoardTarget(boardByName.get(selected.slice(4)) ?? null)}
+                        title="Share / invite people"
+                        className="hidden md:flex items-center gap-1.5 ml-1 px-2.5 py-1 rounded-lg text-[12px] font-semibold text-white transition-opacity hover:opacity-90"
+                        style={{ background: t.accentBg }}>
+                        <Share2 className="w-3.5 h-3.5" />Share
+                      </button>
+                    )}
                     <button onClick={goNext} disabled={idx >= navList.length - 1}
                       className="md:hidden p-1 rounded-lg transition-colors disabled:opacity-25"
                       style={{ color: t.textMuted }}
