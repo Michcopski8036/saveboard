@@ -98,7 +98,11 @@ export async function deleteBoard(boardId: string): Promise<void> {
 export async function sendBoardInviteEmail(email: string, boardId: string): Promise<{ ok: boolean; error?: string }> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch('https://www.saveboard.app/api/send-team-invite', {
+    // Web: hit THIS deployment (relative) so preview/prod each call their own
+    // updated function. Native (capacitor://) can't do relative → use prod.
+    const isWeb = typeof window !== 'undefined' && window.location.protocol.startsWith('http');
+    const endpoint = isWeb ? '/api/send-team-invite' : 'https://www.saveboard.app/api/send-team-invite';
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
