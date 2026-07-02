@@ -184,6 +184,10 @@ export function isPlaceholder(imageUrl: string): boolean {
 }
 
 export type { Platform };
+// Brand gradient/background for a platform — reused by text-only cards' header strip.
+export function platformGradient(platform: Platform): string {
+  return PLATFORM_CONFIG[platform]?.gradient ?? PLATFORM_CONFIG.default.gradient;
+}
 export function getPlatformFromPlaceholder(imageUrl: string): Platform {
   if (!isPlaceholder(imageUrl)) return 'default';
   return (imageUrl.replace('placeholder:', '') as Platform) ?? 'default';
