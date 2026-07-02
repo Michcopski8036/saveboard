@@ -479,7 +479,9 @@ function AppContent() {
     if (selected.startsWith('tag:')) {
       const tag = selected.slice(4).toLowerCase();
       return links.filter(l => {
-        if ((l.tags ?? []).includes(tag)) return true;
+        // Case-insensitive to match how the sidebar counts tags (user tags may
+        // be stored with mixed case, e.g. "Hotel").
+        if ((l.tags ?? []).some(x => x.trim().toLowerCase() === tag)) return true;
         const domain = (() => { try { return new URL(l.url).hostname.toLowerCase().replace('www.', ''); } catch { return ''; } })();
         return deriveAiTags(l, domain).some(t => t.type !== 'category' && t.label.toLowerCase() === tag);
       });
