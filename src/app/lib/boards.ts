@@ -25,8 +25,12 @@ export async function loadBoards(uid: string): Promise<Board[]> {
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true });
   // 'None' is the unsorted sentinel, not a real board — the Phase 1 backfill
-  // created one from links whose category was literally 'None'. Never surface it.
-  const bd = (bdRaw ?? []).filter((b: any) => b.name !== 'None');
+  // created one from links whose category was literally 'None'. Never surface it
+  // (match case/whitespace-insensitively, and drop blank names for safety).
+  const bd = (bdRaw ?? []).filter((b: any) => {
+    const n = (b.name ?? '').trim().toLowerCase();
+    return n !== '' && n !== 'none';
+  });
   if (!bd.length) return [];
 
   // board_members is readable for my own rows + (as owner) every member of my
