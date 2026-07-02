@@ -118,21 +118,21 @@ export function SharedBoardPage() {
     try {
       const catName = board!.category;
 
-      // Ensure the target board exists, and in parallel gather what we need to
-      // dedup (links already in THIS board), enforce the Free saves limit
-      // (total link count), and detect the plan.
-      const [{ data: existingBoard }, { data: boardLinks }, { count: totalCount }, { data: sub }] = await Promise.all([
-        supabase.from('boards').select('id').eq('name', catName).eq('owner_id', user.id).maybeSingle(),
-        supabase.from('links').select('url, title').eq('user_id', user.id).eq('category', catName),
+      // Ensure the target board exists first — its id is what we dedup against.
+      const { data: existingBoard } = await supabase.from('boards').select('id').eq('name', catName).eq('owner_id', user.id).maybeSingle();
+      let importBoardId = existingBoard?.id as string | undefined;
+      if (!importBoardId) {
+        const { board: created } = await createBoard(catName);
+        importBoardId = created?.id;
+      }
+
+      // Dedup (links already in THIS board), the Free-plan saves limit (total
+      // link count), and the plan — in parallel.
+      const [{ data: boardLinks }, { count: totalCount }, { data: sub }] = await Promise.all([
+        supabase.from('links').select('url, title').eq('user_id', user.id).eq('board_id', importBoardId ?? ''),
         supabase.from('links').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('subscriptions').select('plan, status').eq('user_id', user.id).maybeSingle(),
       ]);
-
-      let importBoardId = existingBoard?.id as string | undefined;
-      if (!importBoardId) {
-        const { board } = await createBoard(catName);
-        importBoardId = board?.id;
-      }
 
       const isPro = sub?.status === 'active' && (sub?.plan === 'pro' || sub?.plan === 'team');
 
@@ -165,7 +165,6 @@ export function SharedBoardPage() {
         title: l.title,
         description: l.description || '',
         image: l.image || '',
-        category: catName,
         board_id: importBoardId ?? null,
         created_at: Date.now(),
       }));

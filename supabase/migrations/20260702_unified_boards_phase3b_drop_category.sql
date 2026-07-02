@@ -1,0 +1,16 @@
+-- Unified boards — Phase 3b (2026-07-02). Drop the redundant links.category
+-- column. board_id has been the source of truth since Phase 2b; the client no
+-- longer writes or reads links.category (display grouping uses the board name
+-- derived from board_id in memory). shared_boards.category is a DIFFERENT table
+-- and is kept.
+--
+-- Run the two parts at DIFFERENT times (see the PR/plan sequencing):
+--
+--   Part 1 — BEFORE deploying the 3b client. Safe: the current prod client
+--   still writes category, old rows unaffected. Makes the column nullable so the
+--   new client's inserts (which omit category) don't violate NOT NULL.
+alter table public.links alter column category drop not null;
+--
+--   Part 2 — AFTER the 3b client deploy is verified on prod. DESTRUCTIVE.
+--   Back up the links table first, then run:
+-- alter table public.links drop column if exists category;

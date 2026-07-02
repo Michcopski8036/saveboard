@@ -309,7 +309,8 @@ function AppContent() {
             const { data: { publicUrl } } = supabase.storage.from('pdfs').getPublicUrl(path);
             const cat = selected.startsWith('cat:') ? selected.slice(4) : 'None';
             const nl = { id, user_id: user.id, url: publicUrl, title: 'Shared Image', description: '', image: publicUrl, category: cat, board_id: boardIdForName(cat), created_at: Date.now() };
-            const { error } = await supabase.from('links').insert(nl);
+            const { category: _c, ...nlDb } = nl;   // category is display-only (in-memory), not a DB column
+            const { error } = await supabase.from('links').insert(nlDb);
             if (!error) setLinks(p => [{ ...nl, boardId: nl.board_id, savedAt: new Date(nl.created_at) }, ...p]);
           } catch { /* silent */ }
         }
@@ -369,7 +370,7 @@ function AppContent() {
 
       // Dedup within the target board only (so a link already saved in a
       // different board still gets copied here), keyed so memos don't collapse.
-      const { data: existingLinksData } = await supabase.from('links').select('url, title, category').eq('user_id', user!.id).eq('board_id', importBoardId ?? '');
+      const { data: existingLinksData } = await supabase.from('links').select('url, title').eq('user_id', user!.id).eq('board_id', importBoardId ?? '');
       const seen = new Set((existingLinksData ?? []).map((l: any) => importDedupKey(l)));
       const candidates = (data.links_snapshot as any[]).filter((l: any) => {
         const k = importDedupKey(l);
@@ -405,7 +406,7 @@ function AppContent() {
         created_at: Date.now(),
       }));
       if (newLinks.length > 0) {
-        await supabase.from('links').insert(newLinks);
+        await supabase.from('links').insert(newLinks.map(({ category, ...db }) => db));
         setLinks(p => [...newLinks.map((l: any) => ({ ...l, boardId: l.board_id, savedAt: new Date(l.created_at) })), ...p]);
       }
       window.location.href = `${window.location.origin}?board=${encodeURIComponent(catName)}`;
@@ -573,7 +574,7 @@ function AppContent() {
       // Insert one copy of `base` (no id/category/created_at) into each board.
       const insertInto = async (base: Record<string, any>, cats: string[]) => {
         const rows = cats.map(cat => ({ ...base, id: generateId(), category: cat, board_id: boardIdForName(cat), created_at: Date.now() }));
-        const { error } = await supabase.from('links').insert(rows);
+        const { error } = await supabase.from('links').insert(rows.map(({ category, ...db }) => db));
         if (error) throw error;
         setLinks(p => [...rows.map(r => ({ ...r, boardId: r.board_id, savedAt: new Date(r.created_at) })), ...p]);
         return rows.length;
@@ -682,7 +683,7 @@ function AppContent() {
         }
         const base = { user_id: user.id, url: publicUrl, title: file.name.replace(/\.[^.]+$/, ''), description: `${ext} • ${(file.size / 1024).toFixed(0)} KB`, image: imageVal };
         const rows = targetCats.map(cat => ({ ...base, id: generateId(), category: cat, board_id: boardIdForName(cat), created_at: Date.now() }));
-        const { error } = await supabase.from('links').insert(rows);
+        const { error } = await supabase.from('links').insert(rows.map(({ category, ...db }) => db));
         if (error) throw error;
         rows.forEach(r => newLinks.push({ ...r, boardId: r.board_id, savedAt: new Date(r.created_at) }));
         uploadedFiles++;
@@ -719,7 +720,7 @@ function AppContent() {
 
   // Move a link to another board (by name). board_id is authoritative; category
   // is kept in sync as the display fallback.
-  const handleUpdateCategory  = async (id: string, cat: string) => { const bid = boardIdForName(cat); await supabase.from('links').update({ board_id: bid, category: cat }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, boardId: bid, category: cat } : l)); };
+  const handleUpdateCategory  = async (id: string, cat: string) => { const bid = boardIdForName(cat); await supabase.from('links').update({ board_id: bid }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, boardId: bid, category: cat } : l)); };
   const handleDeleteLink      = async (id: string) => { await supabase.from('links').delete().eq('id', id); setLinks(p => p.filter(l => l.id !== id)); };
   const handleUpdateNotes     = async (id: string, notes: string) => { await supabase.from('links').update({ notes }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, notes } : l)); };
   const handleUpdateLink      = async (id: string, title: string, description: string) => { await supabase.from('links').update({ title, description }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, title, description } : l)); };
@@ -764,7 +765,6 @@ function AppContent() {
     if (!b) return;
     if (categories.includes(t)) { alert('Name already exists'); return; }
     await supabase.from('boards').update({ name: t }).eq('id', b.id);
-    await supabase.from('links').update({ category: t }).eq('board_id', b.id);
     setBoards(p => p.map(x => x.id === b.id ? { ...x, name: t } : x));
     setLinks(p => p.map(l => l.boardId === b.id ? { ...l, category: t } : l));
     if (selected === `cat:${old}`) setSelected(`cat:${t}`);
@@ -783,7 +783,7 @@ function AppContent() {
       await supabase.from('links').delete().eq('board_id', b.id);
       setLinks(p => p.filter(l => l.boardId !== b.id));
     } else {
-      await supabase.from('links').update({ board_id: null, category: 'None' }).eq('board_id', b.id);
+      await supabase.from('links').update({ board_id: null }).eq('board_id', b.id);
       setLinks(p => p.map(l => l.boardId === b.id ? { ...l, boardId: null, category: 'None' } : l));
     }
     await deleteBoard(b.id);
@@ -881,7 +881,7 @@ function AppContent() {
         created_at: l.savedAt ? new Date(l.savedAt).getTime() : Date.now(),
       };
     });
-    await supabase.from('links').insert(il);
+    await supabase.from('links').insert(il.map(({ category, ...db }) => db));
     setLinks(il.map((l: any) => ({ ...l, boardId: l.board_id, savedAt: new Date(l.created_at) })));
     setFavorites(new Set(il.filter((l: any) => l.is_favorite).map((l: any) => l.id)));
     alert('Import successful!');

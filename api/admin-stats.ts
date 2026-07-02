@@ -56,8 +56,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Links per day last 30 days (raw rows to group client-side)
     supabase.from('links').select('created_at').gte('created_at', Date.now() - 30 * 86400000).order('created_at', { ascending: true }),
 
-    // Top categories by link count
-    supabase.from('links').select('category').neq('category', 'None').neq('category', null),
+    // Top boards by link count (board name resolved from boardsByUserRes below)
+    supabase.from('links').select('board_id').not('board_id', 'is', null),
 
     // All tags (flat array per row)
     supabase.from('links').select('tags').not('tags', 'is', null),
@@ -71,8 +71,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Total share views
     supabase.from('shared_board_views').select('id', { count: 'exact', head: true }),
 
-    // Board counts per user
-    supabase.from('boards').select('owner_id'),
+    // All boards (for per-user counts + resolving board_id → name for top boards)
+    supabase.from('boards').select('id, owner_id, name'),
   ]);
 
   // ── Users ─────────────────────────────────────────────────────────────────
@@ -130,10 +130,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const linksOverTimeArr = Object.entries(linksOverTime).map(([date, count]) => ({ date, count }));
 
-  // Top categories
+  // Top categories (now boards): count links per board_id, resolve to board name.
+  const boardName: Record<string, string> = {};
+  for (const b of (boardsByUserRes.data ?? [])) boardName[b.id] = b.name;
   const catCount: Record<string, number> = {};
   for (const row of (topCategoriesRes.data ?? [])) {
-    if (row.category) catCount[row.category] = (catCount[row.category] ?? 0) + 1;
+    const name = boardName[row.board_id];
+    if (name) catCount[name] = (catCount[name] ?? 0) + 1;
   }
   const topCategories = Object.entries(catCount)
     .sort(([, a], [, b]) => b - a)
