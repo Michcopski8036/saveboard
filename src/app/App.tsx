@@ -5,8 +5,7 @@ import { LinkCard, LinkData } from './components/LinkCard';
 import { Sidebar, type Collection } from './components/Sidebar';
 import { KanbanView } from './components/KanbanView';
 import { GalleryView } from './components/GalleryView';
-import { CollabBoardView } from './components/CollabBoardView';
-import { listMyCollabBoards, createCollabBoard, joinCollabBoard, type CollabBoard } from './lib/collab';
+import { Board, loadBoards, createBoard, joinBoard, deleteBoard } from './lib/boards';
 import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
@@ -42,7 +41,7 @@ const HTML5toTouch = {
     { id: 'touch', backend: TouchBackend, options: { enableMouseEvents: false, delayTouchStart: 200 }, transition: TouchTransition },
   ],
 };
-import { ShareModal } from './components/ShareModal';
+import { BoardShareModal } from './components/BoardShareModal';
 import { UpgradePage, FREE_LIMITS } from './components/UpgradePage';
 import { BillingPage } from './components/BillingPage';
 import { SettingsPage } from './components/SettingsPage';
@@ -84,9 +83,7 @@ function AppContent() {
   const [authLoading, setAuthLoading]   = useState(true);
   const [showAuth, setShowAuth]         = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [links, setLinks]               = useState<LinkData[]>([]);
-  const [categories, setCategories]     = useState<string[]>([]);
-  const [collabBoards, setCollabBoards] = useState<CollabBoard[]>([]);
-  const [selectedCollab, setSelectedCollab] = useState<CollabBoard | null>(null);
+  const [boards, setBoards]             = useState<Board[]>([]);
   const [isLoading, setIsLoading]       = useState(false);
   const [isAdding, setIsAdding]         = useState(false);
   const [isUploading, setIsUploading]   = useState(false);
@@ -112,7 +109,7 @@ function AppContent() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addBoards, setAddBoards] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen]   = useState(false);
-  const [shareCategory, setShareCategory] = useState<string | null>(null);
+  const [shareBoardTarget, setShareBoardTarget] = useState<Board | null>(null);
   const [showFabMenu, setShowFabMenu]   = useState(false);
   const [isRecording, setIsRecording]   = useState(false);
   const [showSearchDrop, setShowSearchDrop] = useState(false);
@@ -141,6 +138,13 @@ function AppContent() {
   const searchInputRef  = useRef<HTMLInputElement>(null);
   const headerInputRef  = useRef<HTMLInputElement>(null);
   const searchOverlayRef = useRef<HTMLInputElement>(null);
+
+  // Boards are the source of truth; the rest of the UI still groups/displays by
+  // board NAME (kept in each link's `category`), so `categories` = board names.
+  const categories = boards.map(b => b.name);
+  const boardByName = new Map(boards.map(b => [b.name, b] as const));
+  const boardIdForName = (name: string): string | null =>
+    (name && name !== 'None') ? (boardByName.get(name)?.id ?? null) : null;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -303,9 +307,10 @@ function AppContent() {
             const { error: ue } = await supabase.storage.from('pdfs').upload(path, blob, { contentType: 'image/jpeg' });
             if (ue) throw ue;
             const { data: { publicUrl } } = supabase.storage.from('pdfs').getPublicUrl(path);
-            const nl = { id, user_id: user.id, url: publicUrl, title: 'Shared Image', description: '', image: publicUrl, category: selected.startsWith('cat:') ? selected.slice(4) : 'None', created_at: Date.now() };
+            const cat = selected.startsWith('cat:') ? selected.slice(4) : 'None';
+            const nl = { id, user_id: user.id, url: publicUrl, title: 'Shared Image', description: '', image: publicUrl, category: cat, board_id: boardIdForName(cat), created_at: Date.now() };
             const { error } = await supabase.from('links').insert(nl);
-            if (!error) setLinks(p => [{ ...nl, savedAt: new Date(nl.created_at) }, ...p]);
+            if (!error) setLinks(p => [{ ...nl, boardId: nl.board_id, savedAt: new Date(nl.created_at) }, ...p]);
           } catch { /* silent */ }
         }
       }
@@ -315,26 +320,26 @@ function AppContent() {
   }, [user]);
 
   useEffect(() => {
-    if (!user) { setLinks([]); setCategories([]); setCollabBoards([]); setSelectedCollab(null); return; }
-    loadData().then(() => {
-      handlePendingImport();
-      const params = new URLSearchParams(window.location.search);
-      const board = params.get('board');
-      if (board) {
-        setSelected(`cat:${board}`);
-        window.history.replaceState({}, '', window.location.pathname);
-      }
-    });
-    // Team (collaborative) boards: auto-join a pending invite, load my boards, open ?team=<id>.
+    if (!user) { setLinks([]); setBoards([]); return; }
     (async () => {
+      // Auto-join a pending board invite (from the /team/<token> sign-in flow)
+      // before loading, so the joined board shows up right away.
       const pend = localStorage.getItem('saveboard-pending-team');
-      if (pend) { localStorage.removeItem('saveboard-pending-team'); try { await joinCollabBoard(pend); } catch { /* */ } }
-      const boards = await listMyCollabBoards();
-      setCollabBoards(boards);
-      const team = new URLSearchParams(window.location.search).get('team');
-      if (team) {
-        const b = boards.find(x => x.id === team);
-        if (b) setSelectedCollab(b);
+      if (pend) { localStorage.removeItem('saveboard-pending-team'); try { await joinBoard(pend); } catch { /* */ } }
+
+      const loaded = await loadData();
+      await handlePendingImport();
+
+      // Deep links: ?board=<name> (share import) or ?team=<id> (just joined).
+      const params = new URLSearchParams(window.location.search);
+      const boardName = params.get('board');
+      const teamId = params.get('team');
+      if (boardName) {
+        setSelected(`cat:${boardName}`);
+        window.history.replaceState({}, '', window.location.pathname);
+      } else if (teamId) {
+        const b = (loaded ?? []).find(x => x.id === teamId);
+        if (b) setSelected(`cat:${b.name}`);
         window.history.replaceState({}, '', window.location.pathname);
       }
     })();
@@ -351,16 +356,20 @@ function AppContent() {
       if (!data) return;
 
       const catName = data.category;
-      const { data: existingCat } = await supabase
-        .from('categories').select('name').eq('name', catName).eq('user_id', user.id).single();
-      if (!existingCat) {
-        await supabase.from('categories').insert({ name: catName, user_id: user.id });
-        setCategories(p => [...p, catName]);
+      // Ensure a board with this name exists (create via RPC if needed), and
+      // point the imported links at it.
+      const { data: existingBoard } = await supabase
+        .from('boards').select('id').eq('owner_id', user.id).eq('name', catName).maybeSingle();
+      let importBoardId = existingBoard?.id as string | undefined;
+      if (!importBoardId) {
+        const { board } = await createBoard(catName);
+        importBoardId = board?.id;
+        if (board) setBoards(p => [...p, board]);
       }
 
       // Dedup within the target board only (so a link already saved in a
       // different board still gets copied here), keyed so memos don't collapse.
-      const { data: existingLinksData } = await supabase.from('links').select('url, title, category').eq('user_id', user!.id).eq('category', catName);
+      const { data: existingLinksData } = await supabase.from('links').select('url, title, category').eq('user_id', user!.id).eq('board_id', importBoardId ?? '');
       const seen = new Set((existingLinksData ?? []).map((l: any) => importDedupKey(l)));
       const candidates = (data.links_snapshot as any[]).filter((l: any) => {
         const k = importDedupKey(l);
@@ -392,38 +401,62 @@ function AppContent() {
         description: l.description || '',
         image: l.image || '',
         category: catName,
+        board_id: importBoardId ?? null,
         created_at: Date.now(),
       }));
       if (newLinks.length > 0) {
         await supabase.from('links').insert(newLinks);
-        setLinks(p => [...newLinks.map((l: any) => ({ ...l, savedAt: new Date(l.created_at) })), ...p]);
+        setLinks(p => [...newLinks.map((l: any) => ({ ...l, boardId: l.board_id, savedAt: new Date(l.created_at) })), ...p]);
       }
       window.location.href = `${window.location.origin}?board=${encodeURIComponent(catName)}`;
     } catch (e) { console.error(e); }
   };
 
-  const loadData = async () => {
+  const loadData = async (): Promise<Board[]> => {
     setIsLoading(true);
     try {
-      const { data: ld } = await supabase.from('links').select('*').eq('user_id', user!.id).order('created_at', { ascending: false });
-      if (ld?.length) {
-        let mapped = ld.map(l => ({ ...l, savedAt: new Date(l.created_at) }));
-        try {
-          const stored = localStorage.getItem(`sb_order_${user!.id}`);
-          if (stored) {
-            const order: string[] = JSON.parse(stored);
-            const orderMap = new Map(order.map((id, i) => [id, i]));
-            mapped = mapped.sort((a, b) => (orderMap.get(a.id) ?? 999999) - (orderMap.get(b.id) ?? 999999));
-            setSortOption('custom');
-          }
-        } catch {}
-        setLinks(mapped);
-        setFavorites(new Set(ld.filter(l => l.is_favorite).map((l: any) => l.id)));
+      // Boards (source of truth). Seed defaults for a brand-new account.
+      let bs = await loadBoards(user!.id);
+      if (!bs.length) {
+        for (const name of defaultCategories) { const { board } = await createBoard(name); if (board) bs.push(board); }
       }
-      const { data: cd } = await supabase.from('categories').select('name, sort_order').eq('user_id', user!.id).order('sort_order', { ascending: true, nullsFirst: false }).order('created_at', { ascending: true });
-      if (cd?.length) setCategories(cd.map(c => c.name));
-      else await supabase.from('categories').insert(defaultCategories.map(name => ({ name, user_id: user!.id })));
-    } catch (e) { console.error(e); }
+      setBoards(bs);
+      const nameById = new Map(bs.map(b => [b.id, b.name] as const));
+
+      // My own links, plus links from boards I've joined (owned by others).
+      const { data: ownLd } = await supabase.from('links').select('*').eq('user_id', user!.id).order('created_at', { ascending: false });
+      const memberIds = bs.filter(b => b.role === 'member').map(b => b.id);
+      const { data: sharedLd } = memberIds.length
+        ? await supabase.from('links').select('*').in('board_id', memberIds).order('created_at', { ascending: false })
+        : { data: [] as any[] };
+
+      // A member's own row could also be their board's link; dedup by id.
+      const byId = new Map<string, any>();
+      [...(ownLd ?? []), ...(sharedLd ?? [])].forEach(l => { if (!byId.has(l.id)) byId.set(l.id, l); });
+      const all = Array.from(byId.values());
+
+      // Group/display key = the board's name (null board_id → Unsorted 'None').
+      let mapped = all.map(l => ({
+        ...l,
+        boardId: l.board_id ?? null,
+        category: l.board_id ? (nameById.get(l.board_id) ?? l.category ?? 'None') : 'None',
+        savedAt: new Date(l.created_at),
+      }));
+      try {
+        const stored = localStorage.getItem(`sb_order_${user!.id}`);
+        if (stored) {
+          const order: string[] = JSON.parse(stored);
+          const orderMap = new Map(order.map((id, i) => [id, i]));
+          mapped = mapped.sort((a, b) => (orderMap.get(a.id) ?? 999999) - (orderMap.get(b.id) ?? 999999));
+          setSortOption('custom');
+        } else {
+          mapped = mapped.sort((a, b) => b.savedAt.getTime() - a.savedAt.getTime());
+        }
+      } catch {}
+      setLinks(mapped);
+      setFavorites(new Set(all.filter(l => l.is_favorite).map((l: any) => l.id)));
+      return bs;
+    } catch (e) { console.error(e); return []; }
     finally { setIsLoading(false); }
   };
 
@@ -532,10 +565,10 @@ function AppContent() {
 
       // Insert one copy of `base` (no id/category/created_at) into each board.
       const insertInto = async (base: Record<string, any>, cats: string[]) => {
-        const rows = cats.map(cat => ({ ...base, id: generateId(), category: cat, created_at: Date.now() }));
+        const rows = cats.map(cat => ({ ...base, id: generateId(), category: cat, board_id: boardIdForName(cat), created_at: Date.now() }));
         const { error } = await supabase.from('links').insert(rows);
         if (error) throw error;
-        setLinks(p => [...rows.map(r => ({ ...r, savedAt: new Date(r.created_at) })), ...p]);
+        setLinks(p => [...rows.map(r => ({ ...r, boardId: r.board_id, savedAt: new Date(r.created_at) })), ...p]);
         return rows.length;
       };
 
@@ -641,10 +674,10 @@ function AppContent() {
           } catch { /* keep placeholder */ }
         }
         const base = { user_id: user.id, url: publicUrl, title: file.name.replace(/\.[^.]+$/, ''), description: `${ext} • ${(file.size / 1024).toFixed(0)} KB`, image: imageVal };
-        const rows = targetCats.map(cat => ({ ...base, id: generateId(), category: cat, created_at: Date.now() }));
+        const rows = targetCats.map(cat => ({ ...base, id: generateId(), category: cat, board_id: boardIdForName(cat), created_at: Date.now() }));
         const { error } = await supabase.from('links').insert(rows);
         if (error) throw error;
-        rows.forEach(r => newLinks.push({ ...r, savedAt: new Date(r.created_at) }));
+        rows.forEach(r => newLinks.push({ ...r, boardId: r.board_id, savedAt: new Date(r.created_at) }));
         uploadedFiles++;
         runningStorageMb += fileMb;
       } catch (err: any) {
@@ -677,7 +710,9 @@ function AppContent() {
     setIsAdding(false); setIsUploading(false); clearInput();
   };
 
-  const handleUpdateCategory  = async (id: string, cat: string) => { await supabase.from('links').update({ category: cat }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, category: cat } : l)); };
+  // Move a link to another board (by name). board_id is authoritative; category
+  // is kept in sync as the display fallback.
+  const handleUpdateCategory  = async (id: string, cat: string) => { const bid = boardIdForName(cat); await supabase.from('links').update({ board_id: bid, category: cat }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, boardId: bid, category: cat } : l)); };
   const handleDeleteLink      = async (id: string) => { await supabase.from('links').delete().eq('id', id); setLinks(p => p.filter(l => l.id !== id)); };
   const handleUpdateNotes     = async (id: string, notes: string) => { await supabase.from('links').update({ notes }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, notes } : l)); };
   const handleUpdateLink      = async (id: string, title: string, description: string) => { await supabase.from('links').update({ title, description }).eq('id', id); setLinks(p => p.map(l => l.id === id ? { ...l, title, description } : l)); };
@@ -693,34 +728,38 @@ function AppContent() {
   const handleAddCategory = async (name: string) => {
     const t = name.trim();
     if (!t || categories.includes(t)) return;
-    if (!isPro && categories.length >= FREE_LIMITS.boards) { setShowUpgrade(true); return; }
-    await supabase.from('categories').insert({ name: t, user_id: user!.id, sort_order: categories.length }); setCategories(p => [...p, t]);
-    maybeAskReview(links.length, categories.length + 1);
+    const { board, error } = await createBoard(t);
+    if (error) {
+      if (/board_limit/.test(error)) setShowUpgrade(true);
+      else setErrorMessage('Could not create the board. Please try again.');
+      return;
+    }
+    if (board) { setBoards(p => [...p, board]); maybeAskReview(links.length, categories.length + 1); }
   };
   // Drag-reorder boards; persists sort_order per board (synced across devices).
   const handleReorderCategory = async (dragCat: string, dropCat: string) => {
     if (dragCat === dropCat || !user) return;
-    let next: string[] = [];
-    setCategories(prev => {
+    let next: Board[] = [];
+    setBoards(prev => {
       const arr = [...prev];
-      const from = arr.indexOf(dragCat), to = arr.indexOf(dropCat);
+      const from = arr.findIndex(b => b.name === dragCat), to = arr.findIndex(b => b.name === dropCat);
       if (from === -1 || to === -1) return prev;
-      arr.splice(from, 1);
-      arr.splice(to, 0, dragCat);
+      const [moved] = arr.splice(from, 1);
+      arr.splice(to, 0, moved);
       next = arr;
       return arr;
     });
-    await Promise.all(next.map((name, i) =>
-      supabase.from('categories').update({ sort_order: i }).eq('name', name).eq('user_id', user.id)
-    ));
+    await Promise.all(next.map((b, i) => supabase.from('boards').update({ sort_order: i }).eq('id', b.id)));
   };
   const handleRenameCategory = async (old: string, neu: string) => {
     const t = neu.trim();
+    const b = boardByName.get(old);
+    if (!b) return;
     if (categories.includes(t)) { alert('Name already exists'); return; }
-    await supabase.from('categories').update({ name: t }).eq('name', old).eq('user_id', user!.id);
-    await supabase.from('links').update({ category: t }).eq('category', old).eq('user_id', user!.id);
-    setCategories(p => p.map(c => c === old ? t : c));
-    setLinks(p => p.map(l => l.category === old ? { ...l, category: t } : l));
+    await supabase.from('boards').update({ name: t }).eq('id', b.id);
+    await supabase.from('links').update({ category: t }).eq('board_id', b.id);
+    setBoards(p => p.map(x => x.id === b.id ? { ...x, name: t } : x));
+    setLinks(p => p.map(l => l.boardId === b.id ? { ...l, category: t } : l));
     if (selected === `cat:${old}`) setSelected(`cat:${t}`);
   };
   const handleDeleteCategory = (cat: string) => {
@@ -731,15 +770,17 @@ function AppContent() {
 
   const execDeleteCategory = async (cat: string, deleteSaves: boolean) => {
     setDeleteBoardConfirm(null);
+    const b = boardByName.get(cat);
+    if (!b) return;
     if (deleteSaves) {
-      await supabase.from('links').delete().eq('category', cat).eq('user_id', user!.id);
-      setLinks(p => p.filter(l => l.category !== cat));
+      await supabase.from('links').delete().eq('board_id', b.id);
+      setLinks(p => p.filter(l => l.boardId !== b.id));
     } else {
-      await supabase.from('links').update({ category: 'None' }).eq('category', cat).eq('user_id', user!.id);
-      setLinks(p => p.map(l => l.category === cat ? { ...l, category: 'None' } : l));
+      await supabase.from('links').update({ board_id: null, category: 'None' }).eq('board_id', b.id);
+      setLinks(p => p.map(l => l.boardId === b.id ? { ...l, boardId: null, category: 'None' } : l));
     }
-    await supabase.from('categories').delete().eq('name', cat).eq('user_id', user!.id);
-    setCategories(p => p.filter(c => c !== cat));
+    await deleteBoard(b.id);
+    setBoards(p => p.filter(x => x.id !== b.id));
     if (selected === `cat:${cat}`) setSelected('all');
   };
   const focusSearch = () => { setShowSearch(true); setTimeout(() => searchOverlayRef.current?.focus(), 50); };
@@ -807,9 +848,35 @@ function AppContent() {
     if (!data.links || !Array.isArray(data.links)) { alert('Invalid format'); return; }
     if (!confirm(`Import ${data.links.length} link(s)?`)) return;
     await supabase.from('links').delete().eq('user_id', user!.id);
-    const il = data.links.map((l: any) => ({ ...l, user_id: user!.id, savedAt: undefined, created_at: new Date(l.savedAt).getTime() }));
+
+    // Re-create a board per distinct category name (best-effort — ignores tier
+    // caps here) and point each imported link at it via board_id.
+    const nameToId = new Map(boards.map(b => [b.name, b.id] as const));
+    const wantCats = Array.from(new Set(data.links.map((l: any) => l.category).filter((c: any) => c && c !== 'None'))) as string[];
+    const createdBoards: Board[] = [];
+    for (const name of wantCats) {
+      if (nameToId.has(name)) continue;
+      const { data: existing } = await supabase.from('boards').select('id').eq('owner_id', user!.id).eq('name', name).maybeSingle();
+      if (existing?.id) { nameToId.set(name, existing.id); continue; }
+      const { board } = await createBoard(name);
+      if (board) { nameToId.set(name, board.id); createdBoards.push(board); }
+    }
+    if (createdBoards.length) setBoards(p => [...p, ...createdBoards]);
+
+    // Only write real columns; drop client-only fields (boardId, savedAt).
+    const il = data.links.map((l: any) => {
+      const cat = l.category && l.category !== 'None' ? l.category : 'None';
+      return {
+        id: crypto.randomUUID(), user_id: user!.id,
+        url: l.url, title: l.title, description: l.description || '', image: l.image || '',
+        category: cat, board_id: nameToId.get(cat) ?? null,
+        notes: l.notes ?? null, tags: l.tags ?? null, is_favorite: !!l.is_favorite,
+        created_at: l.savedAt ? new Date(l.savedAt).getTime() : Date.now(),
+      };
+    });
     await supabase.from('links').insert(il);
-    setLinks(il.map((l: any) => ({ ...l, savedAt: new Date(l.created_at) })));
+    setLinks(il.map((l: any) => ({ ...l, boardId: l.board_id, savedAt: new Date(l.created_at) })));
+    setFavorites(new Set(il.filter((l: any) => l.is_favorite).map((l: any) => l.id)));
     alert('Import successful!');
   };
 
@@ -826,20 +893,6 @@ function AppContent() {
     });
     return Object.entries(map).map(([label, type]) => ({ label, type })).sort((a, b) => a.label.localeCompare(b.label));
   })();
-
-  const handleNewCollab = async () => {
-    const name = window.prompt('Team board name:')?.trim();
-    if (!name) return;
-    const { board, error } = await createCollabBoard(name);
-    if (error) {
-      if (/free_limit_boards|pro_limit_boards/.test(error)) setShowUpgrade(true);
-      else if (/team_limit_boards/.test(error)) setErrorMessage('You’ve reached the Team limit of 25 collaborative boards.');
-      else setErrorMessage('Could not create the board. Please try again.');
-      return;
-    }
-    if (board) { setCollabBoards(p => [...p, board]); setSelectedCollab(board); }
-  };
-  const selectCollab = (id: string) => { const b = collabBoards.find(x => x.id === id); if (b) setSelectedCollab(b); };
 
   const cardProps = (link: LinkData) => ({
     link,
@@ -896,21 +949,17 @@ function AppContent() {
 
       {/* Sidebar */}
       <Sidebar
-        categories={categories}
+        boards={boards}
         selected={selected}
-        onSelect={(id) => { setSelectedCollab(null); setSelected(id); setSidebarOpen(false); }}
+        onSelect={(id) => { setSelected(id); setSidebarOpen(false); }}
         links={links}
         favorites={favorites}
         onAddCategory={handleAddCategory}
         onReorderCategory={handleReorderCategory}
         onRenameCategory={handleRenameCategory}
         onDeleteCategory={handleDeleteCategory}
-        onShareCategory={cat => setShareCategory(cat)}
+        onShareCategory={cat => setShareBoardTarget(boardByName.get(cat) ?? null)}
         onUpdateCategory={handleUpdateCategory}
-        collabBoards={collabBoards}
-        selectedCollabId={selectedCollab?.id ?? null}
-        onSelectCollab={(id) => { selectCollab(id); setSidebarOpen(false); }}
-        onNewCollab={handleNewCollab}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(p => !p)}
       />
@@ -1099,9 +1148,7 @@ function AppContent() {
 
         {/* ── Content ────────────────────────────────────────────────── */}
         <main className={`flex-1 pb-24 md:pb-5 ${selected === 'all' ? 'px-4 sm:px-6 py-5' : !isMobile && viewMode === 'gallery' ? 'flex flex-col overflow-hidden px-4 sm:px-6 py-4' : 'px-4 sm:px-6 py-5'}`}>
-          {selectedCollab && user ? (
-            <CollabBoardView board={selectedCollab} currentUserId={user.id} onExit={() => { setSelectedCollab(null); setSelected('all'); listMyCollabBoards().then(setCollabBoards); }} />
-          ) : selected === 'all' ? (
+          {selected === 'all' ? (
             <HomePage
               links={links}
               categories={categories}
@@ -1447,7 +1494,7 @@ function AppContent() {
                     <button className={row} style={{ color: t.dropdownText }}
                       onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                      onClick={() => { setShowMobileBoardMenu(false); setShareCategory(cat); }}>
+                      onClick={() => { setShowMobileBoardMenu(false); setShareBoardTarget(boardByName.get(cat) ?? null); }}>
                       <Share2 className="w-4 h-4" style={{ color: t.dropdownIcon }} />
                       Share
                     </button>
@@ -1502,13 +1549,15 @@ function AppContent() {
         </>
       )}
 
-      {/* ── Share modal ───────────────────────────────────────────────── */}
-      {shareCategory && user && (
-        <ShareModal
-          category={shareCategory}
+      {/* ── Board share modal (invite members + public link) ──────────── */}
+      {shareBoardTarget && user && (
+        <BoardShareModal
+          board={shareBoardTarget}
           user={user}
-          links={links.filter(l => l.category === shareCategory)}
-          onClose={() => setShareCategory(null)}
+          links={links.filter(l => l.category === shareBoardTarget.name)}
+          onClose={() => setShareBoardTarget(null)}
+          onBoardsChanged={() => loadBoards(user.id).then(setBoards)}
+          onShowUpgrade={() => setShowUpgrade(true)}
         />
       )}
 

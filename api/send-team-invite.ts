@@ -29,11 +29,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (userErr || !uid) return res.status(401).json({ error: 'Not authenticated' });
 
   const { data: membership } = await supabase
-    .from('collab_board_members').select('board_id').eq('board_id', boardId).eq('user_id', uid).maybeSingle();
+    .from('board_members').select('board_id').eq('board_id', boardId).eq('user_id', uid).maybeSingle();
   if (!membership) return res.status(403).json({ error: 'Not a member of this board' });
 
   const { data: board } = await supabase
-    .from('collab_boards').select('name, invite_token, owner_id').eq('id', boardId).maybeSingle();
+    .from('boards').select('name, invite_token, owner_id').eq('id', boardId).maybeSingle();
   if (!board) return res.status(404).json({ error: 'Board not found' });
 
   const inviterName =
