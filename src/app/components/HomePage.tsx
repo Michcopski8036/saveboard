@@ -92,7 +92,10 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
             {sharedBoards.map(board => {
               const color = dotColor(board.category);
               return (
-                <div key={board.token} className="flex-none w-[148px] rounded-2xl overflow-hidden"
+                <div key={board.token} role="button" tabIndex={0}
+                  onClick={() => onSelect(`cat:${board.category}`)}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(`cat:${board.category}`); } }}
+                  className="flex-none w-[148px] rounded-2xl overflow-hidden cursor-pointer transition-transform hover:-translate-y-0.5"
                   style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
                   <div className="p-2.5">
                     <p className="text-[12px] font-semibold truncate mb-0.5" style={{ color: t.textPrimary }}>{board.category}</p>
@@ -120,7 +123,7 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
                       </div>
                     )}
                     <button
-                      onClick={() => copyShareLink(board.token)}
+                      onClick={e => { e.stopPropagation(); copyShareLink(board.token); }}
                       className="w-full flex items-center justify-center gap-1 py-1 rounded-lg text-[10px] font-semibold transition-colors"
                       style={{ background: copiedToken === board.token ? 'rgba(34,197,94,0.10)' : `${color}15`, color: copiedToken === board.token ? '#16A34A' : color }}>
                       {copiedToken === board.token

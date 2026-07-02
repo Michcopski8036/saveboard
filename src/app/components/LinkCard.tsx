@@ -361,6 +361,11 @@ export function LinkCard({
   const isDefaultPlaceholder = link.image === 'placeholder:default';
   const isArticle = !isVideo && !isMemo && !isPdf && !isPlaceholder(link.image);
 
+  // When we couldn't fetch a real thumbnail (platform/default placeholder, or the
+  // image failed to load) render a text-only card — no big gradient block.
+  // Memo / PDF / file keep their meaningful placeholder tiles.
+  const isContentIcon = isMemo || isPdf || link.image === 'placeholder:file';
+  const noThumb = (!isContentIcon && isPlaceholder(link.image)) || cardImgError;
 
   const sp = (fn: () => void) => (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); fn(); };
   const handleCopyLink  = async (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); try { await navigator.clipboard.writeText(link.url); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); } catch {} setShowMenu(false); };
@@ -371,7 +376,7 @@ export function LinkCard({
   const handleEditClick = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); openEditModal(); };
   const handleMenuTgl   = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setMenuRect(r); setShowMenu(p => !p); };
   const handleFav       = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite?.(link.id); };
-  const handleSel       = (e: React.MouseEvent) => { if (selectMode && onToggleSelect) { e.preventDefault(); onToggleSelect(link.id); } };
+  const handleSel       = (e: React.MouseEvent) => { if (selectMode && onToggleSelect) { e.preventDefault(); e.stopPropagation(); onToggleSelect(link.id); } };
 
   const selectedBorder = isSelected && selectMode ? '#7C3AED' : undefined;
 
@@ -625,9 +630,12 @@ export function LinkCard({
       className={`group w-full rounded-2xl overflow-hidden transition-all duration-300 relative${compact ? ' flex flex-col h-full' : ''}${isMemo && !selectMode ? ' cursor-pointer' : ''}`}
       style={{ background: t.cardBg, border: `1px solid ${isOver ? '#A259FF' : (selectedBorder ?? t.cardBorder)}`, boxShadow: isOver ? '0 0 0 2px #A259FF40' : t.cardShadow, opacity: isDragging ? 0.4 : 1 }}
       onMouseEnter={handleCardEnter} onMouseLeave={handleCardLeave}
-      onClick={isMemo && !selectMode ? (e) => { if ((e.target as HTMLElement).closest('button')) return; openEditModal(); } : undefined}>
+      onClick={selectMode
+        ? (e) => { if ((e.target as HTMLElement).closest('a,button')) return; onToggleSelect?.(link.id); }
+        : (isMemo ? (e) => { if ((e.target as HTMLElement).closest('button')) return; openEditModal(); } : undefined)}>
 
-      {/* Thumbnail */}
+      {/* Thumbnail — omitted entirely for text-only cards (no fetchable image) */}
+      {!noThumb && (
       <a href={selectMode || isMemo ? undefined : link.url}
         target={selectMode || isMemo ? undefined : '_blank'}
         rel={selectMode || isMemo ? undefined : 'noopener noreferrer'}
@@ -719,6 +727,7 @@ export function LinkCard({
           </div>
         )}
       </a>
+      )}
 
       {/* Drag handle — always rendered so dragging works even without a thumbnail */}
       {!selectMode && (
@@ -756,7 +765,7 @@ export function LinkCard({
           </div>
         )}
 
-        <a href={isMemo ? undefined : link.url} target={isMemo ? undefined : '_blank'} rel={isMemo ? undefined : 'noopener noreferrer'}>
+        <a href={isMemo ? undefined : link.url} target={isMemo ? undefined : '_blank'} rel={isMemo ? undefined : 'noopener noreferrer'} onClick={handleSel}>
           <p className="text-[13px] font-semibold line-clamp-2 leading-snug mb-2 transition-colors duration-150"
             style={{ color: t.textPrimary }}
             onMouseEnter={e => (e.currentTarget.style.color = '#7C3AED')}
