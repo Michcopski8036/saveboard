@@ -738,18 +738,14 @@ export function LinkCard({
       </a>
       )}
 
-      {/* Text-only card: domain-colored header strip in place of the thumbnail */}
-      {noThumb && (
-        <div className="h-7 w-full relative" style={{ background: stripBg }}>
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)' }} />
-          {selectMode && (
-            <div className="absolute top-1.5 left-2 z-10">
-              <div className="w-5 h-5 rounded-md flex items-center justify-center"
-                style={{ background: isSelected ? '#7C3AED' : 'rgba(255,255,255,0.9)', border: `2px solid ${isSelected ? '#7C3AED' : 'rgba(0,0,0,0.2)'}` }}>
-                {isSelected && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-              </div>
-            </div>
-          )}
+      {/* Text-only card: thin domain-colored accent strip in place of the thumbnail */}
+      {noThumb && <div className="h-1.5 w-full" style={{ background: stripBg }} />}
+      {noThumb && selectMode && (
+        <div className="absolute top-2 left-2 z-20">
+          <div className="w-5 h-5 rounded-md flex items-center justify-center"
+            style={{ background: isSelected ? '#7C3AED' : (t.isDark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.9)'), border: `2px solid ${isSelected ? '#7C3AED' : (t.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.2)')}`, backdropFilter: 'blur(6px)' }}>
+            {isSelected && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+          </div>
         </div>
       )}
 
