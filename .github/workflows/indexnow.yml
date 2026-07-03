@@ -1,0 +1,23 @@
+name: IndexNow
+
+# Auto-notify Bing / Yandex / Seznam / Naver whenever the site content changes.
+# Runs on every push to main that touches public/ (sitemap, static content),
+# and can be triggered manually from the Actions tab.
+# No secrets required — the IndexNow key is public by design.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/**'
+  workflow_dispatch:
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Submit sitemap URLs to IndexNow
+        run: |
+          chmod +x scripts/indexnow.sh
+          ./scripts/indexnow.sh
