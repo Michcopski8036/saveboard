@@ -4,8 +4,36 @@ import { Browser } from '@capacitor/browser';
 import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 import { supabase } from '../lib/supabase';
 import { Bookmark } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+
+const COPY = {
+  en: {
+    welcomeBack: 'Welcome back', createAccount: 'Create account',
+    subLogin: 'Sign in to access your saves', subSignup: 'Start saving your favourite links',
+    continueApple: 'Continue with Apple', continueGoogle: 'Continue with Google',
+    or: 'or', email: 'Email', password: 'Password',
+    passwordHint: 'Use 8+ characters with uppercase, lowercase, a number, and a symbol.',
+    loading: 'Loading...', signIn: 'Sign in', signUp: 'Sign up',
+    noAccount: "Don't have an account? ", haveAccount: 'Already have an account? ',
+    confirmEmail: 'Check your email to confirm your account!',
+    appleFailed: 'Apple Sign In failed',
+  },
+  ko: {
+    welcomeBack: '다시 오신 걸 환영해요', createAccount: '계정 만들기',
+    subLogin: '로그인하고 내 저장 목록을 확인하세요', subSignup: '좋아하는 링크를 저장해보세요',
+    continueApple: 'Apple로 계속하기', continueGoogle: 'Google로 계속하기',
+    or: '또는', email: '이메일', password: '비밀번호',
+    passwordHint: '대문자·소문자·숫자·기호를 포함해 8자 이상 사용하세요.',
+    loading: '로딩 중...', signIn: '로그인', signUp: '회원가입',
+    noAccount: '계정이 없으신가요? ', haveAccount: '이미 계정이 있으신가요? ',
+    confirmEmail: '이메일을 확인해 계정을 인증해주세요!',
+    appleFailed: 'Apple 로그인에 실패했어요',
+  },
+} as const;
 
 export function Auth() {
+  const { language } = useLanguage();
+  const c = (COPY as Record<string, typeof COPY.en>)[language] ?? COPY.en;
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,7 +53,7 @@ export function Auth() {
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setMessage('Check your email to confirm your account!');
+        setMessage(c.confirmEmail);
       }
     } catch (err: any) {
       setError(err.message);
@@ -98,7 +126,7 @@ export function Auth() {
       }
     } catch (err: any) {
       if (err?.message !== 'The user canceled the authorization attempt') {
-        setError(err.message ?? 'Apple Sign In failed');
+        setError(err.message ?? c.appleFailed);
       }
     } finally {
       setAppleLoading(false);
@@ -118,10 +146,10 @@ export function Auth() {
         </div>
 
         <h2 className="text-2xl font-bold text-center mb-2">
-          {isLogin ? 'Welcome back' : 'Create account'}
+          {isLogin ? c.welcomeBack : c.createAccount}
         </h2>
         <p className="text-gray-500 text-center mb-8 text-sm">
-          {isLogin ? 'Sign in to access your saves' : 'Start saving your favourite links'}
+          {isLogin ? c.subLogin : c.subSignup}
         </p>
 
         {/* Apple */}
@@ -140,7 +168,7 @@ export function Auth() {
               <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.39.07 2.36.74 3.18.8 1.21-.24 2.37-.93 3.67-.84 1.56.12 2.73.72 3.5 1.84-3.22 1.93-2.46 6.18.65 7.38-.48 1.24-1.08 2.44-3 3.7zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
             </svg>
           )}
-          <span className="text-sm font-medium">Continue with Apple</span>
+          <span className="text-sm font-medium">{c.continueApple}</span>
         </button>
 
         {/* Google */}
@@ -154,12 +182,12 @@ export function Auth() {
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          <span className="text-sm font-medium">Continue with Google</span>
+          <span className="text-sm font-medium">{c.continueGoogle}</span>
         </button>
 
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-xs text-gray-400">or</span>
+          <span className="text-xs text-gray-400">{c.or}</span>
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
@@ -168,7 +196,7 @@ export function Auth() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
+            placeholder={c.email}
             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF] focus:border-transparent text-sm"
           />
           <input
@@ -176,14 +204,14 @@ export function Auth() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleEmailAuth()}
-            placeholder="Password"
+            placeholder={c.password}
             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF] focus:border-transparent text-sm"
           />
         </div>
 
         {!isLogin && (
           <p className="mt-2 text-xs text-gray-400">
-            Use 8+ characters with uppercase, lowercase, a number, and a symbol.
+            {c.passwordHint}
           </p>
         )}
 
@@ -195,16 +223,16 @@ export function Auth() {
           disabled={loading || !email || !password}
           className="w-full mt-4 py-3 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-[10px] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
         >
-          {loading ? 'Loading...' : isLogin ? 'Sign in' : 'Create account'}
+          {loading ? c.loading : isLogin ? c.signIn : c.createAccount}
         </button>
 
         <p className="text-center text-sm text-gray-500 mt-4">
-          {isLogin ? "Don't have an account? " : 'Already have an account? '}
+          {isLogin ? c.noAccount : c.haveAccount}
           <button
             onClick={() => { setIsLogin(!isLogin); setError(''); setMessage(''); }}
             className="text-[#A259FF] font-medium hover:underline"
           >
-            {isLogin ? 'Sign up' : 'Sign in'}
+            {isLogin ? c.signUp : c.signIn}
           </button>
         </p>
       </div>
