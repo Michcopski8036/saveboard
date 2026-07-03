@@ -5,6 +5,7 @@ import { createBoard } from '../lib/boards';
 import { Bookmark, ExternalLink, Clock, BookmarkPlus, Check, Loader2 } from 'lucide-react';
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
+import { useLanguage } from '../context/LanguageContext';
 
 interface SharedLink {
   id: string;
@@ -70,6 +71,8 @@ function openExternalBrowser(url: string) {
 }
 
 export function SharedBoardPage() {
+  const { tr, language } = useLanguage();
+  const ko = language === 'ko';
   const { token } = useParams<{ token: string }>();
   const [board, setBoard] = useState<SharedBoard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -194,7 +197,7 @@ export function SharedBoardPage() {
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
         </svg>
-        <p className="text-sm text-gray-400">Loading board…</p>
+        <p className="text-sm text-gray-400">{ko ? '보드 불러오는 중…' : 'Loading board…'}</p>
       </div>
     </div>
   );
@@ -202,8 +205,8 @@ export function SharedBoardPage() {
   if (notFound) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">
-        <p className="text-2xl font-bold text-gray-800 mb-2">Board not found</p>
-        <p className="text-sm text-gray-400">This link may have been revoked or never existed.</p>
+        <p className="text-2xl font-bold text-gray-800 mb-2">{tr('boardNotFound')}</p>
+        <p className="text-sm text-gray-400">{tr('boardRevoked')}</p>
       </div>
     </div>
   );
@@ -230,7 +233,7 @@ export function SharedBoardPage() {
       {/* Board header */}
       <div className="max-w-5xl mx-auto px-5 pt-28 pb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-widest mb-2 text-purple-400">Shared Board</p>
+          <p className="text-[11px] font-bold uppercase tracking-widest mb-2 text-purple-400">{tr('sharedBoardTitle')}</p>
           <h1 className="text-[36px] font-extrabold text-gray-900 leading-tight tracking-tight">
             {board?.category}
           </h1>
@@ -246,7 +249,7 @@ export function SharedBoardPage() {
                 {(board.owner_name || board.owner_email || '?')[0].toUpperCase()}
               </div>
               <div>
-                <p className="text-[11px] text-gray-400 leading-none mb-0.5">Shared by</p>
+                <p className="text-[11px] text-gray-400 leading-none mb-0.5">{tr('sharedBy')}</p>
                 <p className="text-[13px] font-semibold text-gray-800 leading-none">
                   {board.owner_name || board.owner_email?.split('@')[0]}
                 </p>
@@ -271,9 +274,9 @@ export function SharedBoardPage() {
               className="flex items-center gap-2 px-5 py-3 rounded-2xl text-[14px] font-semibold text-white shrink-0 mt-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 shadow-lg shadow-purple-200"
               style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
               {saving ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> {ko ? '저장 중…' : 'Saving…'}</>
               ) : (
-                <><BookmarkPlus className="w-4 h-4" /> Save to My Board</>
+                <><BookmarkPlus className="w-4 h-4" /> {ko ? '내 보드에 저장' : 'Save to My Board'}</>
               )}
             </button>
           )
@@ -285,7 +288,7 @@ export function SharedBoardPage() {
         <div className="max-w-5xl mx-auto px-5 -mt-2 mb-6">
           <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
             <p className="text-[14px] font-semibold text-gray-900 mb-2">
-              Saved to your “{board!.category}” board
+              {ko ? `“${board!.category}” 보드에 저장됨` : `Saved to your “${board!.category}” board`}
             </p>
             <ul className="space-y-1 text-[13px]">
               <li className="flex items-center gap-2 text-gray-600">
@@ -317,7 +320,7 @@ export function SharedBoardPage() {
       {/* Links grid */}
       <div className="max-w-5xl mx-auto px-5 pb-32">
         {links.length === 0 ? (
-          <div className="text-center py-20 text-gray-400 text-[15px]">No saves in this board yet.</div>
+          <div className="text-center py-20 text-gray-400 text-[15px]">{tr('noSavesYet')}</div>
         ) : (
           <ResponsiveMasonry columnsCountBreakPoints={{ 0: 2, 1024: 3 }}>
             <Masonry gutter="16px">
@@ -410,7 +413,7 @@ export function SharedBoardPage() {
             ) : isInAppBrowser() ? (
               <div className="space-y-2">
                 <p className="text-[12px] text-center text-gray-500 leading-snug">
-                  Sign-in is blocked in in-app browsers (KakaoTalk, etc.). Open it in the app or your browser to save.
+                  {ko ? '인앱 브라우저(카카오톡 등)에서는 로그인이 차단돼요. 저장하려면 앱이나 브라우저에서 열어주세요.' : 'Sign-in is blocked in in-app browsers (KakaoTalk, etc.). Open it in the app or your browser to save.'}
                 </p>
                 <button
                   onClick={() => { window.location.href = `app.saveboard.saveboard://share/${token}`; }}
@@ -431,9 +434,9 @@ export function SharedBoardPage() {
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[14px] font-semibold text-white hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 shadow-lg shadow-purple-200"
                 style={{ background: 'linear-gradient(to right, #A259FF, #FF7262)' }}>
                 {saving ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> {ko ? '저장 중…' : 'Saving…'}</>
                 ) : (
-                  <><BookmarkPlus className="w-4 h-4" /> Sign in &amp; Save to My Board</>
+                  <><BookmarkPlus className="w-4 h-4" /> {ko ? '로그인 후 내 보드에 저장' : 'Sign in & Save to My Board'}</>
                 )}
               </button>
             )}

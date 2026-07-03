@@ -77,7 +77,8 @@ export default function App() {
 
 function AppContent() {
   const { t } = useTheme();
-  const { tr } = useLanguage();
+  const { tr, language } = useLanguage();
+  const ko = language === 'ko';
   const [user, setUser]                 = useState<User | null>(null);
   const [authLoading, setAuthLoading]   = useState(true);
   const [showAuth, setShowAuth]         = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
@@ -728,7 +729,7 @@ function AppContent() {
     await supabase.from('links').update({ is_favorite: !isFav }).eq('id', id);
   };
   const handleToggleSelect    = (id: string) => { setSelectedIds(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; }); };
-  const handleBulkDelete      = async () => { if (!selectedIds.size || !confirm(`Delete ${selectedIds.size} link(s)?`)) return; await supabase.from('links').delete().in('id', Array.from(selectedIds)); setLinks(p => p.filter(l => !selectedIds.has(l.id))); setSelectedIds(new Set()); setSelectMode(false); };
+  const handleBulkDelete      = async () => { if (!selectedIds.size || !confirm(ko ? `링크 ${selectedIds.size}개를 삭제할까요?` : `Delete ${selectedIds.size} link(s)?`)) return; await supabase.from('links').delete().in('id', Array.from(selectedIds)); setLinks(p => p.filter(l => !selectedIds.has(l.id))); setSelectedIds(new Set()); setSelectMode(false); };
 
   const handleAddCategory = async (name: string) => {
     const t = name.trim();
@@ -760,7 +761,7 @@ function AppContent() {
     const t = neu.trim();
     const b = boardByName.get(old);
     if (!b) return;
-    if (categories.includes(t)) { alert('Name already exists'); return; }
+    if (categories.includes(t)) { alert(ko ? '이미 존재하는 이름이에요' : 'Name already exists'); return; }
     await supabase.from('boards').update({ name: t }).eq('id', b.id);
     setBoards(p => p.map(x => x.id === b.id ? { ...x, name: t } : x));
     setLinks(p => p.map(l => l.boardId === b.id ? { ...l, category: t } : l));
@@ -777,7 +778,7 @@ function AppContent() {
 
   // Leave a shared board you're a member of (removes your membership only).
   const leaveBoard = async (b: Board) => {
-    if (!user || !confirm(`Leave “${b.name}”? You’ll lose access to its links.`)) return;
+    if (!user || !confirm(ko ? `“${b.name}” 보드를 나갈까요? 이 보드의 링크에 접근할 수 없게 돼요.` : `Leave “${b.name}”? You’ll lose access to its links.`)) return;
     await removeMember(b.id, user.id);
     setBoards(p => p.filter(x => x.id !== b.id));
     setLinks(p => p.filter(l => l.boardId !== b.id));
@@ -872,7 +873,7 @@ function AppContent() {
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
   };
   const handleImport = async (data: any) => {
-    if (!data.links || !Array.isArray(data.links)) { alert('Invalid format'); return; }
+    if (!data.links || !Array.isArray(data.links)) { alert(ko ? '잘못된 형식이에요' : 'Invalid format'); return; }
     if (!confirm(`Import ${data.links.length} link(s)?`)) return;
     await supabase.from('links').delete().eq('user_id', user!.id);
 
@@ -1279,7 +1280,7 @@ function AppContent() {
                 type="text" value={urlInput}
                 onChange={e => setUrlInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !isAdding && urlInput.trim()) handleAddUrl(undefined, closeModal); }}
-                placeholder="https://… or write a note"
+                placeholder={ko ? "https://… 또는 메모 작성" : "https://… or write a note"}
                 autoFocus
                 className="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none transition-all"
                 style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, fontSize: '16px' }}
@@ -1452,7 +1453,7 @@ function AppContent() {
                   type="text" value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Escape') { setShowSearch(false); setSearchQuery(''); } }}
-                  placeholder="Search links, notes, boards…"
+                  placeholder={ko ? "링크, 메모, 보드 검색…" : "Search links, notes, boards…"}
                   className="w-full pl-10 pr-10 py-3 rounded-xl focus:outline-none transition-all"
                   style={{ background: t.inputBg, border: `1px solid ${t.inputFocusBorder}`, boxShadow: t.inputFocusShadow, color: t.inputText, fontSize: '16px' }}
                 />
@@ -1540,7 +1541,7 @@ function AppContent() {
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                       onClick={() => { setShowMobileBoardMenu(false); handleDeleteCategory(cat); }}>
                       <Trash2 className="w-4 h-4" style={{ color: '#EF4444' }} />
-                      <span style={{ color: '#EF4444' }}>Delete</span>
+                      <span style={{ color: '#EF4444' }}>{tr('delete')}</span>
                     </button>
                   </>
                 );

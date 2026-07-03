@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Copy, Check, Link2, Loader2, Trash2, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import type { LinkData } from './LinkCard';
 import type { User } from '@supabase/supabase-js';
 
@@ -47,6 +48,7 @@ async function pushSnapshot(links: LinkData[], token: string, ownerName: string,
 
 export function ShareModal({ category, user, links, onClose }: ShareModalProps) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
   const ownerName  = deriveOwnerName(user);
   const ownerEmail = user.email ?? '';
   const [token, setToken] = useState<string | null>(null);
@@ -140,7 +142,7 @@ export function ShareModal({ category, user, links, onClose }: ShareModalProps) 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${t.cardBorder}` }}>
           <div>
-            <p className="text-[15px] font-bold" style={{ color: t.textPrimary }}>Share Board</p>
+            <p className="text-[15px] font-bold" style={{ color: t.textPrimary }}>{tr('shareBoard')}</p>
             <p className="text-[12px] mt-0.5" style={{ color: t.textMuted }}>
               <span className="font-semibold" style={{ color: t.textSecondary }}>{category}</span> — anyone with the link can view
             </p>
@@ -201,7 +203,7 @@ export function ShareModal({ category, user, links, onClose }: ShareModalProps) 
             </>
           ) : (
             <>
-              <p className="text-[13px] text-center py-2" style={{ color: t.textMuted }}>No active share link.</p>
+              <p className="text-[13px] text-center py-2" style={{ color: t.textMuted }}>{tr('noActiveShareLink')}</p>
               <button onClick={handleCreateNew}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-[13px] text-white transition-opacity hover:opacity-90"
                 style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>

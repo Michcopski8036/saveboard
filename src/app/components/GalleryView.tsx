@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ExternalLink, Link2, RefreshCw, Clock, FileText, Heart, Tag, Trash2, Check, X, Folder, Play } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { isPlaceholder, getPlatformFromPlaceholder, PlatformPlaceholder } from './PlatformPlaceholder';
 import { RichTextEditor } from './RichTextEditor';
 import { TAG_COLORS, deriveAiTags } from './LinkCard';
@@ -98,6 +99,7 @@ function AiTag({ label, type }: { label: string; type: string }) {
 
 function GalleryCard({ link, isActive, onClick }: { link: LinkData; isActive: boolean; onClick: () => void }) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
   const dom       = getDomain(link);
   const isMemoCard = link.image === 'placeholder:memo';
   const isPdfCard  = link.image === 'placeholder:pdf';
@@ -192,6 +194,7 @@ function GalleryCard({ link, isActive, onClick }: { link: LinkData; isActive: bo
 
 export function GalleryView({ links, favorites, categories = [], onUpdateLink, onUpdateTags, onToggleFavorite, onUpdateCategory, onDelete }: GalleryViewProps) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
   const [selected, setSelected] = useState<LinkData | null>(links[0] ?? null);
   const [iframeError, setIframeError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
@@ -251,7 +254,7 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
         {links.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full py-16 px-4 text-center">
             <Link2 className="w-8 h-8 mb-3" style={{ color: t.textFaint }} />
-            <p className="text-[13px]" style={{ color: t.textMuted }}>No links here yet</p>
+            <p className="text-[13px]" style={{ color: t.textMuted }}>{tr('noLinksHere')}</p>
           </div>
         )}
       </div>
@@ -278,7 +281,7 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
               <div className="flex items-center gap-0.5 shrink-0">
                 {/* Favorite */}
                 <button onClick={() => onToggleFavorite?.(selected.id)}
-                  className="p-1.5 rounded-lg transition-colors" title="Favorite"
+                  className="p-1.5 rounded-lg transition-colors" title={tr('favorite')}
                   style={{ color: isFav ? '#EF4444' : t.textMuted }}
                   onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
@@ -289,7 +292,7 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
                 {categories.length > 0 && (
                   <div className="relative">
                     <button onClick={() => { setShowCatMenu(v => !v); setShowTagInput(false); }}
-                      className="p-1.5 rounded-lg transition-colors" title="Move to board"
+                      className="p-1.5 rounded-lg transition-colors" title={tr('moveToBoard')}
                       style={{ color: t.textMuted }}
                       onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
@@ -316,7 +319,7 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
                 {/* Reload (non-memo) */}
                 {isEmbeddable && (
                   <button onClick={() => { setIframeError(false); setIframeKey(k => k + 1); }}
-                    title="Reload" className="p-1.5 rounded-lg transition-colors" style={{ color: t.textMuted }}
+                    title={tr('reload')} className="p-1.5 rounded-lg transition-colors" style={{ color: t.textMuted }}
                     onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
                     <RefreshCw className="w-3.5 h-3.5" />
@@ -334,7 +337,7 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
 
                 {/* Delete */}
                 <button onClick={() => { if (confirm('Delete this item?')) { onDelete?.(selected.id); } }}
-                  className="p-1.5 rounded-lg transition-colors ml-1" title="Delete"
+                  className="p-1.5 rounded-lg transition-colors ml-1" title={tr('delete')}
                   style={{ color: t.textMuted }}
                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#EF4444'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = t.textMuted; }}>
@@ -352,12 +355,12 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
                       key={selected.id}
                       content={(selected.description ?? '').replace(/^\[sz:(sm|md|lg)\]/, '')}
                       onChange={desc => autoSave(editTitle, desc)}
-                      placeholder="Write more details…"
+                      placeholder={tr('writeMoreDetails')}
                     />
 
                     {/* Tags editor */}
                     <div>
-                      <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>Tags</label>
+                      <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>{tr('tagsLabel')}</label>
                       {(selected.tags ?? []).length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           {(selected.tags ?? []).map(tag => (
@@ -373,7 +376,7 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
                       )}
                       <div className="relative">
                         <input ref={tagInputRef} value={tagInput} onChange={e => setTagInput(e.target.value)}
-                          placeholder="Type a tag and press Enter…"
+                          placeholder={tr('tagPlaceholder')}
                           className="w-full px-4 py-3 rounded-xl focus:outline-none transition-all text-[14px]"
                           style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText }}
                           onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
@@ -406,7 +409,7 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
                   </div>
                   <div>
                     <p className="text-[15px] font-semibold mb-1" style={{ color: t.textPrimary }}>{selected.title}</p>
-                    <p className="text-[13px]" style={{ color: t.textMuted }}>This site can't be previewed here.</p>
+                    <p className="text-[13px]" style={{ color: t.textMuted }}>{tr('cantPreview')}</p>
                   </div>
                   <a href={selected.url} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
@@ -495,7 +498,7 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
               style={{ background: t.emptyIconContainerBg, border: `1px solid ${t.emptyIconContainerBorder}` }}>
               <Link2 className="w-6 h-6" style={{ color: t.emptyIconColor }} />
             </div>
-            <p className="text-[14px] font-medium" style={{ color: t.textMuted }}>Open link here</p>
+            <p className="text-[14px] font-medium" style={{ color: t.textMuted }}>{tr('openLinkHere')}</p>
           </div>
         )}
       </div>

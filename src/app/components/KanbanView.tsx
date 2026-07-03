@@ -3,6 +3,7 @@ import { useDrag, useDrop } from 'react-dnd';
 import { MoreVertical, Heart, Trash2, Link2, Check, Sparkles } from 'lucide-react';
 import { isPlaceholder, getPlatformFromPlaceholder, PlatformPlaceholder } from './PlatformPlaceholder';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import type { LinkData } from './LinkCard';
 
 const DRAG_TYPE = 'KANBAN_CARD';
@@ -140,6 +141,7 @@ interface KanbanColumnProps {
 
 function KanbanColumn({ col, color, favorites, categories, onToggleFavorite, onDelete, onUpdateCategory }: KanbanColumnProps) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
 
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: DRAG_TYPE,
@@ -183,12 +185,12 @@ function KanbanColumn({ col, color, favorites, categories, onToggleFavorite, onD
         {isActive && col.links.length === 0 && (
           <div className="rounded-xl border-2 border-dashed h-16 flex items-center justify-center"
             style={{ borderColor: color, background: `${color}10` }}>
-            <p className="text-[11px] font-medium" style={{ color }}>Drop here</p>
+            <p className="text-[11px] font-medium" style={{ color }}>{tr('dropHere')}</p>
           </div>
         )}
         {col.links.length === 0 && !isActive ? (
           <div className="flex flex-col items-center justify-center py-10 text-center">
-            <p className="text-[11px]" style={{ color: t.kanbanEmptyText }}>No links here</p>
+            <p className="text-[11px]" style={{ color: t.kanbanEmptyText }}>{tr('noLinksShort')}</p>
           </div>
         ) : (
           col.links.map(link => (
@@ -200,7 +202,7 @@ function KanbanColumn({ col, color, favorites, categories, onToggleFavorite, onD
         {isActive && col.links.length > 0 && (
           <div className="rounded-xl border-2 border-dashed h-12 flex items-center justify-center"
             style={{ borderColor: color, background: `${color}10` }}>
-            <p className="text-[11px] font-medium" style={{ color }}>Drop here</p>
+            <p className="text-[11px] font-medium" style={{ color }}>{tr('dropHere')}</p>
           </div>
         )}
       </div>

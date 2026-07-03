@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { X, Check, Zap, Users, Sparkles, Loader2 } from 'lucide-react';
 import { StoreKit, IAP_PRODUCTS, type StoreProduct } from '../lib/storekit';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../context/LanguageContext';
 
 const AUD = { proMo: 5.49, proYr: 34.99, teamSeat: 9.49 };
 
@@ -76,6 +77,8 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
   onShowTerms?: () => void;
   onShowPrivacy?: () => void;
 }) {
+  const { tr, language } = useLanguage();
+  const ko = language === 'ko';
   const [products, setProducts] = useState<StoreProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
@@ -127,10 +130,10 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
       <div className="text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Sparkles className="w-5 h-5 text-yellow-400" />
-          <span className="text-[11px] font-bold uppercase tracking-widest text-purple-600">Upgrade to Pro</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-purple-600">{tr('upgradeToPro')}</span>
         </div>
-        <h2 className="text-[22px] font-bold text-gray-900 mb-1">Save more. Organize better.</h2>
-        <p className="text-[13px] text-gray-500">Cancel anytime in your Apple subscription settings</p>
+        <h2 className="text-[22px] font-bold text-gray-900 mb-1">{tr('saveMoreOrganize')}</h2>
+        <p className="text-[13px] text-gray-500">{ko ? 'Apple 구독 설정에서 언제든 해지할 수 있어요' : 'Cancel anytime in your Apple subscription settings'}</p>
       </div>
 
       <ul className="space-y-2.5 px-1">
@@ -210,9 +213,9 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
             <Users className="w-4 h-4 text-gray-400" />
             <span className="text-[12px] font-bold uppercase tracking-widest text-gray-400">Team</span>
           </div>
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">Coming Soon</span>
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">{tr('comingSoon')}</span>
         </div>
-        <p className="text-[12px] text-gray-400">Unlimited saves, 10GB storage, team sharing — launching soon</p>
+        <p className="text-[12px] text-gray-400">{ko ? '무제한 저장, 10GB 저장공간, 팀 공유 — 곧 출시' : 'Unlimited saves, 10GB storage, team sharing — launching soon'}</p>
       </div>
     </div>
   );
@@ -220,7 +223,19 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
 
 // ── Main component ────────────────────────────────────────────────────────────
 
+// Korean labels for the feature-comparison table (feature names + special values).
+const FEATURE_KO: Record<string, string> = {
+  'Saves': '저장', 'Boards': '보드', 'Storage': '저장공간', 'File size limit': '파일 크기 제한',
+  'Team boards (collaborative)': '팀 보드(협업)', 'Members per board': '보드당 멤버', 'Shared boards': '공유 보드',
+  'File uploads': '파일 업로드', 'Notes on cards': '카드 메모', 'Favorites': '즐겨찾기',
+  'AI tags & summary': 'AI 태그 & 요약', 'Kanban view': '칸반 보기', 'Export saves': '내보내기',
+};
+const valueKo = (v: string) =>
+  v === 'Unlimited' ? '무제한' : /^(\d+) max$/.test(v) ? `최대 ${v.match(/^(\d+)/)![1]}` : v;
+
 export function UpgradePage({ onClose, currentLinks, currentBoards, currentStorageMb = 0, userId, userEmail, isPro = false, onPurchaseSuccess, onShowTerms, onShowPrivacy }: UpgradePageProps) {
+  const { tr, language } = useLanguage();
+  const ko = language === 'ko';
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const isNative = Capacitor.isNativePlatform();
 
@@ -254,16 +269,16 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
 
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Sparkles className="w-5 h-5 text-yellow-300" />
-                <span className="text-[11px] font-bold uppercase tracking-widest text-white/70">Upgrade SaveBoard</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-white/70">{tr('upgradeSaveBoard')}</span>
               </div>
-              <h1 className="text-[28px] font-bold text-white mb-2">Save more. Organize better.</h1>
-              <p className="text-white/60 text-[14px]">Save everything worth keeping · Cancel anytime</p>
+              <h1 className="text-[28px] font-bold text-white mb-2">{tr('saveMoreOrganize')}</h1>
+              <p className="text-white/60 text-[14px]">{ko ? '간직할 가치가 있는 모든 것을 저장 · 언제든 해지' : 'Save everything worth keeping · Cancel anytime'}</p>
 
               {/* Usage indicators */}
               <div className="mt-5 grid grid-cols-3 gap-3 sm:gap-6 bg-white/10 rounded-2xl px-4 sm:px-7 py-4">
                 <div className="text-left">
                   <div className="flex items-center justify-between mb-1 gap-1">
-                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">Saves</p>
+                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">{tr('savesWord')}</p>
                     <p className="text-white text-[11px] sm:text-[12px] font-semibold">{currentLinks}/{FREE_LIMITS.links}</p>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-white/20">
@@ -272,7 +287,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 </div>
                 <div className="text-left">
                   <div className="flex items-center justify-between mb-1 gap-1">
-                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">Boards</p>
+                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">{tr('boardsLabel')}</p>
                     <p className="text-white text-[11px] sm:text-[12px] font-semibold">{currentBoards}/{FREE_LIMITS.boards}</p>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-white/20">
@@ -281,7 +296,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 </div>
                 <div className="text-left">
                   <div className="flex items-center justify-between mb-1 gap-1">
-                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">Storage</p>
+                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">{tr('storage')}</p>
                     <p className="text-white text-[11px] sm:text-[12px] font-semibold">{fmtStorage(currentStorageMb)}/{fmtStorage(FREE_LIMITS.storageMb)}</p>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-white/20">
@@ -310,7 +325,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                   <div className="rounded-2xl p-4 sm:p-6 flex flex-col" style={{ border: '1px solid #E5E7EB' }}>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Free</p>
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-1">$0</p>
-                    <p className="text-[12px] text-gray-400 mb-5">Forever free</p>
+                    <p className="text-[12px] text-gray-400 mb-5">{tr('foreverFree')}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
                       {['30 saves', '5 boards', '50MB storage', '5MB file size limit', 'All features included'].map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-500">
@@ -377,7 +392,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Team</p>
                     </div>
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.teamSeat}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
-                    <p className="text-[12px] text-gray-400 mb-5">Billed monthly · invited members join free</p>
+                    <p className="text-[12px] text-gray-400 mb-5">{ko ? '월간 결제 · 초대된 멤버는 무료 참여' : 'Billed monthly · invited members join free'}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
                       {['Collaborative team boards','Up to 25 boards, 25 members each','Members join free','Unlimited saves & boards','10GB storage'].map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
@@ -402,21 +417,24 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <table className="w-full border-collapse">
                       <thead>
                         <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                          <th className="py-3 px-4 text-left text-[11px] font-semibold uppercase tracking-widest text-gray-400">Feature</th>
-                          <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest text-gray-400">Free</th>
+                          <th className="py-3 px-4 text-left text-[11px] font-semibold uppercase tracking-widest text-gray-400">{tr('feature')}</th>
+                          <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest text-gray-400">{tr('freeWord')}</th>
                           <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#7C3AED' }}>Pro</th>
-                          <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest text-gray-400">Team</th>
+                          <th className="py-3 px-4 text-center text-[11px] font-semibold uppercase tracking-widest text-gray-400">{tr('team')}</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {comparisonRows.map((row, i) => (
+                        {comparisonRows.map((row, i) => {
+                          const cv = (v: boolean | string) => (ko && typeof v === 'string' ? valueKo(v) : v);
+                          return (
                           <tr key={row.feature} style={{ borderTop: i > 0 ? '1px solid #F3F4F6' : undefined }}>
-                            <td className="py-3 px-4 text-[13px] text-gray-700">{row.feature}</td>
-                            <Cell value={row.free} />
-                            <Cell value={row.pro} highlight />
-                            <Cell value={row.team} />
+                            <td className="py-3 px-4 text-[13px] text-gray-700">{ko ? (FEATURE_KO[row.feature] ?? row.feature) : row.feature}</td>
+                            <Cell value={cv(row.free)} />
+                            <Cell value={cv(row.pro)} highlight />
+                            <Cell value={cv(row.team)} />
                           </tr>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

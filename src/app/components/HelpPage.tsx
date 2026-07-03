@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Search, ChevronDown, ChevronRight, Link2, Tag, Layout, Star, Download, Trash2, Columns2, Mail } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface FAQ {
   q: string;
@@ -139,6 +140,7 @@ interface HelpPageProps {
 }
 
 export function HelpPage({ onClose, onShowContact }: HelpPageProps) {
+  const { tr } = useLanguage();
   const [search, setSearch] = useState('');
   const [openSection, setOpenSection] = useState<string | null>('Adding Links');
   const [openFaq, setOpenFaq] = useState<string | null>(null);
@@ -167,8 +169,8 @@ export function HelpPage({ onClose, onShowContact }: HelpPageProps) {
             <div className="px-6 pt-6 pb-4" style={{ borderBottom: '1px solid #F3F4F6' }}>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-[18px] font-bold text-gray-900">Help & FAQ</h2>
-                  <p className="text-[12px] text-gray-400 mt-0.5">Guides and answers for SaveBoard</p>
+                  <h2 className="text-[18px] font-bold text-gray-900">{tr('helpFaq')}</h2>
+                  <p className="text-[12px] text-gray-400 mt-0.5">{tr('helpSub')}</p>
                 </div>
                 <button onClick={onClose}
                   className="p-2 rounded-xl transition-colors"
@@ -185,7 +187,7 @@ export function HelpPage({ onClose, onShowContact }: HelpPageProps) {
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="Search guides and FAQs…"
+                  placeholder={tr('searchGuides')}
                   className="flex-1 bg-transparent outline-none text-gray-700 placeholder-gray-400"
                   style={{ fontSize: '16px' }}
                   autoFocus
@@ -203,7 +205,7 @@ export function HelpPage({ onClose, onShowContact }: HelpPageProps) {
               {filtered.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-[15px] font-semibold text-gray-700">No results for "{search}"</p>
-                  <p className="text-[13px] text-gray-400 mt-1">Try different keywords or contact us below</p>
+                  <p className="text-[13px] text-gray-400 mt-1">{tr('tryDifferent')}</p>
                 </div>
               ) : (
                 filtered.map(section => {
@@ -285,7 +287,7 @@ export function HelpPage({ onClose, onShowContact }: HelpPageProps) {
             {/* Footer CTA */}
             <div className="px-6 py-4 flex items-center justify-between" style={{ borderTop: '1px solid #F3F4F6', background: '#FAFAFA' }}>
               <div>
-                <p className="text-[13px] font-semibold text-gray-700">Still need help?</p>
+                <p className="text-[13px] font-semibold text-gray-700">{tr('stillNeedHelp')}</p>
                 <p className="text-[11px] text-gray-400">We usually reply within 24 hours</p>
               </div>
               <button
