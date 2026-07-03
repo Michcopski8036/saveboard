@@ -6,6 +6,7 @@ import { CategoryPopup } from './CategoryPopup';
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl, platformGradient } from './PlatformPlaceholder';
 import { RichTextEditor } from './RichTextEditor';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const LINK_DRAG_TYPE = 'LINK_TO_BOARD';
 
@@ -252,6 +253,7 @@ function Dropdown({ show, rect, onClose, onCopy, isCopied, onEdit, onCategory, o
   onDelete: (e: React.MouseEvent) => void; hasNotes?: boolean;
 }) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
   if (!show || !rect) return null;
   const row = 'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors text-left';
   const bg  = (isDelete = false) => ({
@@ -267,15 +269,15 @@ function Dropdown({ show, rect, onClose, onCopy, isCopied, onEdit, onCategory, o
         <div className="p-1">
           <button onClick={onCopy} className={row} style={{ color: t.dropdownText }} {...bg()}>
             {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Link2 className="w-4 h-4" style={{ color: t.dropdownIcon }} />}
-            <span className="text-[13px]">{isCopied ? 'Copied!' : 'Copy link'}</span>
+            <span className="text-[13px]">{isCopied ? tr('copied') : tr('copyLink')}</span>
           </button>
           <button onClick={onEdit} className={row} style={{ color: t.dropdownText }} {...bg()}>
             <Pencil className="w-4 h-4" style={{ color: t.dropdownIcon }} />
-            <span className="text-[13px]">Edit content</span>
+            <span className="text-[13px]">{tr('editContent')}</span>
           </button>
           <button onClick={onCategory} className={row} style={{ color: t.dropdownText }} {...bg()}>
             <ChevronDown className="w-4 h-4" style={{ color: t.dropdownIcon }} />
-            <span className="text-[13px]">Change Board</span>
+            <span className="text-[13px]">{tr('changeBoard')}</span>
           </button>
           <button onClick={onNotes} className={row} style={{ color: t.dropdownText }} {...bg()}>
             <FileText className="w-4 h-4" style={{ color: hasNotes ? '#3B82F6' : t.dropdownIcon }} />
@@ -284,7 +286,7 @@ function Dropdown({ show, rect, onClose, onCopy, isCopied, onEdit, onCategory, o
           <div style={{ borderTop: `1px solid ${t.dropdownDivider}`, margin: '4px 0' }} />
           <button onClick={onDelete} className={row} {...bg(true)}>
             <Trash2 className="w-4 h-4" style={{ color: '#EF4444' }} />
-            <span className="text-[13px]" style={{ color: '#EF4444' }}>Delete</span>
+            <span className="text-[13px]" style={{ color: '#EF4444' }}>{tr('delete')}</span>
           </button>
         </div>
       </div>
@@ -309,6 +311,7 @@ export function LinkCard({
   isSelected = false, isFavorited = false, listMode = false, compact = false, isPro = false,
 }: LinkCardProps) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
   const [showCategoryPopup, setShowCategoryPopup] = useState(false);
   const [isHovered, setIsHovered]   = useState(false);
   const [imgHovered, setImgHovered] = useState(false);
@@ -398,10 +401,10 @@ export function LinkCard({
         <div className="overflow-y-auto p-6 flex-1">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
-            <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>Notes</h3>
+            <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>{tr('notes')}</h3>
           </div>
           <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.title}</p>
-          <textarea value={notesInput} onChange={e => setNotesInput(e.target.value)} placeholder="Add your notes here…"
+          <textarea value={notesInput} onChange={e => setNotesInput(e.target.value)} placeholder={tr('addYourNotes')}
             autoFocus
             className="w-full h-36 px-4 py-3 rounded-xl resize-none focus:outline-none transition-all"
             style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, caretColor: '#7C3AED', fontSize: '16px' }}
@@ -410,10 +413,10 @@ export function LinkCard({
         </div>
         <div className="flex gap-2 px-6 py-4 justify-end shrink-0" style={{ borderTop: `1px solid ${t.modalBorder}` }}>
           <button onClick={() => setShowNotesModal(false)} className="px-4 py-2 rounded-xl text-sm transition-colors"
-            style={{ border: `1px solid ${t.modalInputBorder}`, color: t.textSecondary }}>Cancel</button>
+            style={{ border: `1px solid ${t.modalInputBorder}`, color: t.textSecondary }}>{tr('cancel')}</button>
           <button onClick={() => { onUpdateNotes?.(link.id, notesInput); setShowNotesModal(false); }}
             className="px-4 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg,#7C3AED,#4338CA)' }}>Save</button>
+            style={{ background: 'linear-gradient(135deg,#7C3AED,#4338CA)' }}>{tr('save')}</button>
         </div>
       </div>
     </>,
@@ -430,12 +433,12 @@ export function LinkCard({
         <div className="overflow-y-auto p-6 flex-1">
           <div className="flex items-center gap-2 mb-1">
             <Pencil className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
-            <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>Edit Content</h3>
+            <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>{tr('editContent')}</h3>
           </div>
           <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.url}</p>
           <div className="space-y-3">
             <div>
-              <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Title</label>
+              <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>{tr('title')}</label>
               <input value={editTitle} onChange={e => setEditTitle(e.target.value)}
                 autoFocus
                 className="w-full px-4 py-3 rounded-xl focus:outline-none transition-all"
@@ -444,11 +447,11 @@ export function LinkCard({
                 onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
             </div>
             <div>
-              <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>Description</label>
+              <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>{tr('description')}</label>
               <RichTextEditor key={link.id} content={editDescHtml} onChange={setEditDescHtml} />
             </div>
             <div>
-              <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>Tags</label>
+              <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>{tr('tagsLabel')}</label>
               {editTags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {editTags.map(tag => (
@@ -475,7 +478,7 @@ export function LinkCard({
                       setEditTags(p => p.slice(0, -1));
                     }
                   }}
-                  placeholder="Type a tag and press Enter…"
+                  placeholder={tr('tagPlaceholder')}
                   className="w-full px-3 py-2 rounded-xl focus:outline-none transition-all"
                   style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, fontSize: '16px' }}
                   onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
@@ -518,7 +521,7 @@ export function LinkCard({
         {/* Sticky footer — always above keyboard */}
         <div className="flex gap-2 px-6 py-4 justify-end shrink-0" style={{ borderTop: `1px solid ${t.modalBorder}` }}>
           <button onClick={() => setShowEditModal(false)} className="px-4 py-2 rounded-xl text-sm transition-colors"
-            style={{ border: `1px solid ${t.modalInputBorder}`, color: t.textSecondary }}>Cancel</button>
+            style={{ border: `1px solid ${t.modalInputBorder}`, color: t.textSecondary }}>{tr('cancel')}</button>
           <button onClick={() => {
               const finalTags = tagInput.trim() && !editTags.includes(tagInput.trim()) ? [...editTags, tagInput.trim()] : editTags;
               onUpdateLink?.(link.id, editTitle.trim() || link.title, editDescHtml);
@@ -526,7 +529,7 @@ export function LinkCard({
               setShowEditModal(false);
             }}
             className="px-4 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg,#7C3AED,#4338CA)' }}>Save</button>
+            style={{ background: 'linear-gradient(135deg,#7C3AED,#4338CA)' }}>{tr('save')}</button>
         </div>
       </div>
     </>,
@@ -671,7 +674,7 @@ export function LinkCard({
           <div className="absolute inset-0 flex items-end justify-end p-2 pointer-events-none">
             <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)' }}>
               <ExternalLink className="w-2.5 h-2.5 text-white/80" />
-              <span className="text-[10px] text-white/80 font-medium">Open</span>
+              <span className="text-[10px] text-white/80 font-medium">{tr('open')}</span>
             </div>
           </div>
         )}
@@ -715,7 +718,7 @@ export function LinkCard({
             style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
             onClick={e => e.stopPropagation()}>
             <ExternalLink className="w-7 h-7 text-white" />
-            <span className="text-white text-[13px] font-semibold">Open in Instagram</span>
+            <span className="text-white text-[13px] font-semibold">{tr('openInInstagram')}</span>
           </a>
         )}
 
@@ -754,7 +757,7 @@ export function LinkCard({
         <div ref={dragRef}
           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 touch-visible transition-opacity duration-150 cursor-grab active:cursor-grabbing z-10 touch-none"
           onClick={e => e.preventDefault()}
-          title="Drag to reorder or move to a board">
+          title={tr('dragReorderMove')}>
           <div className="flex items-center gap-1 px-1.5 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.50)', backdropFilter: 'blur(8px)' }}>
             <GripVertical className="w-3 h-3 text-white/80" />
           </div>
@@ -779,7 +782,7 @@ export function LinkCard({
             {isVideo && (
               <div className="flex items-center gap-1 shrink-0 px-1.5 py-0.5 rounded-md" style={{ background: t.badgeBg }}>
                 <Play className="w-2 h-2" style={{ color: t.textMuted }} fill={t.textMuted} />
-                <span className="text-[9px] font-medium" style={{ color: t.textMuted }}>Video</span>
+                <span className="text-[9px] font-medium" style={{ color: t.textMuted }}>{tr('video')}</span>
               </div>
             )}
           </div>

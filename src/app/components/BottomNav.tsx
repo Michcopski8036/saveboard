@@ -1,5 +1,6 @@
 import { Home, Search, Plus, Heart, MoreHorizontal } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import type { Collection } from './Sidebar';
 
 interface BottomNavProps {
@@ -14,6 +15,7 @@ interface BottomNavProps {
 
 export function BottomNav({ selected, onSelect, onOpenAdd, onFocusSearch, onOpenMore, favorites, hidden }: BottomNavProps) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
   const accent = '#7C3AED';
 
   return (
@@ -36,7 +38,7 @@ export function BottomNav({ selected, onSelect, onOpenAdd, onFocusSearch, onOpen
           style={{ color: selected === 'all' ? accent : t.bottomNavInactiveText }}
           onClick={() => onSelect('all')}>
           <Home className={`w-[22px] h-[22px] transition-transform ${selected === 'all' ? 'scale-110' : ''}`} />
-          <span className="text-[9px] font-semibold tracking-wide">Home</span>
+          <span className="text-[9px] font-semibold tracking-wide">{tr('home')}</span>
         </button>
 
         {/* Search */}
@@ -45,7 +47,7 @@ export function BottomNav({ selected, onSelect, onOpenAdd, onFocusSearch, onOpen
           style={{ color: t.bottomNavInactiveText }}
           onClick={onFocusSearch}>
           <Search className="w-[22px] h-[22px]" />
-          <span className="text-[9px] font-semibold tracking-wide">Search</span>
+          <span className="text-[9px] font-semibold tracking-wide">{tr('searchNav')}</span>
         </button>
 
         {/* Add (center, elevated) */}
@@ -69,7 +71,7 @@ export function BottomNav({ selected, onSelect, onOpenAdd, onFocusSearch, onOpen
           <Heart
             className={`w-[22px] h-[22px] transition-all ${selected === 'favorites' ? 'fill-[#7C3AED] scale-110' : ''}`}
           />
-          <span className="text-[9px] font-semibold tracking-wide">Saved</span>
+          <span className="text-[9px] font-semibold tracking-wide">{tr('savedNav')}</span>
           {favorites.size > 0 && (
             <span
               className="absolute top-1.5 right-[14%] h-4 min-w-[16px] rounded-full text-[8px] font-bold flex items-center justify-center text-white px-1"
@@ -85,7 +87,7 @@ export function BottomNav({ selected, onSelect, onOpenAdd, onFocusSearch, onOpen
           style={{ color: t.bottomNavInactiveText }}
           onClick={onOpenMore}>
           <MoreHorizontal className="w-[22px] h-[22px]" />
-          <span className="text-[9px] font-semibold tracking-wide">More</span>
+          <span className="text-[9px] font-semibold tracking-wide">{tr('moreNav')}</span>
         </button>
       </div>
 

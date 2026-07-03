@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Link2, Check, Share2, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { LinkCard, type LinkData } from './LinkCard';
 
 const PALETTE = ['#8B5CF6','#6366F1','#3B82F6','#0EA5E9','#10B981','#F59E0B','#EF4444','#EC4899'];
@@ -33,6 +34,14 @@ interface HomePageProps {
 
 export function HomePage({ links, categories, favorites, userEmail, sharedBoards = [], onRevokeShare, onSelect, cardProps }: HomePageProps) {
   const { t } = useTheme();
+  const { tr, language } = useLanguage();
+  const ko = language === 'ko';
+  // Natural count phrases: Korean = "보드 3개", English = "3 boards".
+  const countLabel = (n: number, unit: 'board' | 'link' | 'view') => {
+    if (ko) return `${unit === 'board' ? '보드' : unit === 'link' ? '링크' : '조회'} ${n}${unit === 'view' ? '회' : '개'}`;
+    const w = unit === 'view' ? 'view' : unit;
+    return `${n} ${w}${n !== 1 ? 's' : ''}`;
+  };
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   const copyShareLink = async (token: string) => {
@@ -59,10 +68,10 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
 
   const greeting = useMemo(() => {
     const h = new Date().getHours();
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
-  }, []);
+    if (h < 12) return tr('goodMorning');
+    if (h < 17) return tr('goodAfternoon');
+    return tr('goodEvening');
+  }, [tr]);
 
   const name = userEmail?.split('@')[0] ?? '';
 
@@ -72,7 +81,7 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
       {/* ── Greeting ─────────────────────────────────────────────────── */}
       <div>
         <p className="text-[13px] font-medium mb-0.5" style={{ color: t.textMuted }}>{greeting}{name ? `, ${name}` : ''}!</p>
-        <h1 className="text-[24px] font-bold leading-tight" style={{ color: t.textPrimary }}>Your SaveBoard</h1>
+        <h1 className="text-[24px] font-bold leading-tight" style={{ color: t.textPrimary }}>{tr('yourSaveBoard')}</h1>
       </div>
 
       {/* ── Recently Shared Board ────────────────────────────────────── */}
@@ -81,11 +90,11 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Share2 className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
-              <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>Recently Shared Board</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>{tr('recentlySharedBoard')}</p>
             </div>
             <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
               style={{ background: 'rgba(124,58,237,0.08)', color: '#7C3AED' }}>
-              {sharedBoards.length} board{sharedBoards.length !== 1 ? 's' : ''}
+              {countLabel(sharedBoards.length, 'board')}
             </span>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 sm:-mx-6 sm:px-6"
@@ -99,8 +108,8 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
                   className="group relative flex-none w-[148px] rounded-2xl overflow-hidden cursor-pointer transition-transform hover:-translate-y-0.5"
                   style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
                   {onRevokeShare && (
-                    <button title="Remove shared link"
-                      onClick={e => { e.stopPropagation(); if (confirm(`Stop sharing “${board.category}”? The public link will stop working.`)) onRevokeShare(board.token); }}
+                    <button title={tr('removeSharedLink')}
+                      onClick={e => { e.stopPropagation(); if (confirm(ko ? `“${board.category}” 공유를 중단할까요? 공개 링크가 작동을 멈춰요.` : `Stop sharing “${board.category}”? The public link will stop working.`)) onRevokeShare(board.token); }}
                       className="absolute top-1.5 right-1.5 z-10 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       style={{ background: t.badgeBg, color: t.textMuted }}>
                       <X className="w-3 h-3" />
@@ -109,18 +118,18 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
                   <div className="p-2.5">
                     <p className="text-[12px] font-semibold truncate mb-0.5" style={{ color: t.textPrimary }}>{board.category}</p>
                     <p className="text-[10px] mb-1.5" style={{ color: t.textMuted }}>
-                      {board.count} link{board.count !== 1 ? 's' : ''}
+                      {countLabel(board.count, 'link')}
                     </p>
                     <div className="flex items-center gap-1 mb-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
                       <p className="text-[10px] font-semibold" style={{ color: t.textPrimary }}>
-                        {board.views} view{board.views !== 1 ? 's' : ''}
+                        {countLabel(board.views, 'view')}
                       </p>
                     </div>
                     {board.viewers.length > 0 && (
                       <div className="flex items-center gap-1 mb-2 flex-wrap">
                         {board.viewers.slice(0, 4).map((v, i) => (
-                          <div key={i} title={v.email ?? 'Anonymous'}
+                          <div key={i} title={v.email ?? tr('anonymous')}
                             className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0"
                             style={{ background: v.email ? dotColor(v.email) : '#9CA3AF' }}>
                             {v.email ? v.email[0].toUpperCase() : '?'}
@@ -136,8 +145,8 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
                       className="w-full flex items-center justify-center gap-1 py-1 rounded-lg text-[10px] font-semibold transition-colors"
                       style={{ background: copiedToken === board.token ? 'rgba(34,197,94,0.10)' : `${color}15`, color: copiedToken === board.token ? '#16A34A' : color }}>
                       {copiedToken === board.token
-                        ? <><Check className="w-3 h-3" />Copied!</>
-                        : <><Link2 className="w-3 h-3" />Copy link</>}
+                        ? <><Check className="w-3 h-3" />{tr('copied')}</>
+                        : <><Link2 className="w-3 h-3" />{tr('copyLink')}</>}
                     </button>
                   </div>
                 </div>
@@ -151,11 +160,11 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
       {recent.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>Recently Saved</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: t.navSectionLabel }}>{tr('recentlySaved')}</p>
             <button onClick={() => onSelect('browse')}
               className="flex items-center gap-1 text-[12px] font-medium transition-opacity hover:opacity-70"
               style={{ color: '#7C3AED' }}>
-              View all <ArrowRight className="w-3.5 h-3.5" />
+              {tr('viewAll')} <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
           <div className="flex gap-3.5 items-start">

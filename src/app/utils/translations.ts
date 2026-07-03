@@ -35,6 +35,39 @@ export const translations = {
     nothingHere: 'Nothing here yet', addFirstLink: 'Add your first link with the button above',
     // Language page
     chooseLanguage: 'Language', searchLanguage: 'Search languages…',
+    // Bottom nav
+    searchNav: 'Search', savedNav: 'Saved', moreNav: 'More',
+    // Search / sort
+    searchLinks: 'Search links...', sortLabel: 'Sort', newestFirst: 'Newest first', oldestFirst: 'Oldest first',
+    // Category filter / popup
+    categoryName: 'Category name', addCategory: 'Add category', scrollCategories: 'Scroll categories',
+    dragToReorder: 'Drag to reorder', deleteBoardTitle: 'Delete board', searchWord: 'Search',
+    boardName: 'Board name', createBoard: 'Create board',
+    // Home
+    goodMorning: 'Good morning', goodAfternoon: 'Good afternoon', goodEvening: 'Good evening',
+    yourSaveBoard: 'Your SaveBoard', recentlySharedBoard: 'Recently Shared Board',
+    viewAll: 'View all', removeSharedLink: 'Remove shared link', anonymous: 'Anonymous',
+    // Share modal
+    shareBoard: 'Share Board', noActiveShareLink: 'No active share link.',
+    // Views
+    noLinksHere: 'No links here yet', favorite: 'Favorite', moveToBoard: 'Move to board',
+    reload: 'Reload', writeMoreDetails: 'Write more details…', cantPreview: "This site can't be previewed here.",
+    openLinkHere: 'Open link here', dropHere: 'Drop here', noLinksShort: 'No links here',
+    // Link card
+    open: 'Open', openInInstagram: 'Open in Instagram', video: 'Video',
+    dragReorderMove: 'Drag to reorder or move to a board', addYourNotes: 'Add your notes here…',
+    // Shared board page
+    boardNotFound: 'Board not found', boardRevoked: 'This link may have been revoked or never existed.',
+    boardWord: 'Board', sharedBoardTitle: 'Shared Board', sharedBy: 'Shared by', noSavesYet: 'No saves in this board yet.',
+    // Join team board
+    inviteUnavailable: 'Invite unavailable', teamBoardInvite: 'Team board invite', sharedByShort: 'Shared by ',
+    // Help
+    helpFaq: 'Help & FAQ', helpSub: 'Guides and answers for SaveBoard', searchGuides: 'Search guides and FAQs…',
+    tryDifferent: 'Try different keywords or contact us below', stillNeedHelp: 'Still need help?',
+    // Upgrade
+    saveMoreOrganize: 'Save more. Organize better.', cancelAnytime: 'Cancel anytime in your Apple subscription settings',
+    team: 'Team', comingSoon: 'Coming Soon', upgradeSaveBoard: 'Upgrade SaveBoard',
+    savesWord: 'Saves', storage: 'Storage', foreverFree: 'Forever free', feature: 'Feature', freeWord: 'Free',
   },
   ko: {
     collections: '컬렉션', home: '홈', recentlySaved: '최근 저장',
@@ -61,6 +94,28 @@ export const translations = {
     links: '링크', boardsLabel: '보드', contactUs: '문의하기',
     nothingHere: '아직 없습니다', addFirstLink: '위의 버튼으로 첫 번째 링크를 추가하세요',
     chooseLanguage: '언어', searchLanguage: '언어 검색…',
+    searchNav: '검색', savedNav: '저장됨', moreNav: '더보기',
+    searchLinks: '링크 검색...', sortLabel: '정렬', newestFirst: '최신순', oldestFirst: '오래된순',
+    categoryName: '카테고리 이름', addCategory: '카테고리 추가', scrollCategories: '카테고리 스크롤',
+    dragToReorder: '드래그하여 순서 변경', deleteBoardTitle: '보드 삭제', searchWord: '검색',
+    boardName: '보드 이름', createBoard: '보드 만들기',
+    goodMorning: '좋은 아침이에요', goodAfternoon: '좋은 오후예요', goodEvening: '좋은 저녁이에요',
+    yourSaveBoard: '내 SaveBoard', recentlySharedBoard: '최근 공유한 보드',
+    viewAll: '전체 보기', removeSharedLink: '공유 링크 제거', anonymous: '익명',
+    shareBoard: '보드 공유', noActiveShareLink: '활성화된 공유 링크가 없어요.',
+    noLinksHere: '아직 링크가 없어요', favorite: '즐겨찾기', moveToBoard: '보드로 이동',
+    reload: '새로고침', writeMoreDetails: '더 자세히 적어보세요…', cantPreview: '이 사이트는 여기서 미리볼 수 없어요.',
+    openLinkHere: '여기서 링크 열기', dropHere: '여기에 놓기', noLinksShort: '링크 없음',
+    open: '열기', openInInstagram: 'Instagram에서 열기', video: '동영상',
+    dragReorderMove: '드래그하여 순서 변경 또는 보드로 이동', addYourNotes: '메모를 여기에 적어보세요…',
+    boardNotFound: '보드를 찾을 수 없어요', boardRevoked: '이 링크는 해제되었거나 존재하지 않아요.',
+    boardWord: '보드', sharedBoardTitle: '공유된 보드', sharedBy: '공유한 사람', noSavesYet: '아직 이 보드에 저장된 항목이 없어요.',
+    inviteUnavailable: '초대를 사용할 수 없어요', teamBoardInvite: '팀 보드 초대', sharedByShort: '공유한 사람: ',
+    helpFaq: '도움말 & FAQ', helpSub: 'SaveBoard 가이드와 답변', searchGuides: '가이드와 FAQ 검색…',
+    tryDifferent: '다른 키워드로 검색하거나 아래로 문의해주세요', stillNeedHelp: '도움이 더 필요하세요?',
+    saveMoreOrganize: '더 많이 저장하고, 더 잘 정리하세요.', cancelAnytime: 'Apple 구독 설정에서 언제든 해지할 수 있어요',
+    team: '팀', comingSoon: '출시 예정', upgradeSaveBoard: 'SaveBoard 업그레이드',
+    savesWord: '저장', storage: '저장공간', foreverFree: '평생 무료', feature: '기능', freeWord: '무료',
   },
   ja: {
     collections: 'コレクション', home: 'ホーム', recentlySaved: '最近保存',

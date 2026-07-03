@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { ChevronRight, X, Plus } from 'lucide-react';
 import { useDrag, useDrop } from 'react-dnd';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CategoryFilterProps {
   categories: string[];
@@ -47,6 +48,7 @@ function DraggableCategory({
   handleRename,
   handleKeyDown,
 }: DraggableCategoryProps) {
+  const { tr } = useLanguage();
   const ref = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -128,13 +130,13 @@ function DraggableCategory({
                 : 'text-gray-600 hover:text-gray-900'
             } ${category !== 'All' ? 'cursor-grab active:cursor-grabbing' : ''}`}
           >
-            {category}
+            {category === 'All' ? tr('all') : category}
           </button>
           {isHovered && category !== 'All' && !isDragging && (
             <button
               onClick={handleDelete}
               className="p-1 hover:bg-purple-100 rounded-full transition-colors mb-2"
-              aria-label={`Delete ${category}`}
+              aria-label={`${tr('delete')} ${category}`}
             >
               <X className="w-4 h-4 text-[#A259FF]" />
             </button>
@@ -154,6 +156,7 @@ export function CategoryFilter({
   onDeleteCategory,
   onAddCategory,
 }: CategoryFilterProps) {
+  const { tr } = useLanguage();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -269,7 +272,7 @@ export function CategoryFilter({
               onBlur={handleAddConfirm}
               onKeyDown={handleAddKeyDown}
               autoFocus
-              placeholder="Category name"
+              placeholder={tr('categoryName')}
               className="text-base whitespace-nowrap pb-2 border-b-2 border-[#A259FF] bg-transparent outline-none text-gray-900 min-w-[100px]"
             />
           )}
@@ -278,7 +281,7 @@ export function CategoryFilter({
           <button
             onClick={() => setIsAddingCategory(true)}
             className="flex-shrink-0 p-1 hover:bg-gray-100 rounded-[10px] transition-colors"
-            aria-label="Add category"
+            aria-label={tr('addCategory')}
           >
             <Plus className="w-5 h-5 text-gray-700" />
           </button>
@@ -287,7 +290,7 @@ export function CategoryFilter({
           <button
             onClick={scrollRight}
             className="flex-shrink-0 p-1 hover:bg-gray-100 rounded-[10px] transition-colors"
-            aria-label="Scroll categories"
+            aria-label={tr('scrollCategories')}
           >
             <ChevronRight className="w-5 h-5 text-gray-700" />
           </button>

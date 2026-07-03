@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, Plus, Trash2, GripVertical } from 'lucide-react';
 import { useDrag, useDrop } from 'react-dnd';
+import { useLanguage } from '../context/LanguageContext';
 
 const POPUP_BOARD_DRAG = 'POPUP_BOARD';
 
@@ -62,6 +63,7 @@ function BoardRow({
   name, isEditing, anyEditing, editValue, setEditValue, onCommitRename, onKeyDown,
   onStartEdit, onSelect, onDelete, onReorder,
 }: BoardRowProps) {
+  const { tr } = useLanguage();
   const [hovered, setHovered] = useState(false);
   const [{ isDragging }, dragRef, previewRef] = useDrag({
     type: POPUP_BOARD_DRAG,
@@ -87,7 +89,7 @@ function BoardRow({
         ref={node => { dragRef(node); }}
         onClick={e => e.stopPropagation()}
         className="shrink-0 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none"
-        title="Drag to reorder"
+        title={tr("dragToReorder")}
       >
         <GripVertical className="w-4 h-4" />
       </span>
@@ -118,13 +120,13 @@ function BoardRow({
             onClick={(e) => { e.stopPropagation(); onSelect(name); }}
             className="px-3 py-1.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white text-sm rounded-full hover:opacity-90 transition-opacity"
           >
-            Select
+            {tr('select')}
           </button>
           {onDelete && (
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(name); }}
               className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
-              title="Delete board"
+              title={tr("deleteBoardTitle")}
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -136,6 +138,7 @@ function BoardRow({
 }
 
 export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAddCategory, onRenameCategory, onDeleteCategory, onReorderCategory, categories }: CategoryPopupProps) {
+  const { tr } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
@@ -193,12 +196,12 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4">
-          <h2 className="text-center text-lg mb-4">Change Board</h2>
+          <h2 className="text-center text-lg mb-4">{tr("changeBoard")}</h2>
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text"
-              placeholder="Search"
+              placeholder={tr("searchWord")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF]"
@@ -240,7 +243,7 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
                   if (e.key === 'Enter') handleCreateBoard();
                   if (e.key === 'Escape') { setIsCreating(false); setNewBoardName(''); }
                 }}
-                placeholder="Board name"
+                placeholder={tr("boardName")}
                 autoFocus
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF]"
                 style={{ fontSize: '16px' }}
@@ -261,7 +264,7 @@ export function CategoryPopup({ currentCategory, onClose, onSelectCategory, onAd
               <div className="w-10 h-10 bg-gray-100 rounded-[10px] flex items-center justify-center">
                 <Plus className="w-5 h-5 text-gray-500" />
               </div>
-              <span className="text-base text-gray-700">Create board</span>
+              <span className="text-base text-gray-700">{tr("createBoard")}</span>
             </button>
           )}
         </div>

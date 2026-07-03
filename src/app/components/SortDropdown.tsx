@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ArrowUpDown, Check } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import type { TranslationKey } from '../utils/translations';
 
 export type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
 
@@ -8,14 +10,16 @@ interface SortDropdownProps {
   onChange: (value: SortOption) => void;
 }
 
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: 'newest', label: 'Newest first' },
-  { value: 'oldest', label: 'Oldest first' },
-  { value: 'a-z', label: 'A-Z' },
-  { value: 'z-a', label: 'Z-A' },
+const sortOptions: { value: SortOption; labelKey: TranslationKey | null; fallback: string }[] = [
+  { value: 'newest', labelKey: 'newestFirst', fallback: 'Newest first' },
+  { value: 'oldest', labelKey: 'oldestFirst', fallback: 'Oldest first' },
+  { value: 'a-z', labelKey: null, fallback: 'A-Z' },
+  { value: 'z-a', labelKey: null, fallback: 'Z-A' },
 ];
 
 export function SortDropdown({ value, onChange }: SortDropdownProps) {
+  const { tr } = useLanguage();
+  const labelOf = (o: typeof sortOptions[number]) => (o.labelKey ? tr(o.labelKey) : o.fallback);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -35,7 +39,8 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
     };
   }, [isOpen]);
 
-  const currentLabel = sortOptions.find(opt => opt.value === value)?.label || 'Sort';
+  const currentOption = sortOptions.find(opt => opt.value === value);
+  const currentLabel = currentOption ? labelOf(currentOption) : tr('sortLabel');
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -58,7 +63,7 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
               }}
               className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-50 transition-colors text-sm"
             >
-              <span className="text-gray-700">{option.label}</span>
+              <span className="text-gray-700">{labelOf(option)}</span>
               {value === option.value && (
                 <Check className="w-4 h-4 text-[#A259FF]" />
               )}
