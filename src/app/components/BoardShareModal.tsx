@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Copy, Check, Link2, Loader2, Trash2, RefreshCw, Mail, Send, Users, Globe, UserMinus, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import type { LinkData } from './LinkCard';
 import type { User } from '@supabase/supabase-js';
 import type { Board, BoardMember } from '../lib/boards';
@@ -35,6 +36,7 @@ async function pushSnapshot(links: LinkData[], token: string, ownerName: string,
 
 export function BoardShareModal({ board, user, links, onClose, onBoardsChanged, onShowUpgrade }: BoardShareModalProps) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
   const isOwner = board.owner_id === user.id;
   const [tab, setTab] = useState<'invite' | 'public'>('invite');
 
@@ -49,7 +51,7 @@ export function BoardShareModal({ board, user, links, onClose, onBoardsChanged, 
         <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: `1px solid ${t.cardBorder}` }}>
           <div className="min-w-0">
             <p className="text-[15px] font-bold truncate" style={{ color: t.textPrimary }}>Share “{board.name}”</p>
-            <p className="text-[12px] mt-0.5" style={{ color: t.textMuted }}>Invite people to edit, or share a public view.</p>
+            <p className="text-[12px] mt-0.5" style={{ color: t.textMuted }}>{tr('inviteToEdit')}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-xl transition-colors shrink-0"
             style={{ color: t.iconMuted }}
@@ -153,7 +155,7 @@ function InviteTab({ board, user, isOwner, onClose, onBoardsChanged, onShowUpgra
         <>
           {/* Email invite */}
           <div>
-            <p className="text-[11px] font-semibold mb-1.5 px-1" style={{ color: t.textMuted }}>Invite by email</p>
+            <p className="text-[11px] font-semibold mb-1.5 px-1" style={{ color: t.textMuted }}>{tr('inviteByEmail')}</p>
             <div className="flex items-center gap-2">
               <input type="email" value={inviteEmail}
                 onChange={e => { setInviteEmail(e.target.value); setInviteMsg(''); }}
@@ -196,7 +198,7 @@ function InviteTab({ board, user, isOwner, onClose, onBoardsChanged, onShowUpgra
                       {m.user_id === user.id ? 'You' : 'Member'}{m.role === 'owner' ? ' · owner' : ''}
                     </span>
                     {m.role !== 'owner' && (
-                      <button onClick={() => kickMember(m.user_id)} title="Remove member" className="p-1 rounded-lg" style={{ color: '#EF4444' }}>
+                      <button onClick={() => kickMember(m.user_id)} title={tr('removeMember')} className="p-1 rounded-lg" style={{ color: '#EF4444' }}>
                         <UserMinus className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -305,7 +307,7 @@ function PublicTab({ board, user, links, isOwner }: { board: Board; user: User; 
         </>
       ) : (
         <>
-          <p className="text-[13px] text-center py-2" style={{ color: t.textMuted }}>No active public link.</p>
+          <p className="text-[13px] text-center py-2" style={{ color: t.textMuted }}>{tr('noPublicLink')}</p>
           <button onClick={handleCreateNew}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-[13px] text-white transition-opacity hover:opacity-90"
             style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>

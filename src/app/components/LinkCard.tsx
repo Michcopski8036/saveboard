@@ -802,7 +802,7 @@ export function LinkCard({
             style={{ background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.28)' }}>
             <div className="flex items-center gap-1.5 mb-1">
               <FileText className="w-2.5 h-2.5 shrink-0" style={{ color: '#D97706' }} />
-              <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#D97706' }}>My Note</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#D97706' }}>{tr('myNote')}</span>
             </div>
             <p className="text-[11px] leading-relaxed line-clamp-3" style={{ color: t.textMuted }}>{link.notes}</p>
           </button>

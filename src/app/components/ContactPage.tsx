@@ -69,8 +69,8 @@ export function ContactPage({ onClose, user }: ContactPageProps) {
                   style={{ background: 'rgba(16,185,129,0.10)' }}>
                   <CheckCircle className="w-8 h-8" style={{ color: '#10B981' }} />
                 </div>
-                <p className="text-[17px] font-bold text-gray-900 mb-1">Email client opened!</p>
-                <p className="text-[13px] text-gray-400 max-w-xs">Your message is ready to send in your email app. Press send there to reach us.</p>
+                <p className="text-[17px] font-bold text-gray-900 mb-1">{tr('emailClientOpened')}</p>
+                <p className="text-[13px] text-gray-400 max-w-xs">{tr('emailReady')}</p>
                 <button onClick={onClose}
                   className="mt-8 px-6 py-2.5 rounded-xl text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
@@ -88,7 +88,7 @@ export function ContactPage({ onClose, user }: ContactPageProps) {
                     type="text"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    placeholder="Your name"
+                    placeholder={tr('yourName')}
                     className="w-full px-3.5 py-2.5 rounded-xl text-[14px] focus:outline-none transition-all"
                     style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#374151' }}
                     onFocus={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.10)'; }}
@@ -98,7 +98,7 @@ export function ContactPage({ onClose, user }: ContactPageProps) {
 
                 {/* Email */}
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Email</label>
+                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">{tr('emailLabel')}</label>
                   <input
                     type="email"
                     value={email}
@@ -113,7 +113,7 @@ export function ContactPage({ onClose, user }: ContactPageProps) {
 
                 {/* Subject */}
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Subject</label>
+                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">{tr('subjectLabel')}</label>
                   <div className="flex flex-wrap gap-1.5">
                     {SUBJECTS.map(s => (
                       <button
@@ -133,11 +133,11 @@ export function ContactPage({ onClose, user }: ContactPageProps) {
 
                 {/* Message */}
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Message</label>
+                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">{tr('messageLabel')}</label>
                   <textarea
                     value={message}
                     onChange={e => setMessage(e.target.value)}
-                    placeholder="Write your message here…"
+                    placeholder={tr('writeMessage')}
                     rows={5}
                     className="w-full px-3.5 py-2.5 rounded-xl text-[14px] focus:outline-none transition-all resize-none"
                     style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#374151' }}

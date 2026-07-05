@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { X, Zap, Users, ExternalLink, CreditCard, Calendar, CheckCircle, AlertCircle, Loader2, RotateCcw } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface SubData {
   plan: string;
@@ -72,6 +73,7 @@ function UsageBar({ label, used, limit, isStorage }: { label: string; used: numb
 }
 
 export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId, currentLinks, currentBoards, currentStorageMb, subData }: BillingPageProps) {
+  const { tr } = useLanguage();
   const [portalLoading, setPortalLoading] = useState(false);
   const [restoreLoading, setRestoreLoading] = useState(false);
   const [restoreMsg, setRestoreMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -135,7 +137,7 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
                 <CreditCard className="w-5 h-5 text-white/70" />
                 <h2 className="text-[20px] font-bold text-white">Billing & Plan</h2>
               </div>
-              <p className="text-white/60 text-[13px]">Manage your subscription and usage</p>
+              <p className="text-white/60 text-[13px]">{tr('manageSubUsage')}</p>
             </div>
 
             <div className="p-6 space-y-5">
@@ -161,26 +163,26 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
                     {billingCycle && (
                       <div className="flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                        <span>Billed <span className="font-medium text-gray-800">{billingCycle}</span></span>
+                        <span>{tr('billedWord')} <span className="font-medium text-gray-800">{billingCycle}</span></span>
                       </div>
                     )}
                     {periodEnd && (
                       <div className="flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                        <span>Renews <span className="font-medium text-gray-800">{periodEnd.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span></span>
+                        <span>{tr('renewsWord')} <span className="font-medium text-gray-800">{periodEnd.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span></span>
                       </div>
                     )}
                   </div>
                 )}
 
                 {!isActive && (
-                  <p className="text-[13px] text-gray-500">You are on the free plan.</p>
+                  <p className="text-[13px] text-gray-500">{tr('onFreePlan')}</p>
                 )}
               </div>
 
               {/* Usage */}
               <div className="rounded-2xl p-5" style={{ border: '1px solid #E5E7EB' }}>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-4">Usage</p>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-4">{tr('usageWord')}</p>
                 <div className="space-y-4">
                   <UsageBar label="Saves" used={currentLinks} limit={savesLimit} />
                   <UsageBar label="Boards" used={currentBoards} limit={boardsLimit} />

@@ -180,8 +180,8 @@ export function SettingsPage({ onClose, user, onExport, onImport, onSignOut, onD
                 <RowBtn icon={Trash2} label="Delete Account" danger onClick={() => setConfirmDelete(true)} right={null} />
               ) : (
                 <div className="rounded-2xl p-4 mt-2" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)' }}>
-                  <p className="text-[13px] font-semibold text-red-600 mb-1">Delete your account?</p>
-                  <p className="text-[12px] text-gray-500 mb-3">All your saves, boards, and data will be permanently deleted. This cannot be undone.</p>
+                  <p className="text-[13px] font-semibold text-red-600 mb-1">{tr('deleteAccount')}</p>
+                  <p className="text-[12px] text-gray-500 mb-3">{tr('deleteAccountDesc')}</p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setConfirmDelete(false)}

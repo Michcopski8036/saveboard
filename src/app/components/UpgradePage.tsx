@@ -137,7 +137,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
       </div>
 
       <ul className="space-y-2.5 px-1">
-        {['300 saves', '30 boards', '5 team boards (10 members each)', '2GB storage', '20MB file size limit', 'Priority support'].map(f => (
+        {(ko ? ['저장 300개','보드 30개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['300 saves', '30 boards', '5 team boards (10 members each)', '2GB storage', '20MB file size limit', 'Priority support']).map(f => (
           <li key={f} className="flex items-center gap-2.5 text-[14px] text-gray-700">
             <Check className="w-4 h-4 text-purple-500 shrink-0" />{f}
           </li>
@@ -211,7 +211,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-gray-400" />
-            <span className="text-[12px] font-bold uppercase tracking-widest text-gray-400">Team</span>
+            <span className="text-[12px] font-bold uppercase tracking-widest text-gray-400">{tr('team')}</span>
           </div>
           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">{tr('comingSoon')}</span>
         </div>
@@ -323,11 +323,11 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
 
                   {/* Free */}
                   <div className="rounded-2xl p-4 sm:p-6 flex flex-col" style={{ border: '1px solid #E5E7EB' }}>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Free</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{tr('freeWord')}</p>
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-1">$0</p>
                     <p className="text-[12px] text-gray-400 mb-5">{tr('foreverFree')}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {['30 saves', '5 boards', '50MB storage', '5MB file size limit', 'All features included'].map(f => (
+                      {(ko ? ['저장 30개','보드 5개','50MB 저장공간','파일 크기 5MB','모든 기능 포함'] : ['30 saves', '5 boards', '50MB storage', '5MB file size limit', 'All features included']).map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-500">
                           <Check className="w-3.5 h-3.5 text-gray-300 shrink-0" />{f}
                         </li>
@@ -335,7 +335,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     </ul>
                     {!isPro && (
                       <button disabled className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-gray-300 cursor-default" style={{ border: '1px solid #E5E7EB' }}>
-                        Current plan
+                        {ko ? '현재 플랜' : 'Current plan'}
                       </button>
                     )}
                   </div>
@@ -344,16 +344,16 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                   <div className="rounded-2xl p-4 sm:p-6 relative flex flex-col" style={{ border: '2px solid #7C3AED', background: 'linear-gradient(135deg,rgba(124,58,237,0.04),rgba(99,102,241,0.04))' }}>
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-bold text-white tracking-widest uppercase"
                       style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
-                      Most Popular
+                      {ko ? '가장 인기' : 'Most Popular'}
                     </div>
                     <div className="flex items-center gap-1.5 mb-2">
                       <Zap className="w-3.5 h-3.5 text-purple-600" />
                       <p className="text-[10px] font-bold uppercase tracking-widest text-purple-600">Pro</p>
                     </div>
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.proMo}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
-                    <p className="text-[12px] font-semibold text-purple-600 mb-5">or A${AUD.proYr}/yr — save 47%</p>
+                    <p className="text-[12px] font-semibold text-purple-600 mb-5">{ko ? `또는 A$${AUD.proYr}/년 — 47% 할인` : `or A$${AUD.proYr}/yr — save 47%`}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {['300 saves','30 boards','5 team boards (10 members each)','2GB storage','20MB file size limit','Priority support'].map(f => (
+                      {(ko ? ['저장 300개','보드 30개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['300 saves','30 boards','5 team boards (10 members each)','2GB storage','20MB file size limit','Priority support']).map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
                           <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
                         </li>
@@ -361,7 +361,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     </ul>
                     {isPro ? (
                       <button disabled className="w-full py-2.5 rounded-xl text-[13px] font-semibold cursor-default flex items-center justify-center gap-1.5" style={{ background: 'rgba(124,58,237,0.10)', color: '#7C3AED' }}>
-                        ✓ Current Plan
+                        {ko ? '✓ 현재 플랜' : '✓ Current Plan'}
                       </button>
                     ) : (
                       <div className="flex gap-2">
@@ -371,7 +371,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                           disabled={!!loadingPlan}
                           onClick={() => handleCheckout('pro', 'monthly')}>
                           {loadingPlan === 'pro-monthly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                          Monthly
+                          {ko ? '월간' : 'Monthly'}
                         </button>
                         <button
                           className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-60"
@@ -379,7 +379,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                           disabled={!!loadingPlan}
                           onClick={() => handleCheckout('pro', 'yearly')}>
                           {loadingPlan === 'pro-yearly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                          Yearly −47%
+                          {ko ? '연간 −47%' : 'Yearly −47%'}
                         </button>
                       </div>
                     )}
@@ -389,12 +389,12 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                   <div className="rounded-2xl p-6 flex flex-col" style={{ border: '1px solid #E5E7EB' }}>
                     <div className="flex items-center gap-1.5 mb-2">
                       <Users className="w-3.5 h-3.5 text-gray-500" />
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Team</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{tr('team')}</p>
                     </div>
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.teamSeat}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                     <p className="text-[12px] text-gray-400 mb-5">{ko ? '월간 결제 · 초대된 멤버는 무료 참여' : 'Billed monthly · invited members join free'}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {['Collaborative team boards','Up to 25 boards, 25 members each','Members join free','Unlimited saves & boards','10GB storage'].map(f => (
+                      {(ko ? ['협업 팀 보드','최대 보드 25개, 각 25명','멤버 무료 참여','무제한 저장·보드','10GB 저장공간'] : ['Collaborative team boards','Up to 25 boards, 25 members each','Members join free','Unlimited saves & boards','10GB storage']).map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
                           <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />{f}
                         </li>
@@ -406,7 +406,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                       disabled={!!loadingPlan}
                       onClick={() => handleCheckout('team', 'monthly')}>
                       {loadingPlan === 'team-monthly' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                      Get Team →
+                      {ko ? '팀 시작하기 →' : 'Get Team →'}
                     </button>
                   </div>
                 </div>
@@ -441,10 +441,10 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 </div>
 
                 <p className="text-center text-[10px] sm:text-[11px] text-gray-400 px-4 pb-2">
-                  No credit card required for free plan · Secure payments via Stripe · Cancel anytime
+                  {ko ? '무료 플랜은 카드 필요 없음 · Stripe 안전 결제 · 언제든 해지' : 'No credit card required for free plan · Secure payments via Stripe · Cancel anytime'}
                 </p>
                 <p className="text-center text-[10px] sm:text-[11px] text-gray-400 pb-4 sm:pb-6">
-                  Prices shown in AUD (Australian Dollars) · If you are outside Australia, your bank will convert at the current exchange rate
+                  {ko ? '가격은 호주 달러(AUD) 기준 · 호주 외 지역은 은행이 현재 환율로 환전해요' : 'Prices shown in AUD (Australian Dollars) · If you are outside Australia, your bank will convert at the current exchange rate'}
                 </p>
               </>
             )}

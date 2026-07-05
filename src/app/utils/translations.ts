@@ -64,6 +64,22 @@ export const translations = {
     // Help
     helpFaq: 'Help & FAQ', helpSub: 'Guides and answers for SaveBoard', searchGuides: 'Search guides and FAQs…',
     tryDifferent: 'Try different keywords or contact us below', stillNeedHelp: 'Still need help?',
+    howToGuide: 'How-to guide', replyWithin24: 'We usually reply within 24 hours', noResultsFor: 'No results for',
+    // Sidebar / menus
+    rename: 'Rename', share: 'Share', curateBoard: 'Curate your board', collapseSidebar: 'Collapse sidebar',
+    expandSidebar: 'Expand sidebar', addBoard: 'Add board',
+    billing: 'Billing', adminDashboard: 'Admin Dashboard', noLanguagesFound: 'No languages found',
+    // Billing page
+    manageSubUsage: 'Manage your subscription and usage', billedWord: 'Billed', renewsWord: 'Renews',
+    onFreePlan: 'You are on the free plan.', usageWord: 'Usage',
+    // Board share modal
+    inviteToEdit: 'Invite people to edit, or share a public view.', inviteByEmail: 'Invite by email',
+    removeMember: 'Remove member', noPublicLink: 'No active public link.',
+    // Contact page
+    emailClientOpened: 'Email client opened!', emailReady: 'Your message is ready to send in your email app. Press send there to reach us.',
+    yourName: 'Your name', emailLabel: 'Email', subjectLabel: 'Subject', messageLabel: 'Message', writeMessage: 'Write your message here…',
+    // Settings — delete account
+    deleteAccount: 'Delete your account?', deleteAccountDesc: 'All your saves, boards, and data will be permanently deleted. This cannot be undone.',
     // Upgrade
     saveMoreOrganize: 'Save more. Organize better.', cancelAnytime: 'Cancel anytime in your Apple subscription settings',
     team: 'Team', comingSoon: 'Coming Soon', upgradeSaveBoard: 'Upgrade SaveBoard',
@@ -113,6 +129,17 @@ export const translations = {
     inviteUnavailable: '초대를 사용할 수 없어요', teamBoardInvite: '팀 보드 초대', sharedByShort: '공유한 사람: ',
     helpFaq: '도움말 & FAQ', helpSub: 'SaveBoard 가이드와 답변', searchGuides: '가이드와 FAQ 검색…',
     tryDifferent: '다른 키워드로 검색하거나 아래로 문의해주세요', stillNeedHelp: '도움이 더 필요하세요?',
+    howToGuide: '사용 가이드', replyWithin24: '보통 24시간 이내에 답변드려요', noResultsFor: '검색 결과가 없어요:',
+    rename: '이름 변경', share: '공유', curateBoard: '보드를 만들어보세요', collapseSidebar: '사이드바 접기',
+    expandSidebar: '사이드바 펼치기', addBoard: '보드 추가',
+    billing: '결제', adminDashboard: '관리자 대시보드', noLanguagesFound: '언어를 찾을 수 없어요',
+    manageSubUsage: '구독과 사용량 관리', billedWord: '청구', renewsWord: '갱신',
+    onFreePlan: '무료 플랜을 사용 중이에요.', usageWord: '사용량',
+    inviteToEdit: '편집하도록 초대하거나 공개 보기를 공유하세요.', inviteByEmail: '이메일로 초대',
+    removeMember: '멤버 제거', noPublicLink: '활성화된 공개 링크가 없어요.',
+    emailClientOpened: '이메일 앱이 열렸어요!', emailReady: '이메일 앱에 메시지가 준비됐어요. 거기서 보내기를 누르면 저희에게 전달돼요.',
+    yourName: '이름', emailLabel: '이메일', subjectLabel: '제목', messageLabel: '메시지', writeMessage: '메시지를 여기에 작성하세요…',
+    deleteAccount: '계정을 삭제할까요?', deleteAccountDesc: '모든 저장·보드·데이터가 영구 삭제돼요. 되돌릴 수 없어요.',
     saveMoreOrganize: '더 많이 저장하고, 더 잘 정리하세요.', cancelAnytime: 'Apple 구독 설정에서 언제든 해지할 수 있어요',
     team: '팀', comingSoon: '출시 예정', upgradeSaveBoard: 'SaveBoard 업그레이드',
     savesWord: '저장', storage: '저장공간', foreverFree: '평생 무료', feature: '기능', freeWord: '무료',

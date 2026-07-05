@@ -93,7 +93,7 @@ export function LanguagePage({ onClose }: LanguagePageProps) {
                 );
               })}
               {filtered.length === 0 && (
-                <p className="text-center text-[13px] text-gray-400 py-8">No languages found</p>
+                <p className="text-center text-[13px] text-gray-400 py-8">{tr('noLanguagesFound')}</p>
               )}
             </div>
 

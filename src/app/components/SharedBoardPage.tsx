@@ -41,12 +41,12 @@ function domain(url: string): string {
   try { return new URL(url).hostname.replace('www.', ''); } catch { return url; }
 }
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, ko = false): string {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  return `${Math.floor(s / 86400)}d ago`;
+  if (s < 60) return ko ? '방금' : 'just now';
+  if (s < 3600) { const m = Math.floor(s / 60); return ko ? `${m}분 전` : `${m}m ago`; }
+  if (s < 86400) { const h = Math.floor(s / 3600); return ko ? `${h}시간 전` : `${h}h ago`; }
+  const d = Math.floor(s / 86400); return ko ? `${d}일 전` : `${d}d ago`;
 }
 
 // In-app browsers (KakaoTalk, Line, Instagram, Facebook…) block Google OAuth
@@ -239,7 +239,7 @@ export function SharedBoardPage() {
           </h1>
           <p className="text-[14px] text-gray-400 mt-1 mb-4">
             {links.length} save{links.length !== 1 ? 's' : ''}
-            {board?.synced_at && <span> · shared {timeAgo(board.synced_at)}</span>}
+            {board?.synced_at && <span> · {ko ? '공유됨 ' : 'shared '}{timeAgo(board.synced_at, ko)}</span>}
           </p>
           {/* Shared by */}
           {(board?.owner_name || board?.owner_email) && (
@@ -293,16 +293,16 @@ export function SharedBoardPage() {
             <ul className="space-y-1 text-[13px]">
               <li className="flex items-center gap-2 text-gray-600">
                 <Check className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                {result.added} new {result.added === 1 ? 'item' : 'items'} added
+                {ko ? `새 항목 ${result.added}개 추가됨` : `${result.added} new ${result.added === 1 ? 'item' : 'items'} added`}
               </li>
               {result.skippedExisting > 0 && (
                 <li className="text-gray-400 pl-[22px]">
-                  {result.skippedExisting} already in this board — skipped
+                  {ko ? `${result.skippedExisting}개는 이미 이 보드에 있어 건너뜀` : `${result.skippedExisting} already in this board — skipped`}
                 </li>
               )}
               {result.limited > 0 && (
                 <li className="text-amber-600 pl-[22px]">
-                  {result.limited} not added — Free plan limit ({FREE_SAVE_LIMIT} saves) reached
+                  {ko ? `${result.limited}개는 추가 안 됨 — 무료 플랜 한도(${FREE_SAVE_LIMIT}개) 도달` : `${result.limited} not added — Free plan limit (${FREE_SAVE_LIMIT} saves) reached`}
                 </li>
               )}
             </ul>
@@ -310,7 +310,7 @@ export function SharedBoardPage() {
               <a
                 href={`${window.location.origin}?board=${encodeURIComponent(board!.category)}`}
                 className="inline-block mt-3 text-[13px] font-semibold text-purple-600 hover:text-purple-700">
-                Upgrade for more saves →
+                {ko ? '더 저장하려면 업그레이드 →' : 'Upgrade for more saves →'}
               </a>
             )}
           </div>
@@ -371,7 +371,7 @@ export function SharedBoardPage() {
                       <span className="text-[10px] text-gray-400 truncate flex-1">{dom}</span>
                       <div className="flex items-center gap-1 shrink-0">
                         <Clock className="w-2.5 h-2.5 text-gray-300" />
-                        <span className="text-[10px] text-gray-400">{timeAgo(link.saved_at)}</span>
+                        <span className="text-[10px] text-gray-400">{timeAgo(link.saved_at, ko)}</span>
                       </div>
                     </div>
 

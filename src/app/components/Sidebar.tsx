@@ -155,7 +155,7 @@ function BoardDropItem({ cat, active, count, color, shared, memberCount, isRenam
                     onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <Pencil className="w-3.5 h-3.5" style={{ color: t.dropdownIcon }} />
-                    <span className="text-[12px]">Rename</span>
+                    <span className="text-[12px]">{tr('rename')}</span>
                   </button>
                   <button onClick={() => { setMenuCat(null); onShareCategory?.(cat); }}
                     className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
@@ -163,7 +163,7 @@ function BoardDropItem({ cat, active, count, color, shared, memberCount, isRenam
                     onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <Share2 className="w-3.5 h-3.5" style={{ color: t.dropdownIcon }} />
-                    <span className="text-[12px]">Share</span>
+                    <span className="text-[12px]">{tr('share')}</span>
                   </button>
                   <button onClick={() => { setMenuCat(null); onDeleteCategory?.(cat); }}
                     className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
@@ -171,7 +171,7 @@ function BoardDropItem({ cat, active, count, color, shared, memberCount, isRenam
                     onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                    <span className="text-[12px]">Delete</span>
+                    <span className="text-[12px]">{tr('delete')}</span>
                   </button>
                 </div>
               </div>
@@ -323,7 +323,7 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
           {sidebarOpen && (
             <button
               onClick={() => onToggleSidebar?.()}
-              title="Collapse sidebar"
+              title={tr('collapseSidebar')}
               className="p-1.5 rounded-xl transition-all shrink-0"
               style={{ color: t.iconMuted }}
               onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; e.currentTarget.style.color = t.textSecondary; }}
@@ -402,7 +402,7 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
                   onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                   <Plus className="w-3.5 h-3.5 shrink-0" />
-                  <span className="text-[12px] font-medium">Curate your board</span>
+                  <span className="text-[12px] font-medium">{tr('curateBoard')}</span>
                 </button>
               )}
             </div>
@@ -412,7 +412,7 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
                   onChange={e => setBoardName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') { setAddingBoard(false); setBoardName(''); } }}
                   onBlur={() => { if (!boardName.trim()) setAddingBoard(false); }}
-                  placeholder="Board name…" autoFocus
+                  placeholder={tr('boardName') + '…'} autoFocus
                   className="w-full px-3 py-2 rounded-xl focus:outline-none"
                   style={{ background: t.boardInputBg, border: `1px solid ${t.boardInputBorder}`, color: t.boardInputText, fontSize: '16px' }}
                   onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(124,58,237,0.10)'; }}
@@ -477,7 +477,7 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
       <div className={sidebarOpen ? 'hidden' : 'hidden md:flex xl:hidden flex-col items-center gap-1 py-4 h-full overflow-y-auto'}>
 
         {/* Logo mark */}
-        <button onClick={() => onSelect('all')} title="Home"
+        <button onClick={() => onSelect('all')} title={tr('home')}
           className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
           style={{ background: t.logoIconBg, boxShadow: t.logoIconShadow }}>
           <Bookmark className="w-4 h-4 text-white" strokeWidth={2.5} />
@@ -486,7 +486,7 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
         {/* Expand button */}
         <button
           onClick={() => onToggleSidebar?.()}
-          title="Expand sidebar"
+          title={tr('expandSidebar')}
           className="w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 mt-1"
           style={{ color: t.iconMuted }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.10)'; e.currentTarget.style.color = '#7C3AED'; }}
@@ -525,7 +525,7 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
         })}
 
         {/* Add board */}
-        <button title="Add board"
+        <button title={tr('addBoard')}
           onClick={() => { const n = window.prompt('Board name:'); if (n?.trim()) onAddCategory?.(n.trim()); }}
           className="w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 mt-0.5"
           style={{ color: t.iconMuted }}

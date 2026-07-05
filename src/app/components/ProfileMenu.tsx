@@ -155,7 +155,7 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
               {isPro && (
                 <button onClick={() => { onShowBilling?.(); setShowMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
                   <CreditCard className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm text-gray-700">Billing</span>
+                  <span className="text-sm text-gray-700">{tr('billing')}</span>
                 </button>
               )}
               <button onClick={handleExport} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
@@ -180,7 +180,7 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
                   <button onClick={() => { onShowAdmin(); setShowMenu(false); }}
                     className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
                     <BarChart2 className="w-4 h-4" style={{ color: '#7C3AED' }} />
-                    <span className="text-sm font-semibold" style={{ color: '#7C3AED' }}>Admin Dashboard</span>
+                    <span className="text-sm font-semibold" style={{ color: '#7C3AED' }}>{tr('adminDashboard')}</span>
                   </button>
                 </>
               )}
