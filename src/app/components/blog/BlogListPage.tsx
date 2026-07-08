@@ -2,10 +2,13 @@ import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { Bookmark, ArrowRight } from 'lucide-react';
 import { allPosts, formatDate } from '../../utils/blogUtils';
+import { useLanguage } from '../../context/LanguageContext';
 
 const BASE_URL = 'https://www.saveboard.app';
 
 export function BlogListPage() {
+  const { language } = useLanguage();
+  const ko = language === 'ko';
   useEffect(() => {
     document.title = 'Blog — SaveBoard';
     setMeta('description', 'Tips, guides, and updates from the SaveBoard team. Learn how to save and organise links from group chats, WhatsApp, and more.');
@@ -26,18 +29,18 @@ export function BlogListPage() {
 
           <div className="mb-14 text-center">
             <p className="text-[13px] font-medium text-purple-600 bg-purple-50 inline-block px-3 py-1 rounded-full mb-4">
-              SaveBoard Blog
+              {ko ? 'SaveBoard 블로그' : 'SaveBoard Blog'}
             </p>
             <h1 className="text-[44px] sm:text-[54px] font-extrabold text-gray-900 leading-[1.05] tracking-tight mb-4">
-              Tips &amp; Guides
+              {ko ? '팁 & 가이드' : 'Tips & Guides'}
             </h1>
             <p className="text-[17px] text-gray-500 max-w-lg mx-auto leading-relaxed">
-              Practical advice on saving, organising, and sharing links — for parents, coaches, and group leaders.
+              {ko ? '링크를 저장·정리·공유하는 실용 팁 — 학부모, 코치, 모임 리더를 위해.' : 'Practical advice on saving, organising, and sharing links — for parents, coaches, and group leaders.'}
             </p>
           </div>
 
           {allPosts.length === 0 ? (
-            <p className="text-center text-gray-400">No posts yet.</p>
+            <p className="text-center text-gray-400">{ko ? '아직 게시물이 없어요.' : 'No posts yet.'}</p>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {allPosts.map(post => (
@@ -56,7 +59,7 @@ export function BlogListPage() {
                       {post.description}
                     </p>
                     <span className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-semibold text-purple-600">
-                      Read article <ArrowRight className="w-3.5 h-3.5" />
+                      {ko ? '글 읽기' : 'Read article'} <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </Link>
@@ -72,6 +75,8 @@ export function BlogListPage() {
 }
 
 export function Nav() {
+  const { language } = useLanguage();
+  const ko = language === 'ko';
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
       <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
@@ -85,13 +90,13 @@ export function Nav() {
         </Link>
         <div className="flex items-center gap-4">
           <Link to="/blog" className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors">
-            Blog
+            {ko ? '블로그' : 'Blog'}
           </Link>
           <Link
             to="/?auth=1"
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-xl font-semibold text-[13px] hover:opacity-90 transition-opacity"
           >
-            Get Started
+            {ko ? '시작하기' : 'Get Started'}
           </Link>
         </div>
       </div>

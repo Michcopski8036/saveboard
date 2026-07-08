@@ -4,10 +4,13 @@ import { ArrowLeft, ArrowRight, Calendar } from 'lucide-react';
 import { getPostBySlug, formatDate } from '../../utils/blogUtils';
 import { renderMarkdown } from '../../utils/markdownRenderer';
 import { Nav, BlogFooter } from './BlogListPage';
+import { useLanguage } from '../../context/LanguageContext';
 
 const BASE_URL = 'https://www.saveboard.app';
 
 export function BlogPostPage() {
+  const { language } = useLanguage();
+  const ko = language === 'ko';
   const { slug } = useParams<{ slug: string }>();
   const post = getPostBySlug(slug ?? '');
 
@@ -39,7 +42,7 @@ export function BlogPostPage() {
             className="inline-flex items-center gap-1.5 text-[13px] font-medium text-gray-500 hover:text-gray-900 transition-colors mb-10"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            All articles
+            {ko ? '전체 글' : 'All articles'}
           </Link>
 
           <header className="mb-10">
@@ -62,18 +65,18 @@ export function BlogPostPage() {
           </article>
 
           <div className="mt-16 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-8 text-center">
-            <p className="text-[13px] font-semibold text-purple-600 mb-2">Ready to try it?</p>
+            <p className="text-[13px] font-semibold text-purple-600 mb-2">{ko ? '써볼 준비 됐나요?' : 'Ready to try it?'}</p>
             <h2 className="text-[24px] font-extrabold text-gray-900 mb-3">
-              Start saving links from WhatsApp today
+              {ko ? '오늘부터 링크를 저장해보세요' : 'Start saving links from WhatsApp today'}
             </h2>
             <p className="text-[15px] text-gray-500 mb-6 max-w-sm mx-auto">
-              Free to start. Works on any device. Takes under a minute to set up.
+              {ko ? '무료로 시작 · 모든 기기에서 작동 · 1분이면 설정 끝.' : 'Free to start. Works on any device. Takes under a minute to set up.'}
             </p>
             <Link
               to="/?auth=1"
               className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
             >
-              Get Started Free
+              {ko ? '무료로 시작하기' : 'Get Started Free'}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
