@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Copy, Check, Link2, Loader2, Trash2, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { publicBase } from '../lib/urls';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import type { LinkData } from './LinkCard';
@@ -22,9 +23,7 @@ function deriveOwnerName(user: User): string {
   );
 }
 
-const BASE_URL = window.location.origin.startsWith('capacitor')
-  ? 'https://saveboard.app'
-  : window.location.origin;
+const BASE_URL = publicBase();
 
 async function pushSnapshot(links: LinkData[], token: string, ownerName: string, ownerEmail: string) {
   const snapshot = links.map(l => ({

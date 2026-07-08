@@ -5,6 +5,7 @@
 // by the board's NAME (kept in links.category as a fallback until Phase 3).
 // See supabase/migrations/20260702_unified_boards_phase{1,2}.sql.
 import { supabase } from './supabase';
+import { publicBase, isNativeApp, PROD_URL } from './urls';
 
 export interface Board {
   id: string;
@@ -103,9 +104,10 @@ export async function sendBoardInviteEmail(email: string, boardId: string): Prom
   try {
     const { data: { session } } = await supabase.auth.getSession();
     // Web: hit THIS deployment (relative) so preview/prod each call their own
-    // updated function. Native (capacitor://) can't do relative → use prod.
-    const isWeb = typeof window !== 'undefined' && window.location.protocol.startsWith('http');
-    const endpoint = isWeb ? '/api/send-team-invite' : 'https://www.saveboard.app/api/send-team-invite';
+    // updated function. Native can't do relative (localhost has no server) → use
+    // prod. NOTE: Android native runs on http://localhost, so a protocol sniff
+    // misclassifies it as web — use the authoritative Capacitor check instead.
+    const endpoint = isNativeApp() ? `${PROD_URL}/api/send-team-invite` : '/api/send-team-invite';
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -123,8 +125,5 @@ export async function sendBoardInviteEmail(email: string, boardId: string): Prom
 }
 
 export function inviteUrl(token: string): string {
-  const base = typeof window !== 'undefined' && !window.location.origin.startsWith('capacitor')
-    ? window.location.origin
-    : 'https://saveboard.app';
-  return `${base}/team/${token}`;
+  return `${publicBase()}/team/${token}`;
 }

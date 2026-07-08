@@ -3,6 +3,7 @@ import { ArrowRight, Link2, Check, Share2, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { LinkCard, type LinkData } from './LinkCard';
+import { publicBase } from '../lib/urls';
 
 const PALETTE = ['#8B5CF6','#6366F1','#3B82F6','#0EA5E9','#10B981','#F59E0B','#EF4444','#EC4899'];
 function dotColor(n: string) { return PALETTE[[...n].reduce((a,c) => a+c.charCodeAt(0),0) % PALETTE.length]; }
@@ -45,8 +46,7 @@ export function HomePage({ links, categories, favorites, userEmail, sharedBoards
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   const copyShareLink = async (token: string) => {
-    const base = window.location.origin.startsWith('capacitor') ? 'https://saveboard.app' : window.location.origin;
-    await navigator.clipboard.writeText(`${base}/share/${token}`);
+    await navigator.clipboard.writeText(`${publicBase()}/share/${token}`);
     setCopiedToken(token);
     setTimeout(() => setCopiedToken(null), 2000);
   };

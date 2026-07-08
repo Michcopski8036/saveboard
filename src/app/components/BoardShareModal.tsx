@@ -7,6 +7,7 @@ import type { LinkData } from './LinkCard';
 import type { User } from '@supabase/supabase-js';
 import type { Board, BoardMember } from '../lib/boards';
 import { shareBoard, loadBoardMembers, removeMember, inviteUrl, sendBoardInviteEmail } from '../lib/boards';
+import { publicBase } from '../lib/urls';
 
 interface BoardShareModalProps {
   board: Board;
@@ -21,7 +22,7 @@ function deriveOwnerName(user: User): string {
   return user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Someone';
 }
 
-const BASE_URL = window.location.origin.startsWith('capacitor') ? 'https://saveboard.app' : window.location.origin;
+const BASE_URL = publicBase();
 
 async function pushSnapshot(links: LinkData[], token: string, ownerName: string, ownerEmail: string) {
   const snapshot = links.map(l => ({
