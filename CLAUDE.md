@@ -18,9 +18,10 @@ Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn (call
 
 ## Commands
 - Dev: `npm run dev`
-- Build: `npm run build` → runs `vite build` **then `node scripts/prerender-seo.mjs`** (blog/landing prerender + sitemap). Always use `npm run build` (not bare vite) so prerendered HTML + sitemap stay in sync.
+- Build: `npm run build` → runs **`tsc --noEmit`** (typecheck gate — a type error fails the build/deploy) **then `vite build` then `node scripts/prerender-seo.mjs`** (blog/landing prerender + sitemap). Always use `npm run build` (not bare vite) so the typecheck runs and prerendered HTML + sitemap stay in sync.
+- Typecheck only: `npm run typecheck` (`tsc --noEmit -p tsconfig.json`). Config is intentionally loose (`strict:false`) for legacy Figma-Make code, but still catches undefined names (TS2304) — the class of bug that caused the 2026-07-13 Share/Sidebar white-screen crash. Keep it at **zero errors** so the gate stays meaningful.
 - After web changes that ship to native: `npx cap sync ios` / `npx cap sync android`.
-- No automated tests. Verify via `npx tsc --noEmit` + emulator/simulator.
+- No automated tests. Verify via `npm run typecheck` + emulator/simulator.
 
 ## SEO/AEO content system (scripts/prerender-seo.mjs)
 - Blog posts = markdown in `src/blog/*.md` with frontmatter `title/date/description/slug/keywords`. Auto-prerendered to `/blog/<slug>` with SEO meta + Article JSON-LD + sitemap entry.
