@@ -84,6 +84,10 @@ export const translations = {
     saveMoreOrganize: 'Save more. Organize better.', cancelAnytime: 'Cancel anytime in your Apple subscription settings',
     team: 'Team', comingSoon: 'Coming Soon', upgradeSaveBoard: 'Upgrade SaveBoard',
     savesWord: 'Saves', storage: 'Storage', foreverFree: 'Forever free', feature: 'Feature', freeWord: 'Free',
+    // App update prompt
+    updateAvailable: 'A new version of SaveBoard is available.', update: 'Update',
+    updateRequiredTitle: 'Update required', openStore: 'Open store',
+    updateRequiredBody: 'This version is out of date. Please update to keep using SaveBoard.',
   },
   ko: {
     collections: '컬렉션', home: '홈', recentlySaved: '최근 저장',
@@ -143,6 +147,9 @@ export const translations = {
     saveMoreOrganize: '더 많이 저장하고, 더 잘 정리하세요.', cancelAnytime: 'Apple 구독 설정에서 언제든 해지할 수 있어요',
     team: '팀', comingSoon: '출시 예정', upgradeSaveBoard: 'SaveBoard 업그레이드',
     savesWord: '저장', storage: '저장공간', foreverFree: '평생 무료', feature: '기능', freeWord: '무료',
+    updateAvailable: 'SaveBoard 새 버전이 있어요.', update: '업데이트',
+    updateRequiredTitle: '업데이트가 필요해요', openStore: '스토어 열기',
+    updateRequiredBody: '이 버전은 오래됐어요. 계속 사용하려면 업데이트해 주세요.',
   },
   ja: {
     collections: 'コレクション', home: 'ホーム', recentlySaved: '最近保存',

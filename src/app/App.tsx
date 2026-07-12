@@ -42,6 +42,7 @@ const HTML5toTouch = {
   ],
 };
 import { BoardShareModal } from './components/BoardShareModal';
+import { UpdateGate } from './components/UpdateGate';
 import { UpgradePage, FREE_LIMITS } from './components/UpgradePage';
 import { BillingPage } from './components/BillingPage';
 import { SettingsPage } from './components/SettingsPage';
@@ -974,6 +975,9 @@ function AppContent() {
   // ── Main render ────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex" style={{ background: t.pageBg, color: t.pageText }}>
+
+      {/* Native update prompt (soft banner / forced screen) — renders nothing on web */}
+      <UpdateGate />
 
       {/* Sidebar */}
       <Sidebar
