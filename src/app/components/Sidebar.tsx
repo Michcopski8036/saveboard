@@ -87,7 +87,7 @@ function BoardDropItem({ cat, active, count, color, shared, memberCount, isRenam
   const overBoard = isOver && overType === BOARD_DRAG_TYPE;
 
   return (
-    <div ref={node => dragRef(dropRef(node))} className="group relative flex items-center rounded-xl transition-all duration-150"
+    <div ref={node => { dragRef(dropRef(node)); }} className="group relative flex items-center rounded-xl transition-all duration-150"
       style={{
         background: overLink ? `${color}22` : active ? t.boardActiveBg : 'transparent',
         border: overLink ? `1.5px solid ${color}66` : active ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent',

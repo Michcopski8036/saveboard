@@ -356,7 +356,7 @@ function AppContent() {
         .single();
       if (!data) return;
 
-      const catName = data.category;
+      const catName = (data as any).category;
       // Ensure a board with this name exists (create via RPC if needed), and
       // point the imported links at it.
       const { data: existingBoard } = await supabase
@@ -372,7 +372,7 @@ function AppContent() {
       // different board still gets copied here), keyed so memos don't collapse.
       const { data: existingLinksData } = await supabase.from('links').select('url, title').eq('user_id', user!.id).eq('board_id', importBoardId ?? '');
       const seen = new Set((existingLinksData ?? []).map((l: any) => importDedupKey(l)));
-      const candidates = (data.links_snapshot as any[]).filter((l: any) => {
+      const candidates = ((data as any).links_snapshot as any[]).filter((l: any) => {
         const k = importDedupKey(l);
         if (seen.has(k)) return false;
         seen.add(k);  // also dedup within the snapshot itself
@@ -574,7 +574,7 @@ function AppContent() {
         const rows = cats.map(cat => ({ ...base, id: generateId(), category: cat, board_id: boardIdForName(cat), created_at: Date.now() }));
         const { error } = await supabase.from('links').insert(rows.map(({ category, ...db }) => db));
         if (error) throw error;
-        setLinks(p => [...rows.map(r => ({ ...r, boardId: r.board_id, savedAt: new Date(r.created_at) })), ...p]);
+        setLinks(p => [...rows.map(r => ({ ...r, boardId: r.board_id, savedAt: new Date(r.created_at) })), ...p] as LinkData[]);
         return rows.length;
       };
 

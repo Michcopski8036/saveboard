@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "build": "vite build && node scripts/prerender-seo.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "tsc --noEmit -p tsconfig.json && vite build && node scripts/prerender-seo.mjs",
     "dev": "vite",
     "postinstall": "patch-package"
   },
@@ -89,10 +90,12 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
+    "@types/node": "^25.6.0",
     "@vercel/node": "^5.8.0",
     "@vitejs/plugin-react": "4.7.0",
     "patch-package": "^8.0.1",
     "tailwindcss": "4.1.12",
+    "typescript": "^5.9.3",
     "vite": "6.3.5"
   },
   "peerDependencies": {

@@ -50,7 +50,7 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete }: KanbanCar
   };
 
   return (
-    <div ref={drag} className="group rounded-xl p-3 transition-all duration-200 cursor-grab active:cursor-grabbing"
+    <div ref={node => { drag(node); }} className="group rounded-xl p-3 transition-all duration-200 cursor-grab active:cursor-grabbing"
       style={{
         background: t.kanbanCardBg,
         border: `1px solid ${t.kanbanCardBorder}`,
@@ -162,7 +162,7 @@ function KanbanColumn({ col, color, favorites, categories, onToggleFavorite, onD
   const isActive = isOver && canDrop;
 
   return (
-    <div ref={drop} className="flex flex-col shrink-0 rounded-2xl transition-all duration-150"
+    <div ref={node => { drop(node); }} className="flex flex-col shrink-0 rounded-2xl transition-all duration-150"
       style={{
         width: 270,
         background: t.kanbanColBg,

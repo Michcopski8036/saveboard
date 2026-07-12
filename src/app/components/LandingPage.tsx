@@ -152,7 +152,7 @@ const COPY = {
 
 export function LandingPage({ onGetStarted }: Props) {
   const { language } = useLanguage();
-  const c = (COPY as Record<string, typeof COPY.en>)[language] ?? COPY.en;
+  const c = COPY[language as keyof typeof COPY] ?? COPY.en;
 
   const solutionMeta = [
     { icon: Link2,      bg: '#EDE9FE', color: '#7C3AED' },

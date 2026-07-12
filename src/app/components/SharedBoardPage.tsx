@@ -94,7 +94,7 @@ export function SharedBoardPage() {
         .single();
 
       if (error || !data) { setNotFound(true); setLoading(false); return; }
-      setBoard(data);
+      setBoard(data as SharedBoard);
       setLoading(false);
 
       // Record view + bump the counter in one definer RPC (fire and forget).

@@ -754,7 +754,7 @@ export function LinkCard({
 
       {/* Drag handle — always rendered so dragging works even without a thumbnail */}
       {!selectMode && (
-        <div ref={dragRef}
+        <div ref={node => { dragRef(node); }}
           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 touch-visible transition-opacity duration-150 cursor-grab active:cursor-grabbing z-10 touch-none"
           onClick={e => e.preventDefault()}
           title={tr('dragReorderMove')}>

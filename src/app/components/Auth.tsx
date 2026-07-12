@@ -33,7 +33,7 @@ const COPY = {
 
 export function Auth() {
   const { language } = useLanguage();
-  const c = (COPY as Record<string, typeof COPY.en>)[language] ?? COPY.en;
+  const c = COPY[language as keyof typeof COPY] ?? COPY.en;
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
