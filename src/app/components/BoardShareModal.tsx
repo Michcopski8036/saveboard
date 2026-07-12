@@ -90,6 +90,7 @@ function InviteTab({ board, user, isOwner, onClose, onBoardsChanged, onShowUpgra
   board: Board; user: User; isOwner: boolean; onClose: () => void; onBoardsChanged?: () => void; onShowUpgrade?: () => void;
 }) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
   const [token, setToken] = useState<string | null>(board.invite_token);
   const [members, setMembers] = useState<BoardMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -229,6 +230,7 @@ function InviteTab({ board, user, isOwner, onClose, onBoardsChanged, onShowUpgra
 // ── Public read-only snapshot link (anyone with the link can view) ────────────
 function PublicTab({ board, user, links, isOwner }: { board: Board; user: User; links: LinkData[]; isOwner: boolean }) {
   const { t } = useTheme();
+  const { tr } = useLanguage();
   const ownerName = deriveOwnerName(user);
   const ownerEmail = user.email ?? '';
   const [token, setToken] = useState<string | null>(null);

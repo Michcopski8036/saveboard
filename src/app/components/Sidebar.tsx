@@ -63,6 +63,7 @@ interface BoardDropItemProps {
 }
 
 function BoardDropItem({ cat, active, count, color, shared, memberCount, isRenaming, renameValue, isMenuOpen, menuRef, t, onSelect, onUpdateCategory, setRenameValue, commitRename, setRenamingCat, setMenuCat, startRename, onShareCategory, onDeleteCategory, onReorderCategory }: BoardDropItemProps) {
+  const { tr } = useLanguage();
   const [{ isDragging }, dragRef] = useDrag({
     type: BOARD_DRAG_TYPE,
     item: { cat },
