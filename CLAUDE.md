@@ -31,7 +31,7 @@ Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn (call
 - Existing landings: `/pocket-alternative`, `/raindrop-alternative`, `/saveboard-vs-raindrop`. Positioning anchors on **live competitors (Raindrop.io)**, not Pocket (discontinued). See `marketing/offsite-listings.md`.
 
 ## Android release
-- Version in `android/app/build.gradle`: `versionCode` (must increase) + `versionName`. **Current: versionCode 6 / 1.0.3.**
+- Version in `android/app/build.gradle`: `versionCode` (must increase) + `versionName`. **Current: versionCode 13 / 1.0.10.**
 - Signing: gitignored `android/keystore.properties`. Gradle needs:
   `JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`
 - Build AAB:
@@ -44,7 +44,7 @@ Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn (call
 - Builds are **cumulative** — a newer versionCode contains all prior changes; version codes need not be contiguous.
 
 ## iOS release (CLI workflow — no Xcode GUI needed)
-- Versions in `ios/App/App.xcodeproj/project.pbxproj`: `CURRENT_PROJECT_VERSION` (build #) + `MARKETING_VERSION` — **4 entries each** (App Debug/Release + ShareExtension Debug/Release); keep all equal. **Current: 1.0.1 / build 13.**
+- Versions in `ios/App/App.xcodeproj/project.pbxproj`: `CURRENT_PROJECT_VERSION` (build #) + `MARKETING_VERSION` — **4 entries each** (App Debug/Release + ShareExtension Debug/Release); keep all equal. **Current: 1.0.5 / build 17.**
 - ⚠️ When the marketing version is "Ready for Distribution"/approved, that version train CLOSES — bump `MARKETING_VERSION` for any update (altool error 90186/90062 otherwise).
 - `ShareExtension/Info.plist` uses `$(MARKETING_VERSION)`/`$(CURRENT_PROJECT_VERSION)` (must match parent app or App Store warns).
 - Workflow:
@@ -72,6 +72,7 @@ Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn (call
 - RLS model: `shared_boards`/`shared_board_views` via SECURITY DEFINER RPCs (`get_shared_board`, `increment_board_view`, `record_board_view`); no direct anon table access.
 - Key tables: `links` (id,url,title,description,image,category,user_id,created_at,tags), `categories` (name,user_id,sort_order), `subscriptions`.
 - Payments: Apple IAP on iOS, Stripe on web + Android.
+- **App update gate** (`src/app/components/UpdateGate.tsx` + `app_config` table): native-only. On launch it compares the running `App.getInfo().version` to per-platform `latest_version`/`min_version` in `app_config` → soft dismissible banner (below latest) or blocking "update required" screen (below min). Fail-safe (web / missing config / errors show nothing). **After every native store release, update `app_config`** (Supabase SQL editor): bump `latest_version` to the new version (shows the soft banner to everyone still behind); also bump `min_version` **only for critical releases** (forces the update). Keep `min_version` ≤ `latest_version`. Caveat: the prompt only reaches users who already run a build that contains UpdateGate (shipped first in iOS 1.0.5 / Android 1.0.10).
 
 ## Conventions / gotchas
 - `dist/` is gitignored but a few files (`dist/index.html`, `dist/sitemap.xml`) are tracked — Vercel rebuilds anyway, so committing dist isn't required.
