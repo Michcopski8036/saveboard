@@ -11,6 +11,15 @@ const supabase = createClient(
 
 const FROM = 'SaveBoard <invites@saveboard.app>'; // must be a verified Resend domain
 
+// The native apps call this cross-origin (capacitor://localhost, http://localhost)
+// with an Authorization header, which triggers a preflight. Without these the
+// WebView blocks the request and the client silently falls back to mailto:.
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+};
+
 // Build the join link from the incoming request host so preview invites point at
 // the preview deployment and prod invites at prod (falls back to the prod site).
 function siteFromRequest(req: VercelRequest): string {
@@ -20,6 +29,8 @@ function siteFromRequest(req: VercelRequest): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!process.env.RESEND_API_KEY) return res.status(503).json({ error: 'email_not_configured' });
 

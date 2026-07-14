@@ -29,7 +29,7 @@ import { InAppReview } from '@capacitor-community/in-app-review';
 import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { useLanguage } from './context/LanguageContext';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
@@ -73,7 +73,7 @@ const importDedupKey = (l: { url?: string; title?: string }): string => {
 // Labels computed dynamically via tr() in AppContent
 
 export default function App() {
-  return <DndProvider backend={MultiBackend} options={HTML5toTouch}><ThemeProvider><LanguageProvider><AppContent /></LanguageProvider></ThemeProvider></DndProvider>;
+  return <DndProvider backend={MultiBackend} options={HTML5toTouch}><ThemeProvider><AppContent /></ThemeProvider></DndProvider>;
 }
 
 function AppContent() {
