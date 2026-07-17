@@ -998,14 +998,14 @@ function AppContent() {
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-10 xl:hidden" style={{ background: t.mobileOverlay }} onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-30 xl:hidden" style={{ background: t.mobileOverlay }} onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* ── Main area ──────────────────────────────────────────────────── */}
       <div className={`flex-1 min-w-0 ml-0 md:ml-16 xl:ml-[260px] flex flex-col ${!isMobile && viewMode === 'gallery' ? 'h-screen overflow-hidden' : 'min-h-screen'}`} style={{ background: t.pageBg }}>
 
         {/* Header */}
-        <header className="sticky top-0 z-10" style={{ background: t.headerBg, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${t.headerBorder}` }}>
+        <header className="sticky top-0 z-20" style={{ background: t.headerBg, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${t.headerBorder}` }}>
           <div className="px-4 sm:px-6 py-4 flex items-center gap-3">
 
             {/* Mobile menu toggle */}

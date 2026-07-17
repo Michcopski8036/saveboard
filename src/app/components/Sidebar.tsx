@@ -293,7 +293,7 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-20 flex flex-col transition-all duration-300 ease-in-out
+      className={`fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300 ease-in-out
         ${sidebarOpen
           ? 'w-[260px] translate-x-0'
           : 'w-[260px] md:w-16 xl:w-[260px] -translate-x-full md:translate-x-0'}`}
