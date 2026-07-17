@@ -1,21 +1,51 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ============================================================================
+# SaveBoard R8 / ProGuard rules
+# R8 (minifyEnabled) is on for release. Capacitor loads its bridge and every
+# plugin by class name via reflection, so those classes MUST be kept or the
+# release build crashes at runtime (never in debug). These rules keep the
+# bridge, all plugins, JS interfaces, and readable crash traces.
+# ============================================================================
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# --- Readable stack traces even with obfuscation (pairs with the uploaded
+#     mapping.txt so Play Console can de-obfuscate crashes/ANRs) ---
+-keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod,Exceptions
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# --- Capacitor core bridge ---
+-keep class com.getcapacitor.** { *; }
+-keep interface com.getcapacitor.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# --- Every Capacitor plugin (package-agnostic: they extend Plugin and/or carry
+#     the @CapacitorPlugin annotation, and their @PluginMethod methods are
+#     invoked reflectively from JS) ---
+-keep @com.getcapacitor.annotation.CapacitorPlugin public class * { *; }
+-keep public class * extends com.getcapacitor.Plugin { *; }
+-keepclassmembers class * {
+    @com.getcapacitor.annotation.PluginMethod public *;
+}
+
+# --- WebView JavaScript interface ---
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# --- Cordova compat layer bundled by Capacitor ---
+-keep class org.apache.cordova.** { *; }
+-keep public class * extends org.apache.cordova.CordovaPlugin
+
+# --- Installed plugins (explicit keeps as extra safety on top of the generic
+#     rules above) ---
+-keep class com.capacitorjs.plugins.app.** { *; }
+-keep class com.capacitorjs.plugins.browser.** { *; }
+-keep class com.capacitorjs.plugins.keyboard.** { *; }
+-keep class com.getcapacitor.community.applesignin.** { *; }
+-keep class com.getcapacitor.community.inappreview.** { *; }
+-keep class de.mindlib.sendIntent.** { *; }
+
+# --- App entry point ---
+-keep class app.saveboard.saveboard.** { *; }
+
+# --- Silence notes for optional/reflective deps commonly pulled in ---
+-dontwarn org.apache.cordova.**
+-dontwarn com.getcapacitor.**

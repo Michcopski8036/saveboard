@@ -1005,7 +1005,7 @@ function AppContent() {
       <div className={`flex-1 min-w-0 ml-0 md:ml-16 xl:ml-[260px] flex flex-col ${!isMobile && viewMode === 'gallery' ? 'h-screen overflow-hidden' : 'min-h-screen'}`} style={{ background: t.pageBg }}>
 
         {/* Header */}
-        <header className="sticky top-0 z-20" style={{ background: t.headerBg, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${t.headerBorder}` }}>
+        <header className="sticky top-0 z-20" style={{ background: t.headerBg, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${t.headerBorder}`, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
           <div className="px-4 sm:px-6 py-4 flex items-center gap-3">
 
             {/* Mobile menu toggle */}
@@ -1447,7 +1447,7 @@ function AppContent() {
       {showSearch && (
         <>
           <div className="fixed inset-0 z-40 backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.3)' }} onClick={() => { setShowSearch(false); setSearchQuery(''); }} />
-          <div className="fixed top-0 left-0 z-50 px-4 pt-4 pb-3 overflow-hidden" style={{ width: '100vw', background: t.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${t.headerBorder}` }}>
+          <div className="fixed top-0 left-0 z-50 px-4 pt-4 pb-3 overflow-hidden" style={{ width: '100vw', background: t.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${t.headerBorder}`, paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}>
             <div className="w-full max-w-2xl mx-auto">
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: t.textMuted }} />

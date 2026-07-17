@@ -297,7 +297,7 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
         ${sidebarOpen
           ? 'w-[260px] translate-x-0'
           : 'w-[260px] md:w-16 xl:w-[260px] -translate-x-full md:translate-x-0'}`}
-      style={{ background: t.sidebarBg, borderRight: `1px solid ${t.sidebarBorder}`, boxShadow: t.sidebarShadow }}>
+      style={{ background: t.sidebarBg, borderRight: `1px solid ${t.sidebarBorder}`, boxShadow: t.sidebarShadow, paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
 
       {/* ── Full sidebar: mobile drawer + tablet expanded + desktop ─────────── */}
       <div className={`flex flex-col h-full ${sidebarOpen ? '' : 'md:hidden xl:flex'}`}>
