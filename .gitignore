@@ -13,3 +13,7 @@ dist/
 *.jks
 *.keystore
 ExportOptions.plist
+
+# macOS / IDE state
+.DS_Store
+android/.idea/
