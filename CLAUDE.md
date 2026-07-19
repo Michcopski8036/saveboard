@@ -30,6 +30,10 @@ Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn (call
 - `public/llms.txt` served at `/llms.txt` for LLM crawlers. `api/robots.ts` allows all AI bots + logs them.
 - Existing landings: `/pocket-alternative`, `/raindrop-alternative`, `/saveboard-vs-raindrop`. Positioning anchors on **live competitors (Raindrop.io)**, not Pocket (discontinued). See `marketing/offsite-listings.md`.
 
+## Versions & release notes
+- **`CHANGELOG.md` is the version record — update it in the SAME commit that bumps a version.** It also carries the two commands that check what is actually live on each store. iOS and Android numbering are independent; never infer one from the other, and never state a live version from memory — check.
+- **`store/release-notes.md` holds copy-paste-ready store notes (EN + KO).** Write them as part of preparing a release, not after. If a release has no user-facing change, say so plainly rather than inventing one.
+
 ## Android release
 - Version in `android/app/build.gradle`: `versionCode` (must increase) + `versionName`. **Current: versionCode 16 / 1.0.12.**
 - Signing: gitignored `android/keystore.properties`. Gradle needs:
