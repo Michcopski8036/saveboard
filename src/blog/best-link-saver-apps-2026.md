@@ -18,7 +18,7 @@ A dedicated link saving app solves this. But which one is right for you? Here's 
 
 ## 1. SaveBoard — Best for Mobile & Group Chats
 
-**Price:** Free / $3.49 per month Pro  
+**Price:** Free / A$5.49 per month Pro  
 **Platform:** Android, iOS  
 **Best for:** Busy parents, community organisers, anyone saving links from group chats
 
@@ -59,7 +59,7 @@ If you were a Pocket user, the practical question is no longer "is Pocket good?"
 
 ## 3. Raindrop.io — Best for Power Users
 
-**Price:** Free / $3.49 per month  
+**Price:** Free tier with unlimited bookmarks / paid Pro plan  
 **Platform:** Web-first, limited mobile  
 **Best for:** Developers, designers, researchers who manage hundreds of bookmarks
 
@@ -133,7 +133,7 @@ Good old browser bookmarks are universal and free. But they haven't evolved much
 | Group chat saving | ✅ | — | ❌ | ❌ | ❌ |
 | Everyday users | ✅ | — | ❌ | ❌ | ✅ |
 | Free tier | 30 links | — | Unlimited | ✅ | ✅ |
-| Price | $3.49/mo | — | $3.49/mo | Varies | Free |
+| Price | Free / A$5.49/mo | — | Free / paid Pro | Varies | Free |
 
 **Choose SaveBoard if:** You save links from your phone, use group chats, and want a beautiful visual interface.  
 **Migrating from Pocket?** SaveBoard is the closest everyday replacement — mobile-first, visual, and simple. Raindrop.io suits desktop power users.  
