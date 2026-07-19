@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { adminEmailFromToken } from './_admins';
+import { adminEmailFromToken } from '../src/shared/admins';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
