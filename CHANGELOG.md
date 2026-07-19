@@ -21,12 +21,12 @@ notes live in `store/release-notes.md`.
 
 | iOS | build | Android | vc | Status | Date |
 |---|---|---|---|---|---|
-| 1.0.7 | 19 | 1.0.12 | 16 | Built, awaiting upload | 2026-07-19 |
+| 1.0.7 | 19 | 1.0.12 | 16 | iOS **submitted for review**; Android AAB awaiting upload | 2026-07-19 |
 | 1.0.6 | 18 | 1.0.11 | 15 | **LIVE** both stores | iOS 2026-07-17 |
 
 ---
 
-## iOS 1.0.7 / Android 1.0.12 — built 2026-07-19, not yet submitted
+## iOS 1.0.7 / Android 1.0.12 — iOS submitted for review 2026-07-19; Android not yet uploaded
 
 **User-facing:** nothing. This is a maintenance release; do not oversell it in
 the store notes.
