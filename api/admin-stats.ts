@@ -8,17 +8,65 @@ const supabase = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KE
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Authorization, Content-Type',
 };
+
+// ── app_config (the native update gate) ────────────────────────────────────
+// This lives here rather than in its own api/ route on purpose: the Vercel plan
+// caps this project at 12 Serverless Functions and we were at the ceiling, so a
+// 13th file silently fails the whole deploy. Reached as
+//   GET  /api/admin-stats?resource=app-config
+//   POST /api/admin-stats?resource=app-config
+const PLATFORMS = new Set(['ios', 'android']);
+// Dotted numeric versions only — the gate compares these segment by segment.
+const VERSION_RE = /^\d+(\.\d+){0,3}$/;
+
+const cmpVer = (a: string, b: string) => {
+  const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d) return d;
+  }
+  return 0;
+};
+
+async function handleAppConfig(req: VercelRequest, res: VercelResponse, actor: string) {
+  if (req.method === 'GET') {
+    const { data, error } = await supabase.from('app_config').select('*').order('platform');
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ config: data ?? [] });
+  }
+
+  const { platform, latest_version, min_version, store_url } =
+    req.body as { platform: string; latest_version: string; min_version: string; store_url: string };
+
+  if (!PLATFORMS.has(platform)) return res.status(400).json({ error: 'platform must be ios or android' });
+  if (!VERSION_RE.test(latest_version ?? '')) return res.status(400).json({ error: 'latest_version must look like 1.0.10' });
+  if (!VERSION_RE.test(min_version ?? ''))    return res.status(400).json({ error: 'min_version must look like 1.0.10' });
+  // min_version above latest would hard-block every user, including those on the newest build.
+  if (cmpVer(min_version, latest_version) > 0) return res.status(400).json({ error: 'min_version cannot be higher than latest_version' });
+  if (!/^https:\/\//.test(store_url ?? ''))   return res.status(400).json({ error: 'store_url must be https' });
+
+  const { error } = await supabase.from('app_config').upsert({
+    platform, latest_version, min_version, store_url, updated_at: new Date().toISOString(),
+  }, { onConflict: 'platform' });
+  if (error) return res.status(500).json({ error: error.message });
+
+  console.log(`[admin-app-config] ${actor} set ${platform} latest=${latest_version} min=${min_version}`);
+  return res.status(200).json({ ok: true });
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   // Verify caller is an admin — decode JWT payload directly (no round-trip to Supabase auth)
-  if (!adminEmailFromToken(req.headers.authorization)) return res.status(403).json({ error: 'Forbidden' });
+  const actor = adminEmailFromToken(req.headers.authorization);
+  if (!actor) return res.status(403).json({ error: 'Forbidden' });
+
+  if (req.query.resource === 'app-config') return handleAppConfig(req, res, actor);
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const now      = new Date();
   const weekAgo  = new Date(now.getTime() - 7  * 86400000).toISOString();

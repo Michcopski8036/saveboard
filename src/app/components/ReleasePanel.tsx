@@ -32,7 +32,7 @@ export function ReleasePanel({ accessToken }: { accessToken: string | null }) {
     if (!accessToken) return;
     setError(null);
     try {
-      const res = await fetch('/api/admin-app-config', { headers: { Authorization: `Bearer ${accessToken}` } });
+      const res = await fetch('/api/admin-stats?resource=app-config', { headers: { Authorization: `Bearer ${accessToken}` } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const { config } = await res.json();
       setRows(config);
@@ -52,7 +52,7 @@ export function ReleasePanel({ accessToken }: { accessToken: string | null }) {
   const save = async (row: ConfigRow) => {
     setSaving(row.platform); setError(null); setSaved(null);
     try {
-      const res = await fetch('/api/admin-app-config', {
+      const res = await fetch('/api/admin-stats?resource=app-config', {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
