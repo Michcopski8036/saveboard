@@ -61,8 +61,9 @@ Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn (call
   xcodebuild -exportArchive -archivePath build/App.xcarchive -exportPath build/export \
     -exportOptionsPlist ExportOptions.plist -allowProvisioningUpdates
   xcrun altool --upload-app -f build/export/App.ipa -t ios \
-    -u artking81@hotmail.com -p <app-specific-password>
+    -u artking81@hotmail.com -p @keychain:AC_PASSWORD
   ```
+- **Upload auth:** app-specific password is in the login keychain as service `AC_PASSWORD`. ⚠️ Create it with `security add-generic-password -s AC_PASSWORD -a artking81@hotmail.com -w "<pw>" -U` — altool's own `--store-password-in-keychain-item` sets the label but not `svce` on Xcode 26, and lookup is by service, so it fails to find what it just stored. `-p` also needs a space before its value.
 - Then App Store Connect (web) → Distribution → `+` new version → add build → "What's New" → Submit for Review. (TestFlight ≠ submission.)
 
 ## Native plugins (run `cap sync` after install)
