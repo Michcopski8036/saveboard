@@ -31,7 +31,7 @@ Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn (call
 - Existing landings: `/pocket-alternative`, `/raindrop-alternative`, `/saveboard-vs-raindrop`. Positioning anchors on **live competitors (Raindrop.io)**, not Pocket (discontinued). See `marketing/offsite-listings.md`.
 
 ## Android release
-- Version in `android/app/build.gradle`: `versionCode` (must increase) + `versionName`. **Current: versionCode 13 / 1.0.10.**
+- Version in `android/app/build.gradle`: `versionCode` (must increase) + `versionName`. **Current: versionCode 16 / 1.0.12.**
 - Signing: gitignored `android/keystore.properties`. Gradle needs:
   `JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`
 - Build AAB:
@@ -44,7 +44,7 @@ Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn (call
 - Builds are **cumulative** — a newer versionCode contains all prior changes; version codes need not be contiguous.
 
 ## iOS release (CLI workflow — no Xcode GUI needed)
-- Versions in `ios/App/App.xcodeproj/project.pbxproj`: `CURRENT_PROJECT_VERSION` (build #) + `MARKETING_VERSION` — **4 entries each** (App Debug/Release + ShareExtension Debug/Release); keep all equal. **Current: 1.0.5 / build 17.**
+- Versions in `ios/App/App.xcodeproj/project.pbxproj`: `CURRENT_PROJECT_VERSION` (build #) + `MARKETING_VERSION` — **4 entries each** (App Debug/Release + ShareExtension Debug/Release); keep all equal. **Current: 1.0.7 / build 19.**
 - ⚠️ When the marketing version is "Ready for Distribution"/approved, that version train CLOSES — bump `MARKETING_VERSION` for any update (altool error 90186/90062 otherwise).
 - `ShareExtension/Info.plist` uses `$(MARKETING_VERSION)`/`$(CURRENT_PROJECT_VERSION)` (must match parent app or App Store warns).
 - Workflow:
