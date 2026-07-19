@@ -1,6 +1,30 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { adminEmailFromToken } from '../src/shared/admins';
+
+// ── Admin allowlist ────────────────────────────────────────────────────────
+// Inlined on purpose. Vercel transpiles each api/*.ts file individually rather
+// than bundling it, so a relative import of a shared module resolves at
+// typecheck time and then dies at runtime with ERR_MODULE_NOT_FOUND, taking
+// every admin endpoint down. Keep in sync with src/shared/admins.ts (client).
+const ADMIN_EMAILS = new Set([
+  'michcopski@gmail.com',
+  'admin@saveboard.app',
+  'artking81@hotmail.com',
+]);
+
+/** Returns the caller's email if their bearer token belongs to an admin, else null. */
+function adminEmailFromToken(authHeader: string | undefined): string | null {
+  const token = (authHeader ?? '').replace('Bearer ', '');
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+    const email = payload.email ?? '';
+    return ADMIN_EMAILS.has(email) ? email : null;
+  } catch {
+    return null;
+  }
+}
+
 
 const SUPABASE_URL  = 'https://mchikdltrcbovhdzdhhf.supabase.co';
 
