@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { adminEmailFromToken } from './_admins';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -12,15 +13,8 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Authorization, Content-Type',
 };
 
-const ADMIN_EMAILS = new Set(['michcopski@gmail.com', 'admin@saveboard.app']);
-
 function checkAuth(req: VercelRequest) {
-  const token = (req.headers.authorization ?? '').replace('Bearer ', '');
-  if (!token) return false;
-  try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
-    return ADMIN_EMAILS.has(payload.email ?? '');
-  } catch { return false; }
+  return adminEmailFromToken(req.headers.authorization) !== null;
 }
 
 function extractMeta(html: string, name: string): string {

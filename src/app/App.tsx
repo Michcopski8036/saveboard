@@ -27,6 +27,8 @@ import { Browser } from '@capacitor/browser';
 import { SendIntent } from 'send-intent';
 import { InAppReview } from '@capacitor-community/in-app-review';
 import { supabase } from './lib/supabase';
+import { isAdmin } from './lib/admins';
+import { recordProfileMeta, HEARTBEAT_INTERVAL_MS } from './lib/profileMeta';
 import type { User } from '@supabase/supabase-js';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { useLanguage } from './context/LanguageContext';
@@ -147,11 +149,23 @@ function AppContent() {
   const boardIdForName = (name: string): string | null =>
     (name && name !== 'None') ? (boardByName.get(name)?.id ?? null) : null;
 
+  // Heartbeat so the admin dashboard can tell who is signed in right now. Only
+  // ticks while the app is actually in the foreground, so a backgrounded tab
+  // stops counting as active.
+  useEffect(() => {
+    if (!user) return;
+    const tick = () => { if (document.visibilityState === 'visible') recordProfileMeta(user); };
+    const id = setInterval(tick, HEARTBEAT_INTERVAL_MS);
+    document.addEventListener('visibilitychange', tick);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', tick); };
+  }, [user]);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null); setAuthLoading(false);
+      recordProfileMeta(session?.user ?? null);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => { setUser(s?.user ?? null); recordProfileMeta(s?.user ?? null); });
 
     // Handle OAuth deep link callback (native only)
     let appUrlListener: { remove: () => void } | null = null;
@@ -1079,7 +1093,7 @@ function AppContent() {
             </button>
 
             {/* Avatar */}
-            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowAdmin={['michcopski@gmail.com','admin@saveboard.app'].includes(user?.email ?? '') ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
+            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowAdmin={isAdmin(user?.email) ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
           </div>
 
           {/* Sub-header: title + sort — hidden on home dashboard */}
@@ -1679,7 +1693,7 @@ function AppContent() {
       )}
 
       {/* ── Admin dashboard ────────────────────────────────────────────── */}
-      {showAdmin && ['michcopski@gmail.com','admin@saveboard.app'].includes(user?.email ?? '') && (
+      {showAdmin && isAdmin(user?.email) && (
         <AdminDashboard onClose={() => setShowAdmin(false)} userEmail={user.email} />
       )}
     </div>

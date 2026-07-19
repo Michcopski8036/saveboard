@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { adminEmailFromToken } from './_admins';
 
 const SUPABASE_URL  = 'https://mchikdltrcbovhdzdhhf.supabase.co';
-const ADMIN_EMAILS  = new Set(['michcopski@gmail.com', 'admin@saveboard.app']);
 
 const supabase = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -23,14 +23,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const token = (req.headers.authorization ?? '').replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
-    if (!ADMIN_EMAILS.has(payload.email ?? '')) return res.status(403).json({ error: 'Forbidden' });
-  } catch {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
+  const actor = adminEmailFromToken(req.headers.authorization);
+  if (!actor) return res.status(403).json({ error: 'Forbidden' });
 
   const { userId, planKey } = req.body as { userId: string; planKey: string };
   if (!userId || !planKey) return res.status(400).json({ error: 'userId and planKey required' });

@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { adminEmailFromToken } from './_admins';
 
 const SUPABASE_URL = 'https://mchikdltrcbovhdzdhhf.supabase.co';
-const ADMIN_EMAILS = new Set(['michcopski@gmail.com', 'admin@saveboard.app']);
 
 const supabase = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -17,15 +17,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Verify caller is the admin — decode JWT payload directly (no round-trip to Supabase auth)
-  const token = (req.headers.authorization ?? '').replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
-    if (!ADMIN_EMAILS.has(payload.email ?? '')) return res.status(403).json({ error: 'Forbidden' });
-  } catch {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
+  // Verify caller is an admin — decode JWT payload directly (no round-trip to Supabase auth)
+  if (!adminEmailFromToken(req.headers.authorization)) return res.status(403).json({ error: 'Forbidden' });
 
   const now      = new Date();
   const weekAgo  = new Date(now.getTime() - 7  * 86400000).toISOString();
@@ -85,7 +78,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const recentUsers = [...allUsers]
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .slice(0, 20)
-    .map(u => ({ id: u.id, email: u.email ?? '', created_at: u.created_at }));
+    .map(u => ({
+      id: u.id, email: u.email ?? '', created_at: u.created_at,
+      // Self-reported by the client at sign-in (see src/app/lib/profileMeta.ts).
+      locale:    u.user_metadata?.locale ?? u.user_metadata?.language ?? '',
+      platform:  u.user_metadata?.platform ?? '',
+      lastSeen:  u.user_metadata?.last_seen ?? '',
+      lastSignIn: u.last_sign_in_at ?? '',
+      provider:  u.app_metadata?.provider ?? '',
+    }));
 
   // ── Location: infer country from locale in user_metadata ──────────────────
   const LOCALE_TO_ISO: Record<string, string> = {
@@ -100,13 +101,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     'th': 'THA', 'id': 'IDN', 'ms': 'MYS', 'fil': 'PHL',
     'en': 'USA', // default English → US
   };
+  const localeToIso = (locale: string): string | null =>
+    LOCALE_TO_ISO[locale] ?? (locale.includes('-') ? LOCALE_TO_ISO[locale.split('-')[0]] ?? null : null);
+
   const countryCount: Record<string, number> = {};
   for (const u of allUsers) {
     const locale: string = u.user_metadata?.locale ?? u.user_metadata?.language ?? '';
-    const iso = LOCALE_TO_ISO[locale] ?? (locale.includes('-') ? LOCALE_TO_ISO[locale.split('-')[0]] : null);
-    const country = iso ?? 'UNKNOWN';
+    const country = localeToIso(locale) ?? 'UNKNOWN';
     countryCount[country] = (countryCount[country] ?? 0) + 1;
   }
+  // ── Presence: who is signed in right now ──────────────────────────────────
+  // last_seen is a heartbeat stamped by the open app (src/app/lib/profileMeta.ts).
+  const ACTIVE_WINDOW_MS = 15 * 60 * 1000;
+  const nowMs = now.getTime();
+  const seenMs = (u: any) => Date.parse(u.user_metadata?.last_seen ?? '');
+
+  const withSeen = allUsers.filter(u => Number.isFinite(seenMs(u)));
+  const activeNow   = withSeen.filter(u => nowMs - seenMs(u) <= ACTIVE_WINDOW_MS).length;
+  const activeToday = withSeen.filter(u => nowMs - seenMs(u) <= 24 * 3600_000).length;
+  const activeWeek  = withSeen.filter(u => nowMs - seenMs(u) <= 7 * 24 * 3600_000).length;
+
+  const activeUsers = [...withSeen]
+    .sort((a, b) => seenMs(b) - seenMs(a))
+    .slice(0, 25)
+    .map(u => ({
+      id: u.id,
+      email: u.email ?? '',
+      lastSeen: u.user_metadata.last_seen,
+      platform: u.user_metadata?.platform ?? '',
+      country: localeToIso(u.user_metadata?.locale ?? u.user_metadata?.language ?? '') ?? '',
+      online: nowMs - seenMs(u) <= ACTIVE_WINDOW_MS,
+    }));
+
+  const platformCount: Record<string, number> = { ios: 0, android: 0, web: 0, unknown: 0 };
+  for (const u of allUsers) {
+    const p: string = u.user_metadata?.platform ?? '';
+    platformCount[p in platformCount ? p : 'unknown'] += 1;
+  }
+
   const usersByCountry = Object.entries(countryCount)
     .filter(([c]) => c !== 'UNKNOWN')
     .sort(([, a], [, b]) => b - a)
@@ -183,6 +215,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const enrichedUsers = recentUsers.map(u => ({
     ...u,
+    country: localeToIso(u.locale) ?? '',
     plan:  subByUser[u.id]?.plan  ?? 'free',
     status: subByUser[u.id]?.status ?? 'free',
     source: subByUser[u.id]?.source ?? null,
@@ -200,6 +233,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     recentUsers: enrichedUsers,
     usersByCountry,
     unknownLocationCount: unknownCount,
+    usersByPlatform: platformCount,
+    presence: { activeNow, activeToday, activeWeek, neverSeen: totalUsers - withSeen.length },
+    activeUsers,
     topCategories,
     topTags,
     linksOverTime: linksOverTimeArr,

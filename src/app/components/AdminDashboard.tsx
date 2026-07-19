@@ -3,12 +3,13 @@ import { createPortal } from 'react-dom';
 import {
   Users, Link2, TrendingUp, Share2, Eye, Crown, Apple, CreditCard,
   RefreshCw, BarChart2, Tag, Folder, Calendar, ArrowUp, ArrowDown,
-  Minus, Globe, Smartphone, AlertCircle, CheckCircle, XCircle, ChevronDown, Loader2,
+  Minus, Globe, Smartphone, AlertCircle, CheckCircle, XCircle, ChevronDown, Loader2, Search,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { WorldMap } from './WorldMap';
 import { SeoPanel } from './SeoPanel';
+import { ReleasePanel } from './ReleasePanel';
 
 interface AdminStats {
   overview: {
@@ -24,6 +25,13 @@ interface AdminStats {
   recentUsers: Array<{
     id: string; email: string; created_at: string;
     plan: string; status: string; source: string | null; linkCount: number; boardCount: number;
+    locale: string; platform: string; lastSeen: string; provider: string; country: string;
+  }>;
+  usersByPlatform: Record<string, number>;
+  presence: { activeNow: number; activeToday: number; activeWeek: number; neverSeen: number };
+  activeUsers: Array<{
+    id: string; email: string; lastSeen: string;
+    platform: string; country: string; online: boolean;
   }>;
   topCategories: Array<{ category: string; count: number }>;
   topTags: Array<{ tag: string; count: number }>;
@@ -242,6 +250,67 @@ function BarRow({ label, value, max, color }: { label: string; value: number; ma
   );
 }
 
+// ── Device / locale display ────────────────────────────────────────────────
+const PLATFORM_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  ios:     { label: 'iOS',     icon: Apple,      color: '#6B7280' },
+  android: { label: 'Android', icon: Smartphone, color: '#3DDC84' },
+  web:     { label: 'Web',     icon: Globe,      color: '#3B82F6' },
+};
+
+// ISO3 → flag emoji, via the ISO2 prefix of the regional-indicator block.
+const ISO3_TO_ISO2: Record<string, string> = {
+  AUS:'AU', USA:'US', GBR:'GB', CAN:'CA', NZL:'NZ', SGP:'SG', IND:'IN', IRL:'IE',
+  KOR:'KR', JPN:'JP', CHN:'CN', TWN:'TW', HKG:'HK', FRA:'FR', DEU:'DE', ESP:'ES',
+  MEX:'MX', BRA:'BR', PRT:'PT', ITA:'IT', NLD:'NL', RUS:'RU', SAU:'SA', TUR:'TR',
+  VNM:'VN', THA:'TH', IDN:'ID', MYS:'MY', PHL:'PH',
+};
+const flagOf = (iso3: string) => {
+  const iso2 = ISO3_TO_ISO2[iso3];
+  if (!iso2) return '';
+  return String.fromCodePoint(...[...iso2].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+};
+
+// "3m ago" / "2h ago" / "5d ago" — short enough for a table cell.
+function relTime(iso: string): string {
+  const ms = Date.now() - Date.parse(iso);
+  if (!Number.isFinite(ms)) return '—';
+  const m = Math.floor(ms / 60000);
+  if (m < 1)  return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+function DeviceCell({ platform }: { platform: string }) {
+  const { t } = useTheme();
+  const meta = PLATFORM_META[platform];
+  if (!meta) return <span className="text-[11px]" style={{ color: t.textFaint }}>—</span>;
+  const Icon = meta.icon;
+  return (
+    <span className="flex items-center gap-1.5 text-[11px]" style={{ color: t.textMuted }}>
+      <Icon className="w-3 h-3" style={{ color: meta.color }} />{meta.label}
+    </span>
+  );
+}
+
+// ── User table sorting ─────────────────────────────────────────────────────
+type UserSortKey = 'email' | 'created_at' | 'lastSeen' | 'plan' | 'platform' | 'country' | 'linkCount' | 'boardCount';
+
+const USER_COLUMNS: { key: UserSortKey; label: string }[] = [
+  { key: 'email',      label: 'Email'    },
+  { key: 'created_at', label: 'Joined'   },
+  { key: 'plan',       label: 'Plan'     },
+  { key: 'platform',   label: 'Device'   },
+  { key: 'country',    label: 'Location' },
+  { key: 'lastSeen',   label: 'Last seen' },
+  { key: 'linkCount',  label: 'Links'    },
+  { key: 'boardCount', label: 'Boards'   },
+];
+
+// Free < Pro < Team, so sorting by plan groups the paying users together.
+const PLAN_RANK: Record<string, number> = { free: 0, pro: 1, team: 2 };
+
 type Tab = 'overview' | 'users' | 'revenue' | 'content' | 'seo' | 'system' | 'marketing';
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
@@ -264,9 +333,13 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
   const [planOverrides, setPlanOverrides] = useState<Record<string, PlanKey>>({});
   const [planError, setPlanError] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [userQuery, setUserQuery] = useState('');
+  const [userSort, setUserSort] = useState<{ key: UserSortKey; dir: 'asc' | 'desc' }>({ key: 'created_at', dir: 'desc' });
 
-  const fetchStats = useCallback(async () => {
-    setLoading(true); setError(null);
+  // `silent` skips the spinner so background polling doesn't flicker the UI.
+  const fetchStats = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
@@ -281,11 +354,21 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
     } catch (e: any) {
       setError(e.message ?? 'Failed to load stats');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  // "Signed in now" and the relative times go stale on a static page, so poll
+  // while the Users tab is open and visible. Other tabs stay manual-refresh.
+  useEffect(() => {
+    if (activeTab !== 'users') return;
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') fetchStats(true);
+    }, 60_000);
+    return () => clearInterval(id);
+  }, [activeTab, fetchStats]);
 
   const updatePlan = useCallback(async (userId: string, planKey: PlanKey) => {
     setPlanError(null);
@@ -313,6 +396,39 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
   // Spark for links over time (last 30 days, show last 14 as spark)
   const spark14 = (stats?.linksOverTime ?? []).slice(-14).map(d => d.count);
 
+  // Plan overrides are applied before filtering so a just-changed plan sorts/filters correctly.
+  const effectivePlanOf = useCallback((u: { id: string; plan: string }) => {
+    const o = planOverrides[u.id];
+    if (!o) return u.plan;
+    return o === 'free' ? 'free' : o === 'team' ? 'team' : 'pro';
+  }, [planOverrides]);
+
+  const visibleUsers = (() => {
+    const q = userQuery.trim().toLowerCase();
+    const rows = (stats?.recentUsers ?? []).filter(u =>
+      !q || u.email.toLowerCase().includes(q) || effectivePlanOf(u).includes(q)
+        || (u.platform ?? '').includes(q) || (u.country ?? '').toLowerCase().includes(q)
+        || (u.locale ?? '').toLowerCase().includes(q));
+    const dir = userSort.dir === 'asc' ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      switch (userSort.key) {
+        case 'email':      return a.email.localeCompare(b.email) * dir;
+        case 'created_at': return (Date.parse(a.created_at) - Date.parse(b.created_at)) * dir;
+        case 'plan':       return ((PLAN_RANK[effectivePlanOf(a)] ?? 0) - (PLAN_RANK[effectivePlanOf(b)] ?? 0)) * dir;
+        case 'platform':   return (a.platform ?? '').localeCompare(b.platform ?? '') * dir;
+        case 'country':    return (a.country ?? '').localeCompare(b.country ?? '') * dir;
+        // Never-seen accounts sort to the bottom rather than pretending to be oldest.
+        case 'lastSeen':   return ((Date.parse(a.lastSeen ?? '') || 0) - (Date.parse(b.lastSeen ?? '') || 0)) * dir;
+        case 'linkCount':  return (a.linkCount - b.linkCount) * dir;
+        case 'boardCount': return (a.boardCount - b.boardCount) * dir;
+      }
+    });
+  })();
+
+  const toggleSort = (key: UserSortKey) =>
+    setUserSort(s => s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' }
+                                   : { key, dir: key === 'email' ? 'asc' : 'desc' });
+
   return (
     <div className="fixed inset-0 z-[500] flex flex-col" style={{ background: t.pageBg }}>
 
@@ -328,7 +444,7 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
           {lastRefresh && <span className="text-[10px]" style={{ color: t.textFaint }}>· {lastRefresh.toLocaleTimeString()}</span>}
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={fetchStats} disabled={loading}
+          <button onClick={() => fetchStats()} disabled={loading}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold"
             style={{ background: t.hoverBg, color: t.textMuted }}>
             <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
@@ -427,6 +543,94 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
               {/* USERS */}
               {activeTab === 'users' && (
                 <>
+                  {/* Who is signed in right now */}
+                  <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="relative flex w-2 h-2">
+                        {(stats.presence?.activeNow ?? 0) > 0 && (
+                          <span className="absolute inline-flex w-full h-full rounded-full animate-ping"
+                            style={{ background: '#10B981', opacity: 0.6 }} />
+                        )}
+                        <span className="relative inline-flex w-2 h-2 rounded-full"
+                          style={{ background: (stats.presence?.activeNow ?? 0) > 0 ? '#10B981' : t.textFaint }} />
+                      </span>
+                      <p className="text-[12px] font-bold uppercase tracking-wider" style={{ color: t.textMuted }}>
+                        Signed in now
+                      </p>
+                      <span className="text-[11px] ml-auto" style={{ color: t.textFaint }}>active in the last 15 min</span>
+                    </div>
+
+                    <div className="flex items-baseline gap-6 mb-4 flex-wrap">
+                      <div>
+                        <p className="text-[32px] font-bold leading-none" style={{ color: t.textPrimary }}>
+                          {stats.presence?.activeNow ?? 0}
+                        </p>
+                        <p className="text-[11px] mt-1" style={{ color: t.textFaint }}>right now</p>
+                      </div>
+                      {[{ n: stats.presence?.activeToday ?? 0, l: 'today' },
+                        { n: stats.presence?.activeWeek  ?? 0, l: 'this week' },
+                        { n: stats.presence?.neverSeen   ?? 0, l: 'never recorded' }].map(({ n, l }) => (
+                        <div key={l}>
+                          <p className="text-[18px] font-bold leading-none" style={{ color: t.textMuted }}>{n}</p>
+                          <p className="text-[11px] mt-1" style={{ color: t.textFaint }}>{l}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {(stats.activeUsers ?? []).length > 0 ? (
+                      <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto">
+                        {stats.activeUsers.map(u => (
+                          <div key={u.id} className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                            style={{ background: u.online ? 'rgba(16,185,129,0.07)' : t.pageBg }}>
+                            <span className="w-1.5 h-1.5 rounded-full shrink-0"
+                              style={{ background: u.online ? '#10B981' : t.textFaint }} />
+                            <span className="text-[12px] font-medium truncate flex-1" style={{ color: t.textPrimary }}>
+                              {u.email}
+                            </span>
+                            <DeviceCell platform={u.platform} />
+                            {u.country && (
+                              <span className="text-[11px] shrink-0" style={{ color: t.textMuted }}>
+                                {flagOf(u.country)} {u.country}
+                              </span>
+                            )}
+                            <span className="text-[11px] w-16 text-right shrink-0"
+                              style={{ color: u.online ? '#10B981' : t.textFaint }}>
+                              {relTime(u.lastSeen)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[12px]" style={{ color: t.textFaint }}>
+                        No sessions recorded yet — this fills in as users open the app on a build that includes the heartbeat.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {(['ios', 'android', 'web', 'unknown'] as const).map(p => {
+                      const meta = PLATFORM_META[p];
+                      const Icon = meta?.icon ?? AlertCircle;
+                      const count = stats.usersByPlatform?.[p] ?? 0;
+                      const pct = totalUsers > 0 ? Math.round((count / totalUsers) * 100) : 0;
+                      return (
+                        <div key={p} className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <Icon className="w-4 h-4" style={{ color: meta?.color ?? t.textFaint }} />
+                            <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: t.textMuted }}>
+                              {meta?.label ?? 'Not recorded'}
+                            </p>
+                          </div>
+                          <p className="text-[22px] font-bold leading-none" style={{ color: t.textPrimary }}>{count}</p>
+                          <p className="text-[11px] mt-1" style={{ color: t.textFaint }}>{pct}% of users</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] -mt-2" style={{ color: t.textFaint }}>
+                    Device and location are recorded when a user signs in, so “Not recorded” clears as existing users return.
+                  </p>
+
                   <WorldMap usersByCountry={stats.usersByCountry} unknownLocationCount={stats.unknownLocationCount} />
                   <div>
                     {planError && (
@@ -435,21 +639,39 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />Plan update failed: {planError}
                       </div>
                     )}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="relative flex-1 max-w-xs">
+                        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: t.textFaint }} />
+                        <input value={userQuery} onChange={e => setUserQuery(e.target.value)}
+                          placeholder="Search email or plan…"
+                          className="w-full pl-9 pr-3 py-2 rounded-xl text-[12px] outline-none"
+                          style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, color: t.textPrimary }} />
+                      </div>
+                      <span className="text-[11px]" style={{ color: t.textFaint }}>
+                        {visibleUsers.length} of {stats.recentUsers.length}
+                      </span>
+                    </div>
                     <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${t.cardBorder}` }}>
                       <table className="w-full text-[12px]">
                         <thead>
                           <tr style={{ background: t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
-                            {['Email', 'Joined', 'Plan', 'Links', 'Boards'].map(h => (
-                              <th key={h} className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]"
-                                style={{ color: t.textFaint }}>{h}</th>
+                            {USER_COLUMNS.map(({ key, label }) => (
+                              <th key={key} onClick={() => toggleSort(key)}
+                                className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px] cursor-pointer select-none"
+                                style={{ color: userSort.key === key ? '#7C3AED' : t.textFaint }}>
+                                <span className="inline-flex items-center gap-1">
+                                  {label}
+                                  {userSort.key === key
+                                    ? (userSort.dir === 'asc' ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />)
+                                    : <Minus className="w-2.5 h-2.5 opacity-25" />}
+                                </span>
+                              </th>
                             ))}
                           </tr>
                         </thead>
                         <tbody>
-                          {stats.recentUsers.map((u, i) => {
-                            const effectivePlan = planOverrides[u.id] === 'free' ? 'free'
-                              : planOverrides[u.id]?.startsWith('pro') ? 'pro'
-                              : planOverrides[u.id] === 'team' ? 'team' : u.plan;
+                          {visibleUsers.map((u, i) => {
+                            const effectivePlan = effectivePlanOf(u);
                             const effectiveSource = planOverrides[u.id] ? 'admin' : u.source;
                             return (
                               <tr key={u.id} style={{ background: i % 2 === 0 ? t.pageBg : t.cardBg, borderBottom: `1px solid ${t.cardBorder}` }}>
@@ -458,11 +680,34 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                                 <td className="px-4 py-2.5">
                                   <PlanSelector userId={u.id} plan={effectivePlan} source={effectiveSource} onUpdate={updatePlan} />
                                 </td>
+                                <td className="px-4 py-2.5"><DeviceCell platform={u.platform} /></td>
+                                <td className="px-4 py-2.5" style={{ color: t.textMuted }}>
+                                  {u.country
+                                    ? <span title={u.locale}>{flagOf(u.country)} {u.country}</span>
+                                    : <span style={{ color: t.textFaint }}>—</span>}
+                                </td>
+                                <td className="px-4 py-2.5">
+                                  {(() => {
+                                    const online = Date.now() - Date.parse(u.lastSeen ?? '') <= 15 * 60 * 1000;
+                                    return (
+                                      <span className="flex items-center gap-1.5 text-[11px]"
+                                        style={{ color: online ? '#10B981' : t.textMuted }}>
+                                        {online && <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#10B981' }} />}
+                                        {relTime(u.lastSeen)}
+                                      </span>
+                                    );
+                                  })()}
+                                </td>
                                 <td className="px-4 py-2.5 font-bold" style={{ color: t.textPrimary }}>{u.linkCount}</td>
                                 <td className="px-4 py-2.5 font-bold" style={{ color: t.textPrimary }}>{u.boardCount}</td>
                               </tr>
                             );
                           })}
+                          {visibleUsers.length === 0 && (
+                            <tr><td colSpan={USER_COLUMNS.length} className="px-4 py-6 text-center text-[12px]" style={{ color: t.textFaint }}>
+                              No users match “{userQuery}”
+                            </td></tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -596,11 +841,9 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
               {/* SYSTEM */}
               {activeTab === 'system' && (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     {[{ label: 'WEB', name: 'Vercel', detail: 'saveboard.app' },
-                      { label: 'DATABASE', name: 'Supabase', detail: 'Postgres' },
-                      { label: 'iOS', name: 'In Review', detail: 'versionCode 1' },
-                      { label: 'ANDROID', name: 'In Review', detail: 'versionCode 1' }].map(({ label, name, detail }) => (
+                      { label: 'DATABASE', name: 'Supabase', detail: 'Postgres' }].map(({ label, name, detail }) => (
                       <div key={label} className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
                         <div className="flex items-center gap-2 mb-2">
                           <CheckCircle className="w-4 h-4 text-green-400" />
@@ -611,6 +854,11 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                       </div>
                     ))}
                   </div>
+
+                  <Section title="App releases" icon={Smartphone}>
+                    <ReleasePanel accessToken={accessToken} />
+                  </Section>
+
                   <div className="flex flex-wrap gap-2">
                     {[{ label: 'Supabase', url: 'https://supabase.com/dashboard/project/mchikdltrcbovhdzdhhf' },
                       { label: 'Stripe',   url: 'https://dashboard.stripe.com' },
