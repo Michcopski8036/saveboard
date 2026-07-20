@@ -1099,14 +1099,14 @@ function AppContent() {
           {/* Payment-failure banner — Pro stays gated on `active`, so tell the user why it lapsed */}
           {subData && ['past_due', 'unpaid', 'incomplete'].includes(subData.status) && (
             <div className="px-4 sm:px-6 pb-3 flex items-center gap-3 flex-wrap">
-              <AlertCircle className="w-4 h-4 shrink-0" style={{ color: '#dc2626' }} />
+              <AlertCircle className="w-4 h-4 shrink-0" style={{ color: '#F87171' }} />
               <div className="flex-1 min-w-[180px]">
-                <span className="text-[13px] font-semibold" style={{ color: '#dc2626' }}>{tr('paymentFailedTitle')}</span>
+                <span className="text-[13px] font-semibold" style={{ color: '#F87171' }}>{tr('paymentFailedTitle')}</span>
                 <span className="text-[13px] ml-1.5" style={{ color: t.textSecondary }}>{tr('paymentFailedBody')}</span>
               </div>
               <button onClick={() => setShowBilling(true)}
                 className="px-3 py-1.5 rounded-xl text-[12px] font-medium transition-all shrink-0"
-                style={{ background: '#dc2626', color: '#fff' }}>
+                style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)', color: '#fff' }}>
                 {tr('updatePaymentMethod')}
               </button>
             </div>

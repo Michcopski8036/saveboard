@@ -48,6 +48,10 @@ async function openPortal(userId?: string) {
   }
 }
 
+// Brand palette — keep these in step with UpgradePage.
+const BRAND_PURPLE = '#7C3AED';
+const BRAND_CORAL  = '#F87171';   // the "over limit / needs attention" red used across the app
+
 function UsageBar({ label, used, limit, isStorage }: { label: string; used: number; limit: number; isStorage?: boolean }) {
   const pct = Math.min((used / limit) * 100, 100);
   const warn = pct >= 80;
@@ -59,14 +63,14 @@ function UsageBar({ label, used, limit, isStorage }: { label: string; used: numb
     <div>
       <div className="flex justify-between items-center mb-1.5">
         <span className="text-[13px] text-gray-600">{label}</span>
-        <span className="text-[13px] font-semibold" style={{ color: over ? '#EF4444' : '#374151' }}>
+        <span className="text-[13px] font-semibold" style={{ color: over ? BRAND_CORAL : '#374151' }}>
           {usedStr} <span className="text-gray-400 font-normal">/ {limitStr}</span>
         </span>
       </div>
       <div className="h-1.5 rounded-full bg-gray-100">
         <div className="h-full rounded-full transition-all" style={{
           width: `${pct}%`,
-          background: over ? '#EF4444' : warn ? '#F97316' : 'linear-gradient(90deg,#A78BFA,#7C3AED)',
+          background: over ? BRAND_CORAL : warn ? '#FBBF24' : 'linear-gradient(90deg,#A78BFA,#7C3AED)',
         }} />
       </div>
     </div>
@@ -157,7 +161,7 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
                     <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: planColor }}>{planLabel} Plan</span>
                   </div>
                   {/* Never surface the raw Stripe status string — it means nothing to a user. */}
-                  <span className="flex items-center gap-1.5 text-[12px] font-semibold" style={{ color: isActive ? '#16A34A' : needsPayment ? '#D97706' : '#9CA3AF' }}>
+                  <span className="flex items-center gap-1.5 text-[12px] font-semibold" style={{ color: isActive ? '#16A34A' : needsPayment ? BRAND_CORAL : '#9CA3AF' }}>
                     {isActive
                       ? <><CheckCircle className="w-3.5 h-3.5" /> Active</>
                       : needsPayment
@@ -208,8 +212,8 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
                     disabled={portalLoading}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[14px] font-semibold transition-colors disabled:opacity-60"
                     style={needsPayment
-                      ? { background: '#DC2626', color: '#fff', border: '1.5px solid #DC2626' }
-                      : { border: '1.5px solid #7C3AED', color: '#7C3AED' }}
+                      ? { background: 'linear-gradient(135deg,#7C3AED,#6366F1)', color: '#fff', border: 'none' }
+                      : { border: `1.5px solid ${BRAND_PURPLE}`, color: BRAND_PURPLE }}
                     onMouseEnter={e => { if (!needsPayment) (e.currentTarget as HTMLElement).style.background = 'rgba(124,58,237,0.05)'; }}
                     onMouseLeave={e => { if (!needsPayment) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
                     {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
@@ -244,7 +248,7 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
                 </button>
 
                 {restoreMsg && (
-                  <p className="text-center text-[12px] font-medium" style={{ color: restoreMsg.ok ? '#16A34A' : '#DC2626' }}>
+                  <p className="text-center text-[12px] font-medium" style={{ color: restoreMsg.ok ? '#16A34A' : BRAND_CORAL }}>
                     {restoreMsg.text}
                   </p>
                 )}
