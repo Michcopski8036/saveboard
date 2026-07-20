@@ -154,6 +154,10 @@ export const translations = {
     updateAvailable: 'SaveBoard 새 버전이 있어요.', update: '업데이트',
     updateRequiredTitle: '업데이트가 필요해요', openStore: '스토어 열기',
     updateRequiredBody: '이 버전은 오래됐어요. 계속 사용하려면 업데이트해 주세요.',
+    // Payment failure banner
+    paymentFailedTitle: '결제 실패',
+    paymentFailedBody: '카드 결제에 실패해 Pro 기능이 일시 중지됐어요. 결제 수단을 업데이트하면 바로 복구돼요.',
+    updatePaymentMethod: '결제 수단 변경',
   },
   ja: {
     collections: 'コレクション', home: 'ホーム', recentlySaved: '最近保存',
@@ -259,9 +263,9 @@ export const translations = {
     nothingHere: "Rien ici pour l'instant", addFirstLink: 'Ajoutez votre premier lien avec le bouton ci-dessus',
     chooseLanguage: 'Langue', searchLanguage: 'Rechercher des langues…',
     // Payment failure banner
-    paymentFailedTitle: '결제 실패',
-    paymentFailedBody: '카드 결제에 실패해 Pro 기능이 일시 중지되었습니다. 결제 수단을 업데이트하면 바로 복구됩니다.',
-    updatePaymentMethod: '결제 수단 변경',
+    paymentFailedTitle: 'Échec du paiement',
+    paymentFailedBody: 'Votre carte a été refusée, les fonctions Pro sont donc suspendues. Mettez à jour votre moyen de paiement pour les rétablir.',
+    updatePaymentMethod: 'Mettre à jour le paiement',
   },
 };
 
