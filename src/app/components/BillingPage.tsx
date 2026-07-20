@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { X, Zap, Users, ExternalLink, CreditCard, Calendar, CheckCircle, AlertCircle, Loader2, RotateCcw } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { FREE_LIMITS } from './UpgradePage';
 
 interface SubData {
   plan: string;
@@ -85,14 +86,18 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
   const isActive = status === 'active';
   const isPro = plan === 'pro' && isActive;
   const isTeam = plan === 'team' && isActive;
+  // A lapsed payment still needs the Stripe portal — that is where the card gets fixed.
+  const needsPayment = ['past_due', 'unpaid', 'incomplete'].includes(status);
 
-  const savesLimit   = parseInt(subData?.saves_limit   ?? '30');
-  const boardsLimit  = parseInt(subData?.boards_limit  ?? '5');
-  const storageLimitMb = subData?.storage_limit
-    ? subData.storage_limit.endsWith('GB')
-      ? parseFloat(subData.storage_limit) * 1024
-      : parseFloat(subData.storage_limit)
-    : 50;
+  // Access is gated on `active`, so a lapsed plan is really on the free limits — show those.
+  const savesLimit   = isActive ? parseInt(subData?.saves_limit  ?? '30') : FREE_LIMITS.links;
+  const boardsLimit  = isActive ? parseInt(subData?.boards_limit ?? '5')  : FREE_LIMITS.boards;
+  const storageLimitMb = !isActive ? FREE_LIMITS.storageMb
+    : subData?.storage_limit
+      ? subData.storage_limit.endsWith('GB')
+        ? parseFloat(subData.storage_limit) * 1024
+        : parseFloat(subData.storage_limit)
+      : 50;
 
   const planLabel = isTeam ? 'Team' : isPro ? 'Pro' : 'Free';
   const planColor = isTeam ? '#3B82F6' : isPro ? '#7C3AED' : '#9CA3AF';
@@ -192,16 +197,18 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
 
               {/* Actions */}
               <div className="space-y-3">
-                {isActive && (
+                {(isActive || needsPayment) && (
                   <button
                     onClick={handlePortal}
                     disabled={portalLoading}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[14px] font-semibold transition-colors disabled:opacity-60"
-                    style={{ border: '1.5px solid #7C3AED', color: '#7C3AED' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(124,58,237,0.05)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+                    style={needsPayment
+                      ? { background: '#DC2626', color: '#fff', border: '1.5px solid #DC2626' }
+                      : { border: '1.5px solid #7C3AED', color: '#7C3AED' }}
+                    onMouseEnter={e => { if (!needsPayment) (e.currentTarget as HTMLElement).style.background = 'rgba(124,58,237,0.05)'; }}
+                    onMouseLeave={e => { if (!needsPayment) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
                     {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-                    Manage Billing & Payments
+                    {needsPayment ? 'Update Payment Method' : 'Manage Billing & Payments'}
                   </button>
                 )}
 
@@ -241,6 +248,12 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
               {isActive && (
                 <p className="text-center text-[11px] text-gray-400">
                   To cancel or change your payment method, use "Manage Billing" above.
+                </p>
+              )}
+
+              {needsPayment && (
+                <p className="text-center text-[11px] text-gray-400">
+                  Your last payment failed, so Pro features are paused. Update your card above to restore them.
                 </p>
               )}
             </div>
