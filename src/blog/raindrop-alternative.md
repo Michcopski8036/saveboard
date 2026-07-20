@@ -31,7 +31,7 @@ SaveBoard is built for the mobile-first, share-sheet way people actually save li
 - **Visual cards** — every link becomes a card with its title, description, and preview image, so you can see what something is at a glance instead of scanning a list.
 - **Boards, not nested folders** — simple boards you can drag to reorder and search instantly. No deep hierarchy to maintain.
 - **Shareable boards** — send a whole board to someone with a link.
-- **Free to start** — up to 30 links free, Pro is $3.49/month.
+- **Free to start** — up to 30 links free, Pro is A$5.49/month.
 
 ## SaveBoard vs Raindrop.io
 
@@ -45,7 +45,7 @@ SaveBoard is built for the mobile-first, share-sheet way people actually save li
 | Full-text search | Basic | ✅ (Pro) |
 | Best for | Everyday mobile users | Desktop power users |
 | Free tier | 30 links | Unlimited |
-| Price | $3.49/mo | ~$3/mo |
+| Price | A$5.49/mo | Paid Pro plan |
 
 **Honest take:** if you live on a desktop, manage hundreds of bookmarks, and want nested collections plus browser extensions, Raindrop.io is excellent — stick with it. But if you mostly save links on your phone and want a faster, more visual experience, SaveBoard is the better fit.
 

@@ -20,7 +20,7 @@ Landing pages to link to:
 - **Category / tags:** Bookmark Manager, Visual Bookmarks, Link Saver, Save for Later, Read It Later
 - **Alternative to:** Raindrop.io, mymind, Instapaper
 - **Platforms:** iOS, Android
-- **License / pricing:** Freemium — free up to 30 links; Pro $3.49/month
+- **License / pricing:** Freemium — free up to 30 links; Pro A$5.49/month
 - **Website:** https://www.saveboard.app
 
 **Short description (≈60 words):**

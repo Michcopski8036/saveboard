@@ -33,7 +33,7 @@ Here's an honest, head-to-head comparison to help you pick.
 | Shareable boards | ✅ | ✅ |
 | Highlights / annotations | ❌ | Partial |
 | Free tier | 30 links | Unlimited bookmarks |
-| Paid price | $3.49/month | ~$3/month |
+| Paid price | A$5.49/month | Paid Pro plan |
 | Best for | Everyday mobile users | Desktop power users |
 
 ## Where SaveBoard wins
@@ -54,7 +54,7 @@ We'd rather give you an honest comparison than pretend SaveBoard wins on everyth
 
 ## Pricing
 
-Both are affordable. Raindrop's free tier allows unlimited bookmarks; SaveBoard's free tier covers up to 30 links. Paid plans are similar — around $3–3.49/month — so price isn't the deciding factor. **How and where you save is.**
+Raindrop's free tier allows unlimited bookmarks; SaveBoard's free tier covers up to 30 links. SaveBoard Pro is A$5.49/month. The two bill in different currencies, so which works out cheaper depends on where you are — **how and where you save is the real difference.**
 
 ---
 
@@ -70,7 +70,7 @@ Yes, especially if you mainly save links on your phone. SaveBoard offers native 
 
 ### Which is cheaper, SaveBoard or Raindrop?
 
-Both cost around $3–3.49 per month for their paid plans. Raindrop offers an unlimited free tier; SaveBoard's free tier covers up to 30 links. Pricing is similar, so choose based on platform and workflow rather than cost.
+SaveBoard Pro is A$5.49/month; Raindrop charges in US dollars, so which is cheaper depends on your region and the rate that day. Raindrop offers an unlimited free tier; SaveBoard's free tier covers up to 30 links. Choose on platform and workflow rather than price.
 
 ### Can I use SaveBoard on desktop?
 

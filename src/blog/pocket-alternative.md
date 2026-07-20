@@ -29,7 +29,7 @@ Pocket was built for a desktop-and-browser era. The way people save links now is
 - **Mobile-first** — save from the share sheet in any app (Instagram, YouTube, WhatsApp, your browser) in one tap.
 - **Visual cards** — every link becomes a card with its title, description, and preview image, so you can see what something is at a glance instead of scanning a text list.
 - **Boards, not folders** — group saves into boards, reorder them by dragging, and search everything instantly.
-- **Free to start** — save up to 30 links free, no credit card. Pro is $3.49/month if you need more.
+- **Free to start** — save up to 30 links free, no credit card. Pro is A$5.49/month if you need more.
 - **Cross-platform** — Android and iOS, with your boards synced across devices.
 
 ## Pocket vs SaveBoard vs Raindrop.io
@@ -42,7 +42,7 @@ Pocket was built for a desktop-and-browser era. The way people save links now is
 | Visual cards | ✅ | — | Partial |
 | Boards / collections | ✅ | — | ✅ |
 | Free tier | 30 links | — | Unlimited |
-| Price | $3.49/mo | — | $3.49/mo |
+| Price | A$5.49/mo | — | Paid Pro plan |
 | Best for | Everyday mobile users | — | Desktop power users |
 
 **Short version:** if you mostly saved articles and links on your phone, choose SaveBoard. If you're a researcher or developer who manages hundreds of bookmarks from a desktop, Raindrop.io is the more powerful pick.
@@ -59,7 +59,7 @@ Didn't export in time? You can still start fresh — most people find they only 
 
 ## Is SaveBoard free?
 
-Yes. SaveBoard's free tier lets you save up to 30 links and organise them into boards — enough to replace day-to-day Pocket use without paying. If you save a lot, Pro removes the limit for $3.49/month.
+Yes. SaveBoard's free tier lets you save up to 30 links and organise them into boards — enough to replace day-to-day Pocket use without paying. If you save a lot, Pro removes the limit for A$5.49/month.
 
 ---
 
