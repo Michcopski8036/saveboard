@@ -21,7 +21,7 @@ async function getRawBody(req: VercelRequest): Promise<Buffer> {
 
 async function upsertSubscription(sub: Stripe.Subscription) {
   const userId = sub.metadata?.supabase_user_id;
-  if (!userId) return;
+  if (!userId) { console.warn(`Subscription ${sub.id} has no supabase_user_id metadata — skipping`); return; }
 
   const item = sub.items.data[0];
 
@@ -44,8 +44,11 @@ async function upsertSubscription(sub: Stripe.Subscription) {
   const storagLimit  = productMeta.storage_limit ?? '2GB';
   const teamMembers  = productMeta.team_members  ?? '3';
   const status       = sub.status;
+  // Stripe moved current_period_end from the subscription to its items in API 2025-03-31.basil
+  const periodEndTs  = (item as any)?.current_period_end ?? (sub as any).current_period_end;
+  const periodEnd    = typeof periodEndTs === 'number' ? new Date(periodEndTs * 1000).toISOString() : null;
 
-  await supabase.from('subscriptions').upsert({
+  const { error } = await supabase.from('subscriptions').upsert({
     user_id: userId,
     stripe_customer_id: sub.customer as string,
     stripe_subscription_id: sub.id,
@@ -57,9 +60,12 @@ async function upsertSubscription(sub: Stripe.Subscription) {
     storage_limit: storagLimit,
     team_members: teamMembers,
     status,
-    current_period_end: new Date((sub as any).current_period_end * 1000).toISOString(),
+    current_period_end: periodEnd,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'user_id' });
+
+  // supabase-js returns errors instead of throwing — surface them so the handler 500s and Stripe retries
+  if (error) throw new Error(`subscriptions upsert failed (${userId}): ${error.message}`);
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -87,10 +93,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const sub = event.data.object as Stripe.Subscription;
         const userId = sub.metadata?.supabase_user_id;
         if (userId) {
-          await supabase
+          const { error } = await supabase
             .from('subscriptions')
             .update({ status: 'canceled', updated_at: new Date().toISOString() })
             .eq('user_id', userId);
+          if (error) throw new Error(`subscriptions cancel failed (${userId}): ${error.message}`);
         }
         break;
       }
