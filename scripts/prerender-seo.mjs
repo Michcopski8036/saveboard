@@ -105,6 +105,7 @@ function blogIndexHtml() {
           </article>
         `).join('')}
       </section>
+      ${relatedLandingsHtml()}
     </main>`;
 
   return withSeo({
@@ -130,6 +131,21 @@ function blogIndexHtml() {
   }, body);
 }
 
+// Cornerstone landings are excluded from the post list, which left them with no incoming
+// internal links at all — Google discovered them from the sitemap but kept deprioritising
+// the crawl. This block links them from the blog index and from every article.
+function relatedLandingsHtml(excludeRoute = '') {
+  const related = landings.filter(page => page.route !== excludeRoute);
+  if (!related.length) return '';
+  return `
+      <section>
+        <h2>Compare SaveBoard</h2>
+        <ul>
+          ${related.map(page => `<li><a href="/${esc(page.route)}">${esc(page.title)}</a></li>`).join('')}
+        </ul>
+      </section>`;
+}
+
 function articleHtml(post, { canonical, isLanding }) {
   const content = post.content.replace(new RegExp(`^#\\s+${escapeRegExp(post.title)}\\s*\\n+`), '');
   const article = markdownToHtml(content);
@@ -146,6 +162,8 @@ function articleHtml(post, { canonical, isLanding }) {
         </header>
         ${article}
       </article>
+      ${relatedLandingsHtml(post.route)}
+      ${isLanding ? '<p><a href="/blog">Read the SaveBoard blog</a></p>' : ''}
     </main>`;
 
   const jsonLd = [{

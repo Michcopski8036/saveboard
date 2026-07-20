@@ -14,8 +14,13 @@ export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const post = getPostBySlug(slug ?? '');
 
+  // Landings live at /<route>; /blog/<slug> would be a duplicate URL competing with it.
   useEffect(() => {
-    if (!post) return;
+    if (post?.route) window.location.replace(`/${post.route}`);
+  }, [post]);
+
+  useEffect(() => {
+    if (!post || post.route) return;
     document.title = `${post.title} — SaveBoard Blog`;
     setMeta('description', post.description);
     setMeta('og:title', `${post.title} — SaveBoard Blog`);

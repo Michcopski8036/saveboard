@@ -3,12 +3,14 @@ export interface PostMeta {
   date: string;
   description: string;
   slug: string;
+  /** Cornerstone landings render at top-level `/<route>`, not `/blog/<slug>`. */
+  route: string;
   content: string;
 }
 
 function parseFrontmatter(raw: string): PostMeta {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!match) return { title: '', date: '', description: '', slug: '', content: raw };
+  if (!match) return { title: '', date: '', description: '', slug: '', route: '', content: raw };
   const data: Record<string, string> = {};
   match[1].split('\n').forEach(line => {
     const colon = line.indexOf(':');
@@ -22,6 +24,7 @@ function parseFrontmatter(raw: string): PostMeta {
     date: data.date ?? '',
     description: data.description ?? '',
     slug: data.slug ?? '',
+    route: data.route ?? '',
     content: match[2].trim(),
   };
 }
@@ -32,6 +35,11 @@ export const allPosts: PostMeta[] = Object.values(rawModules)
   .map(raw => parseFrontmatter(raw))
   .filter(p => p.slug)
   .sort((a, b) => b.date.localeCompare(a.date));
+
+// Mirrors scripts/prerender-seo.mjs: pages with a `route` render at top-level
+// `/<route>`, the rest at `/blog/<slug>`.
+export const landingPages: PostMeta[] = allPosts.filter(p => p.route);
+export const blogPosts: PostMeta[] = allPosts.filter(p => !p.route);
 
 export function getPostBySlug(slug: string): PostMeta | undefined {
   return allPosts.find(p => p.slug === slug);

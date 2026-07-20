@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { Bookmark, ArrowRight } from 'lucide-react';
-import { allPosts, formatDate } from '../../utils/blogUtils';
+import { blogPosts, landingPages, formatDate } from '../../utils/blogUtils';
 import { useLanguage } from '../../context/LanguageContext';
 
 const BASE_URL = 'https://www.saveboard.app';
@@ -39,11 +39,11 @@ export function BlogListPage() {
             </p>
           </div>
 
-          {allPosts.length === 0 ? (
+          {blogPosts.length === 0 ? (
             <p className="text-center text-gray-400">{ko ? '아직 게시물이 없어요.' : 'No posts yet.'}</p>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allPosts.map(post => (
+              {blogPosts.map(post => (
                 <Link
                   key={post.slug}
                   to={`/blog/${post.slug}`}
@@ -65,6 +65,32 @@ export function BlogListPage() {
                 </Link>
               ))}
             </div>
+          )}
+
+          {landingPages.length > 0 && (
+            <section className="mt-16 pt-12 border-t border-gray-100">
+              <h2 className="text-[22px] font-bold text-gray-900 mb-2">
+                {ko ? 'SaveBoard 비교하기' : 'Compare SaveBoard'}
+              </h2>
+              <p className="text-[15px] text-gray-500 mb-6">
+                {ko ? '다른 북마크 앱을 쓰고 계신가요? 솔직한 비교를 읽어보세요.' : 'Coming from another bookmark app? Read the honest comparisons.'}
+              </p>
+              <ul className="flex flex-col gap-3">
+                {landingPages.map(page => (
+                  <li key={page.route}>
+                    {/* Plain <a>: /<route> is prerendered static HTML, not a react-router route,
+                        so a client-side Link would fall through to the app shell. */}
+                    <a
+                      href={`/${page.route}`}
+                      className="group inline-flex items-start gap-1.5 text-[15px] font-semibold text-purple-600 hover:text-purple-700 transition-colors"
+                    >
+                      {page.title}
+                      <ArrowRight className="w-3.5 h-3.5 mt-1 shrink-0" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
           )}
         </div>
       </main>
