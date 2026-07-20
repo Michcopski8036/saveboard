@@ -92,6 +92,8 @@ export const translations = {
     paymentFailedTitle: 'Payment failed',
     paymentFailedBody: 'We couldn’t charge your card, so Pro features are paused. Update your payment method to restore them.',
     updatePaymentMethod: 'Update payment',
+    paymentIssue: 'Payment issue',
+    lapsedToFree: 'Your payment didn’t go through, so your account is on the Free plan for now. Update your card and Pro comes straight back — nothing has been deleted.',
   },
   ko: {
     collections: '컬렉션', home: '홈', recentlySaved: '최근 저장',
@@ -158,6 +160,8 @@ export const translations = {
     paymentFailedTitle: '결제 실패',
     paymentFailedBody: '카드 결제에 실패해 Pro 기능이 일시 중지됐어요. 결제 수단을 업데이트하면 바로 복구돼요.',
     updatePaymentMethod: '결제 수단 변경',
+    paymentIssue: '결제 확인 필요',
+    lapsedToFree: '결제가 되지 않아 지금은 무료 플랜으로 전환된 상태예요. 결제 수단을 업데이트하면 Pro가 바로 복구되고, 저장한 내용은 그대로 있어요.',
   },
   ja: {
     collections: 'コレクション', home: 'ホーム', recentlySaved: '最近保存',
@@ -266,6 +270,8 @@ export const translations = {
     paymentFailedTitle: 'Échec du paiement',
     paymentFailedBody: 'Votre carte a été refusée, les fonctions Pro sont donc suspendues. Mettez à jour votre moyen de paiement pour les rétablir.',
     updatePaymentMethod: 'Mettre à jour le paiement',
+    paymentIssue: 'Problème de paiement',
+    lapsedToFree: 'Votre paiement n’a pas abouti, votre compte est donc passé au plan gratuit. Mettez à jour votre carte et Pro sera rétabli — rien n’a été supprimé.',
   },
 };
 

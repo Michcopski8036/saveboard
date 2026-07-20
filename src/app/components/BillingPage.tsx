@@ -156,10 +156,13 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
                              : null}
                     <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: planColor }}>{planLabel} Plan</span>
                   </div>
-                  <span className="flex items-center gap-1.5 text-[12px] font-semibold" style={{ color: isActive ? '#16A34A' : '#DC2626' }}>
+                  {/* Never surface the raw Stripe status string — it means nothing to a user. */}
+                  <span className="flex items-center gap-1.5 text-[12px] font-semibold" style={{ color: isActive ? '#16A34A' : needsPayment ? '#D97706' : '#9CA3AF' }}>
                     {isActive
                       ? <><CheckCircle className="w-3.5 h-3.5" /> Active</>
-                      : <><AlertCircle className="w-3.5 h-3.5" /> {status || 'Inactive'}</>}
+                      : needsPayment
+                        ? <><AlertCircle className="w-3.5 h-3.5" /> {tr('paymentIssue')}</>
+                        : null}
                   </span>
                 </div>
 
@@ -181,7 +184,9 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
                 )}
 
                 {!isActive && (
-                  <p className="text-[13px] text-gray-500">{tr('onFreePlan')}</p>
+                  <p className="text-[13px] text-gray-500">
+                    {needsPayment ? tr('lapsedToFree') : tr('onFreePlan')}
+                  </p>
                 )}
               </div>
 
@@ -249,14 +254,7 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
                 <p className="text-center text-[11px] text-gray-400">
                   To cancel or change your payment method, use "Manage Billing" above.
                 </p>
-              )}
-
-              {needsPayment && (
-                <p className="text-center text-[11px] text-gray-400">
-                  Your last payment failed, so Pro features are paused. Update your card above to restore them.
-                </p>
-              )}
-            </div>
+              )}            </div>
           </div>
         </div>
       </div>
