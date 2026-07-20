@@ -10,7 +10,7 @@ import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
 import { LandingPage } from './components/LandingPage';
-import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2, Check } from 'lucide-react';
+import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2, Check, AlertCircle } from 'lucide-react';
 
 function GalleryIcon({ className }: { className?: string }) {
   return (
@@ -1095,6 +1095,22 @@ function AppContent() {
             {/* Avatar */}
             <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowAdmin={isAdmin(user?.email) ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
           </div>
+
+          {/* Payment-failure banner — Pro stays gated on `active`, so tell the user why it lapsed */}
+          {subData && ['past_due', 'unpaid', 'incomplete'].includes(subData.status) && (
+            <div className="px-4 sm:px-6 pb-3 flex items-center gap-3 flex-wrap">
+              <AlertCircle className="w-4 h-4 shrink-0" style={{ color: '#dc2626' }} />
+              <div className="flex-1 min-w-[180px]">
+                <span className="text-[13px] font-semibold" style={{ color: '#dc2626' }}>{tr('paymentFailedTitle')}</span>
+                <span className="text-[13px] ml-1.5" style={{ color: t.textSecondary }}>{tr('paymentFailedBody')}</span>
+              </div>
+              <button onClick={() => setShowBilling(true)}
+                className="px-3 py-1.5 rounded-xl text-[12px] font-medium transition-all shrink-0"
+                style={{ background: '#dc2626', color: '#fff' }}>
+                {tr('updatePaymentMethod')}
+              </button>
+            </div>
+          )}
 
           {/* Sub-header: title + sort — hidden on home dashboard */}
           {selected !== 'all' && <div className="px-4 sm:px-6 pb-3.5 flex items-center justify-between gap-4">

@@ -88,6 +88,10 @@ export const translations = {
     updateAvailable: 'A new version of SaveBoard is available.', update: 'Update',
     updateRequiredTitle: 'Update required', openStore: 'Open store',
     updateRequiredBody: 'This version is out of date. Please update to keep using SaveBoard.',
+    // Payment failure banner
+    paymentFailedTitle: 'Payment failed',
+    paymentFailedBody: 'We couldn’t charge your card, so Pro features are paused. Update your payment method to restore them.',
+    updatePaymentMethod: 'Update payment',
   },
   ko: {
     collections: '컬렉션', home: '홈', recentlySaved: '최근 저장',
@@ -254,6 +258,10 @@ export const translations = {
     links: 'liens', boardsLabel: 'tableaux', contactUs: 'Nous contacter',
     nothingHere: "Rien ici pour l'instant", addFirstLink: 'Ajoutez votre premier lien avec le bouton ci-dessus',
     chooseLanguage: 'Langue', searchLanguage: 'Rechercher des langues…',
+    // Payment failure banner
+    paymentFailedTitle: '결제 실패',
+    paymentFailedBody: '카드 결제에 실패해 Pro 기능이 일시 중지되었습니다. 결제 수단을 업데이트하면 바로 복구됩니다.',
+    updatePaymentMethod: '결제 수단 변경',
   },
 };
 
