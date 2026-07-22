@@ -26,6 +26,38 @@ notes live in `store/release-notes.md`.
 
 ---
 
+## iOS 1.0.8 (build 20) / Android 1.0.13 (versionCode 17) — prepared 2026-07-22
+
+**iOS layout — two separate causes, both fixed**
+
+- **White bands above and below the content.** `capacitor.config.json` set
+  `ios.contentInset: "always"`, so WKWebView applied its own safe-area insets —
+  while the app was already handling them in CSS (`App.tsx` header pads with
+  `env(safe-area-inset-top)`, `BottomNav` renders a spacer of
+  `env(safe-area-inset-bottom)`). Inside an inset WebView those `env()` values
+  resolve to **0**, so both CSS spacers collapsed and the strip left over by the
+  WebView's own inset rendered as page background. Set to `"never"`: the WebView
+  runs edge to edge, `env()` gets real values back, and the CSS that was already
+  written for this does the job. Android has no equivalent setting and is
+  unaffected.
+- **The bottom bar was taller than other apps' — and it was.** The button row was
+  `h-16` (64pt) against the ~49pt content height of a system `UITabBar`. With the
+  safe-area spacer that came to 98pt where iOS uses 83pt. Now `h-12` (48pt), for a
+  measured **82.3pt** total. Still clears the 44pt minimum touch target.
+  The remaining ~34pt below the labels is the home-indicator region and cannot be
+  removed — every iOS app fills it with the bar's background.
+  Measured on an iPhone 17 Pro simulator by sampling the screenshot at the left
+  edge, where no button content interferes: 98.3pt before, 82.3pt after.
+
+**Billing reaches native for the first time**
+
+Everything in the web-only section below — the Stripe webhook 500s, the recovery
+path for `past_due` subscribers, the plain-language explanation of a lapsed plan,
+the usage bars showing the correct limits, the brand-palette pass and the
+payment-failure banner — has been live on the web since 2026-07-20 but was in no
+native build. `npx cap sync` picks it all up here. **For app users this is the
+substantive half of the release**, and the store notes lead with it.
+
 ## Web-only — Stripe billing fixes, 2026-07-20
 
 No version bump: these shipped straight to production via `main` (commits
