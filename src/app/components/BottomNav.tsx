@@ -30,7 +30,10 @@ export function BottomNav({ selected, onSelect, onOpenAdd, onFocusSearch, onOpen
         transform: hidden ? 'translateY(100%)' : 'translateY(0)',
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
-      <div className="flex items-stretch h-16">
+      {/* 48px matches the ~49pt content height of a native iOS tab bar. With the
+          safe-area spacer below it the whole bar comes to ~82pt, the same as the
+          system one — at h-16 it was 98pt and visibly taller than other apps. */}
+      <div className="flex items-stretch h-12">
 
         {/* Home */}
         <button
