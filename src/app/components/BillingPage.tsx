@@ -4,6 +4,7 @@ import { Browser } from '@capacitor/browser';
 import { X, Zap, Users, ExternalLink, CreditCard, Calendar, CheckCircle, AlertCircle, Loader2, RotateCcw } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { FREE_LIMITS } from './UpgradePage';
+import { authedPost } from '../lib/authedFetch';
 
 interface SubData {
   plan: string;
@@ -26,7 +27,7 @@ interface BillingPageProps {
   subData?: SubData | null;
 }
 
-async function openPortal(userId?: string) {
+async function openPortal(userId: string | undefined, ko: boolean) {
   if (Capacitor.isNativePlatform()) {
     // iOS users manage their subscription through Apple
     await Browser.open({ url: 'https://apps.apple.com/account/subscriptions' });
@@ -34,18 +35,17 @@ async function openPortal(userId?: string) {
   }
   // Web / Android → Stripe portal
   if (!userId) return;
-  try {
-    const res = await fetch('/api/create-portal', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
-    });
-    const { url, error } = await res.json();
-    if (error) { alert(`Error: ${error}`); return; }
-    window.location.href = url;
-  } catch (err: any) {
-    alert(`Billing error: ${err?.message ?? String(err)}`);
+  const r = await authedPost<{ url?: string }>('/api/create-portal', { userId });
+  if (!r.ok) {
+    if (r.reason === 'reauth') {
+      alert(ko ? '세션이 만료됐어요. 페이지를 새로고침한 뒤 다시 로그인해 주세요.' : 'Your session expired. Please refresh the page and sign in again.');
+      window.location.reload();
+      return;
+    }
+    alert((ko ? '결제 오류: ' : 'Billing error: ') + r.message);
+    return;
   }
+  if (r.data?.url) window.location.href = r.data.url;
 }
 
 // Brand palette — keep these in step with UpgradePage.
@@ -78,7 +78,8 @@ function UsageBar({ label, used, limit, isStorage }: { label: string; used: numb
 }
 
 export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId, currentLinks, currentBoards, currentStorageMb, subData }: BillingPageProps) {
-  const { tr } = useLanguage();
+  const { tr, language } = useLanguage();
+  const ko = language === 'ko';
   const [portalLoading, setPortalLoading] = useState(false);
   const [restoreLoading, setRestoreLoading] = useState(false);
   const [restoreMsg, setRestoreMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -108,7 +109,7 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
 
   const handlePortal = async () => {
     setPortalLoading(true);
-    await openPortal(userId);
+    await openPortal(userId, ko);
     setPortalLoading(false);
   };
 

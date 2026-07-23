@@ -7,6 +7,7 @@ import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectP
 import { RichTextEditor } from './RichTextEditor';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { sanitizeHtml } from '../lib/sanitize';
 
 export const LINK_DRAG_TYPE = 'LINK_TO_BOARD';
 
@@ -821,7 +822,7 @@ export function LinkCard({
         {!compact && !isMemo && !isArticle && link.description && link.description.length > 0 && !link.description.startsWith('Link saved from') && (
           isHtmlDesc(link.description)
             ? <div className="text-[11px] leading-relaxed mb-2 line-clamp-4 rich-card-preview" style={{ color: t.textMuted }}
-                dangerouslySetInnerHTML={{ __html: link.description }} />
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(link.description) }} />
             : <MarkdownText text={getMemoText(link.description)} className="text-[11px] leading-relaxed mb-2" style={{ color: t.textMuted }} clamp={4} />
         )}
 

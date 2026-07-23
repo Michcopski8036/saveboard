@@ -6,6 +6,7 @@ import { Bookmark, ExternalLink, Clock, BookmarkPlus, Check, Loader2 } from 'luc
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { useLanguage } from '../context/LanguageContext';
+import { sanitizeHtml } from '../lib/sanitize';
 
 interface SharedLink {
   id: string;
@@ -381,7 +382,7 @@ export function SharedBoardPage() {
                     {/* Description */}
                     {link.description && (
                       link.description.trimStart().startsWith('<')
-                        ? <div className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed rich-card-preview" dangerouslySetInnerHTML={{ __html: link.description }} />
+                        ? <div className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed rich-card-preview" dangerouslySetInnerHTML={{ __html: sanitizeHtml(link.description) }} />
                         : <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed">{link.description.replace(/^\[sz:(sm|md|lg)\]/, '')}</p>
                     )}
 

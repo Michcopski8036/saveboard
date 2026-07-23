@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { X, Check, Zap, Users, Sparkles, Loader2 } from 'lucide-react';
 import { StoreKit, IAP_PRODUCTS, type StoreProduct } from '../lib/storekit';
 import { supabase } from '../lib/supabase';
+import { authedPost } from '../lib/authedFetch';
 import { useLanguage } from '../context/LanguageContext';
 
 const AUD = { proMo: 5.49, proYr: 34.99, teamSeat: 9.49 };
@@ -55,16 +56,19 @@ function Cell({ value, highlight }: { value: boolean | string; highlight?: boole
   );
 }
 
-async function startCheckout(plan: 'pro' | 'team', interval: 'monthly' | 'yearly', userId?: string, userEmail?: string) {
-  if (!userId || !userEmail) { alert('Please sign in first.'); return; }
-  const res = await fetch('/api/create-checkout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ plan, interval, userId, userEmail }),
-  });
-  const { url, error } = await res.json();
-  if (error) { alert(`Checkout error: ${error}`); return; }
-  window.location.href = url;
+async function startCheckout(plan: 'pro' | 'team', interval: 'monthly' | 'yearly', userId: string | undefined, userEmail: string | undefined, ko: boolean) {
+  if (!userId || !userEmail) { alert(ko ? '먼저 로그인해 주세요.' : 'Please sign in first.'); return; }
+  const r = await authedPost<{ url?: string }>('/api/create-checkout', { plan, interval, userId, userEmail });
+  if (!r.ok) {
+    if (r.reason === 'reauth') {
+      alert(ko ? '세션이 만료됐어요. 페이지를 새로고침한 뒤 다시 로그인해 주세요.' : 'Your session expired. Please refresh the page and sign in again.');
+      window.location.reload();
+      return;
+    }
+    alert((ko ? '결제 오류: ' : 'Checkout error: ') + r.message);
+    return;
+  }
+  if (r.data?.url) window.location.href = r.data.url;
 }
 
 // ── iOS IAP view ─────────────────────────────────────────────────────────────
@@ -246,7 +250,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
 
   const handleCheckout = async (plan: 'pro' | 'team', interval: 'monthly' | 'yearly' = 'monthly') => {
     setLoadingPlan(`${plan}-${interval}`);
-    await startCheckout(plan, interval, userId, userEmail);
+    await startCheckout(plan, interval, userId, userEmail, ko);
     setLoadingPlan(null);
   };
 

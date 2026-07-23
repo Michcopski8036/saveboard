@@ -1,7 +1,87 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { lookup } from 'node:dns/promises';
 
 const USER_AGENT =
   'Mozilla/5.0 (compatible; LinkBoard/1.0; +https://link-board-seven.vercel.app) AppleWebKit/537.36 Chrome/124.0 Safari/537.36';
+
+// ── SSRF guard ───────────────────────────────────────────────────────────────
+// This endpoint fetches an arbitrary user-supplied URL server-side, so without
+// filtering it can be pointed at internal services: the cloud metadata endpoint
+// (169.254.169.254), localhost, or private-network hosts. We block private /
+// reserved IPs, resolve the hostname and re-check every address it maps to, and
+// follow redirects manually so a public URL can't 302 into a private one.
+function isIpLiteral(host: string): boolean {
+  return host.includes(':') || /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
+}
+
+function isBlockedIp(ip: string): boolean {
+  const mapped = ip.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i); // IPv4-mapped IPv6
+  if (mapped) ip = mapped[1];
+
+  if (ip.includes(':')) {
+    const l = ip.toLowerCase();
+    return (
+      l === '::1' || l === '::' ||
+      l.startsWith('fc') || l.startsWith('fd') ||                                 // ULA fc00::/7
+      l.startsWith('fe8') || l.startsWith('fe9') || l.startsWith('fea') || l.startsWith('feb') // link-local fe80::/10
+    );
+  }
+
+  const p = ip.split('.').map(Number);
+  if (p.length !== 4 || p.some(n => Number.isNaN(n) || n < 0 || n > 255)) return true; // malformed → block
+  const [a, b] = p;
+  return (
+    a === 0 || a === 127 || a === 10 ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 169 && b === 254) ||           // link-local, incl. 169.254.169.254 metadata
+    (a === 100 && b >= 64 && b <= 127) || // CGNAT 100.64.0.0/10
+    a >= 224                               // multicast + reserved
+  );
+}
+
+async function assertPublicUrl(u: string): Promise<void> {
+  const parsed = new URL(u);
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error('blocked protocol');
+
+  const host = parsed.hostname.replace(/^\[|\]$/g, ''); // strip IPv6 brackets
+  if (isIpLiteral(host)) {
+    if (isBlockedIp(host)) throw new Error('blocked address');
+    return;
+  }
+
+  const lower = host.toLowerCase();
+  if (lower === 'localhost' || lower.endsWith('.localhost') || lower.endsWith('.local') || lower.endsWith('.internal')) {
+    throw new Error('blocked host');
+  }
+
+  const addrs = await lookup(host, { all: true });
+  if (!addrs.length) throw new Error('unresolvable host');
+  for (const a of addrs) if (isBlockedIp(a.address)) throw new Error('blocked address');
+}
+
+// Fetch that validates the SSRF guard on every hop (redirect: 'manual').
+async function safeFetch(startUrl: string, headers: Record<string, string>): Promise<Response> {
+  let current = startUrl;
+  for (let i = 0; i < 5; i++) {
+    await assertPublicUrl(current);
+    const resp = await fetch(current, { headers, redirect: 'manual', signal: AbortSignal.timeout(8000) });
+    if (resp.status >= 300 && resp.status < 400) {
+      const loc = resp.headers.get('location');
+      if (!loc) return resp;
+      current = new URL(loc, current).toString();
+      continue;
+    }
+    return resp;
+  }
+  throw new Error('too many redirects');
+}
+
+// og:title / og:description are plain text — strip any tags so scraped content
+// can never reach the client's HTML renderer as markup.
+function stripTags(s: string): string {
+  return s.replace(/<[^>]*>/g, '').trim();
+}
 
 function extractYouTubeVideoId(url: string): string | null {
   const patterns = [
@@ -95,15 +175,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.json({ title: 'Vimeo Video', description: '', image: '' });
     }
 
-    // ── General: fetch HTML server-side ──────────────────────────────
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': USER_AGENT,
-        'Accept': 'text/html,application/xhtml+xml,*/*;q=0.9',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-      redirect: 'follow',
-      signal: AbortSignal.timeout(8000),
+    // ── General: fetch HTML server-side (SSRF-guarded, per-hop validated) ──
+    const response = await safeFetch(url, {
+      'User-Agent': USER_AGENT,
+      'Accept': 'text/html,application/xhtml+xml,*/*;q=0.9',
+      'Accept-Language': 'en-US,en;q=0.9',
     });
 
     if (!response.ok) {
@@ -128,9 +204,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const title =
-      meta(html, 'og:title', 'twitter:title') || titleTag(html) || hostname;
+      stripTags(meta(html, 'og:title', 'twitter:title') || titleTag(html) || hostname);
     const description =
-      meta(html, 'og:description', 'twitter:description', 'description') || '';
+      stripTags(meta(html, 'og:description', 'twitter:description', 'description') || '');
     const rawImage =
       meta(html, 'og:image', 'twitter:image:src', 'twitter:image') || '';
     const image = makeAbsolute(rawImage, url);

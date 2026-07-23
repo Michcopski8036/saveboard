@@ -12,17 +12,16 @@ const ADMIN_EMAILS = new Set([
   'artking81@hotmail.com',
 ]);
 
-/** Returns the caller's email if their bearer token belongs to an admin, else null. */
-function adminEmailFromToken(authHeader: string | undefined): string | null {
-  const token = (authHeader ?? '').replace('Bearer ', '');
+/** Verifies the bearer token WITH Supabase auth (validates the JWT signature —
+ *  a bare payload decode is forgeable) and returns the caller's email if they
+ *  are an admin, else null. */
+async function verifyAdmin(authHeader: string | undefined): Promise<string | null> {
+  const token = (authHeader ?? '').replace(/^Bearer\s+/i, '');
   if (!token) return null;
-  try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
-    const email = payload.email ?? '';
-    return ADMIN_EMAILS.has(email) ? email : null;
-  } catch {
-    return null;
-  }
+  const { data, error } = await supabase.auth.getUser(token);
+  const email = data.user?.email ?? '';
+  if (error || !email) return null;
+  return ADMIN_EMAILS.has(email) ? email : null;
 }
 
 
@@ -47,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const actor = adminEmailFromToken(req.headers.authorization);
+  const actor = await verifyAdmin(req.headers.authorization);
   if (!actor) return res.status(403).json({ error: 'Forbidden' });
 
   const { userId, planKey } = req.body as { userId: string; planKey: string };

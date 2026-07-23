@@ -12,17 +12,16 @@ const ADMIN_EMAILS = new Set([
   'artking81@hotmail.com',
 ]);
 
-/** Returns the caller's email if their bearer token belongs to an admin, else null. */
-function adminEmailFromToken(authHeader: string | undefined): string | null {
-  const token = (authHeader ?? '').replace('Bearer ', '');
+/** Verifies the bearer token WITH Supabase auth (validates the JWT signature —
+ *  a bare payload decode is forgeable) and returns the caller's email if they
+ *  are an admin, else null. */
+async function verifyAdmin(authHeader: string | undefined): Promise<string | null> {
+  const token = (authHeader ?? '').replace(/^Bearer\s+/i, '');
   if (!token) return null;
-  try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
-    const email = payload.email ?? '';
-    return ADMIN_EMAILS.has(email) ? email : null;
-  } catch {
-    return null;
-  }
+  const { data, error } = await supabase.auth.getUser(token);
+  const email = data.user?.email ?? '';
+  if (error || !email) return null;
+  return ADMIN_EMAILS.has(email) ? email : null;
 }
 
 
@@ -37,8 +36,8 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Authorization, Content-Type',
 };
 
-function checkAuth(req: VercelRequest) {
-  return adminEmailFromToken(req.headers.authorization) !== null;
+async function checkAuth(req: VercelRequest) {
+  return (await verifyAdmin(req.headers.authorization)) !== null;
 }
 
 function extractMeta(html: string, name: string): string {
@@ -50,7 +49,7 @@ function extractMeta(html: string, name: string): string {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (!checkAuth(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!(await checkAuth(req))) return res.status(403).json({ error: 'Forbidden' });
 
   const url = 'https://www.saveboard.app';
 

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { sanitizeHtml } from '../lib/sanitize';
 
 type Platform = 'instagram' | 'youtube' | 'twitter' | 'facebook' | 'tiktok' | 'linkedin' | 'pdf' | 'memo' | 'file' | 'default';
 
@@ -155,7 +156,7 @@ export function PlatformPlaceholder({ platform, domain, text, className = '' }: 
             return displayText ? (
               <div style={{ padding: '20px', width: '100%', fontSize, fontWeight: 400, lineHeight: '1.65', color: t.memoText, fontFamily: '"Pretendard", -apple-system, BlinkMacSystemFont, sans-serif', wordBreak: 'break-word' }}>
                 {isHtml
-                  ? <div dangerouslySetInnerHTML={{ __html: displayText }} className="memo-card-html" />
+                  ? <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayText) }} className="memo-card-html" />
                   : <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{displayText}</p>
                 }
               </div>
