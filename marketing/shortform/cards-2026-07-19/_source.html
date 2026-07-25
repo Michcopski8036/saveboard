@@ -1,0 +1,119 @@
+<style>
+  @page { margin: 0 }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#111}
+
+  .card{
+    width:1080px; height:1920px;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:150px 110px;
+    position:relative;
+    page-break-after:always;
+  }
+
+  /* SaveBoard brand ground: deep violet-black */
+  .en{ background:#171325; color:#F4F1FA; }
+  .ko{ background:#1A1220; color:#F6F0F4; }
+
+  .quote{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:104px; line-height:1.18; font-weight:600; letter-spacing:-.02em;
+  }
+  .attrib{
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:38px; line-height:1.45; color:#9C93B8; margin-top:48px; font-weight:500;
+  }
+  .line{
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:82px; line-height:1.32; font-weight:600; letter-spacing:-.015em;
+  }
+  .line.small{ font-size:64px; color:#BDB4D4; font-weight:500; }
+  .ko .line{ font-family:"Apple SD Gothic Neo",-apple-system,sans-serif; font-size:78px; line-height:1.42; }
+  .ko .line.small{ font-size:60px; }
+  .ko .quote{ font-family:"Apple SD Gothic Neo",-apple-system,sans-serif; font-size:92px; line-height:1.34; }
+
+  .cta{
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:72px; font-weight:700; letter-spacing:-.02em;
+  }
+  .ko .cta{ font-family:"Apple SD Gothic Neo",-apple-system,sans-serif; font-size:66px; }
+  .cta .brand{
+    background:linear-gradient(100deg,#A855F7,#F472A0);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .cta .sub{ display:block; font-size:44px; font-weight:500; color:#9C93B8; margin-top:34px; letter-spacing:0; }
+  .ko .cta .sub{ font-size:42px; }
+
+  .tick{ position:absolute; left:110px; bottom:120px; display:flex; gap:14px; }
+  .tick i{ width:52px; height:6px; border-radius:99px; background:#3A3350; display:block; }
+  .tick i.on{ background:#A855F7; }
+</style>
+
+<!-- ══════════ SCRIPT 01 — English ══════════ -->
+
+<div class="card en">
+  <p class="quote">"Oh my God,<br>it's hell"</p>
+  <p class="attrib">— NYC parent, on the school<br>WhatsApp group chat <em>(Gothamist)</em></p>
+  <div class="tick"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<div class="card en">
+  <p class="line">300 unread.<br>Somewhere in there is<br>the field trip form.</p>
+  <div class="tick"><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<div class="card en">
+  <p class="line">You'll find it.<br>Eventually.</p>
+  <p class="line small" style="margin-top:44px">Between the reply-all's<br>and the 👍👍👍.</p>
+  <div class="tick"><i></i><i></i><i class="on"></i><i></i><i></i><i></i></div>
+</div>
+
+<div class="card en">
+  <p class="line">Or you scroll for<br>ten minutes<br>and give up.</p>
+  <div class="tick"><i></i><i></i><i></i><i class="on"></i><i></i><i></i></div>
+</div>
+
+<div class="card en">
+  <p class="line small">There's a difference between<br>a group chat and<br>a filing system.</p>
+  <div class="tick"><i></i><i></i><i></i><i></i><i class="on"></i><i></i></div>
+</div>
+
+<div class="card en">
+  <p class="cta"><span class="brand">SaveBoard</span>
+    <span class="sub">Save the link before it<br>disappears into the chat.</span></p>
+  <div class="tick"><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div>
+</div>
+
+<!-- ══════════ SCRIPT 02 — 한국어 ══════════ -->
+
+<div class="card ko">
+  <p class="quote">담임 쌤이 공지를<br>죄다 단톡방에<br>올리심 📌</p>
+  <div class="tick"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<div class="card ko">
+  <p class="line">준비물, 일정, 신청 링크…<br>다 섞여서 올라옴</p>
+  <div class="tick"><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<div class="card ko">
+  <p class="line">그 공지 하나 찾으려면<br>위로 위로 위로</p>
+  <div class="tick"><i></i><i></i><i class="on"></i><i></i><i></i><i></i></div>
+</div>
+
+<div class="card ko">
+  <p class="line">결국 못 찾고<br>다시 물어봄</p>
+  <p class="line small" style="margin-top:44px">"그거 언제까지였죠?"</p>
+  <div class="tick"><i></i><i></i><i></i><i class="on"></i><i></i><i></i></div>
+</div>
+
+<div class="card ko">
+  <p class="line small">링크만이라도<br>따로 저장해두면<br>좀 낫지 않을까</p>
+  <div class="tick"><i></i><i></i><i></i><i></i><i class="on"></i><i></i></div>
+</div>
+
+<div class="card ko">
+  <p class="cta"><span class="brand">세이브보드</span>
+    <span class="sub">단톡방에 올라온 링크만<br>따로 모아두는 앱</span></p>
+  <div class="tick"><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div>
+</div>
