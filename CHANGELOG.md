@@ -21,6 +21,7 @@ notes live in `store/release-notes.md`.
 
 | iOS | build | Android | vc | Status | Date |
 |---|---|---|---|---|---|
+| 1.0.8 | 20 | — | — | **iOS uploading** — YouTube in-app playback fix (WKWebView UA + IFrame Player API), billing-failure recovery, iPhone layout (safe-area top, bottom-nav spacing). Android unaffected by the video bug → separate later release | 2026-07-27 |
 | 1.0.7 | 19 | 1.0.12 | 16 | **Both submitted for review** | 2026-07-19 |
 | 1.0.6 | 18 | 1.0.11 | 15 | **LIVE** both stores | iOS 2026-07-17 |
 
