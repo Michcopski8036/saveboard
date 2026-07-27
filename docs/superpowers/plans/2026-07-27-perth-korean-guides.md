@@ -345,7 +345,7 @@ board_url: "https://www.saveboard.app/shared/test-fixture"
 
 - [ ] **Step 7: Build and verify**
 
-Run: `cd ~/saveboard && npm run build`
+Run: `cd /Users/cl/saveboard/.claude/worktrees/perth-korean-guides && npm run build`
 Expected: build succeeds (no `tsc` errors — this file isn't type-checked since it's plain `.mjs`, but a syntax error will crash the `node scripts/prerender-seo.mjs` step and fail the whole command). Then inspect:
 
 ```bash
@@ -360,7 +360,7 @@ Expected: both title tags print correctly, `ItemList` count ≥ 1, and 3 `/guide
 - [ ] **Step 8: Commit**
 
 ```bash
-cd ~/saveboard
+cd /Users/cl/saveboard/.claude/worktrees/perth-korean-guides
 git add scripts/prerender-seo.mjs src/guides/
 git commit -m "$(cat <<'EOF'
 Add /guides/ bilingual local-listicle rendering to prerender-seo.mjs
@@ -392,7 +392,7 @@ EOF
 This is a one-time interactive step, not part of the repeatable script (creating an auth user twice would fail on the duplicate email). Run once:
 
 ```bash
-cd ~/saveboard
+cd /Users/cl/saveboard/.claude/worktrees/perth-korean-guides
 node -e '
 import("@supabase/supabase-js").then(async ({ createClient }) => {
   const supabase = createClient(
@@ -503,7 +503,7 @@ Create `scripts/fixtures/create-guide-board.sample.json`:
 Run:
 
 ```bash
-cd ~/saveboard
+cd /Users/cl/saveboard/.claude/worktrees/perth-korean-guides
 export GUIDES_BOT_USER_ID="<uuid from Step 1>"
 node scripts/create-guide-board.mjs scripts/fixtures/create-guide-board.sample.json
 ```
@@ -527,7 +527,7 @@ import("@supabase/supabase-js").then(async ({ createClient }) => {
 - [ ] **Step 5: Commit**
 
 ```bash
-cd ~/saveboard
+cd /Users/cl/saveboard/.claude/worktrees/perth-korean-guides
 git add scripts/create-guide-board.mjs scripts/fixtures/create-guide-board.sample.json
 git commit -m "$(cat <<'EOF'
 Add scripts/create-guide-board.mjs — automated public board creation
@@ -655,7 +655,7 @@ Create `scripts/fixtures/build-guide-video.sample.json` (uses a stable public te
 Run:
 
 ```bash
-cd ~/saveboard
+cd /Users/cl/saveboard/.claude/worktrees/perth-korean-guides
 node scripts/build-guide-video.mjs scripts/fixtures/build-guide-video.sample.json
 open marketing/guides-social/test-fixture/video.mp4
 ```
@@ -667,14 +667,14 @@ Expected: prints `marketing/guides-social/test-fixture/video.mp4`, and the video
 Generated videos/cards are large binary output, not source — don't commit them.
 
 ```bash
-rm -rf ~/saveboard/marketing/guides-social/test-fixture
-echo 'marketing/guides-social/' >> ~/saveboard/.gitignore
+rm -rf /Users/cl/saveboard/.claude/worktrees/perth-korean-guides/marketing/guides-social/test-fixture
+echo 'marketing/guides-social/' >> /Users/cl/saveboard/.claude/worktrees/perth-korean-guides/.gitignore
 ```
 
 - [ ] **Step 5: Commit**
 
 ```bash
-cd ~/saveboard
+cd /Users/cl/saveboard/.claude/worktrees/perth-korean-guides
 git add scripts/build-guide-video.mjs scripts/fixtures/build-guide-video.sample.json .gitignore
 git commit -m "$(cat <<'EOF'
 Add scripts/build-guide-video.mjs — photo+caption short assembly
@@ -721,16 +721,20 @@ Copy the printed `shareUrl` into both `board_url` frontmatter fields.
 - [ ] **Step 4: Build and verify the site**
 
 ```bash
-cd ~/saveboard && npm run build
+cd /Users/cl/saveboard/.claude/worktrees/perth-korean-guides && npm run build
 open dist/guides/top-10-korean-bbq-perth/index.html
 ```
 
 Confirm the page renders, the board link works, and `grep -c "ItemList" dist/guides/top-10-korean-bbq-perth/index.html` still finds it.
 
-- [ ] **Step 5: Commit and push**
+- [ ] **Step 5: Commit**
+
+Work happens in an isolated worktree for this plan — commit only. The push to
+`origin main` (this repo's deploy trigger) happens once, at the end of all 5
+tasks, after the final whole-branch review — not per-task. Pushing mid-plan
+would deploy an incomplete feature (e.g. before Task 5's routine exists).
 
 ```bash
-cd ~/saveboard
 git add src/guides/ dist/
 git commit -m "$(cat <<'EOF'
 Publish first real /guides/ post — Top 10 Korean BBQ in Perth
@@ -741,7 +745,6 @@ real public SaveBoard board, real assembled video (staged, not posted).
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 EOF
 )"
-git push origin main
 ```
 
 ---
@@ -806,7 +809,7 @@ Add a new automations-list row (same pattern as the existing SaveBoard/PeriodVol
 - [ ] **Step 4: Commit**
 
 ```bash
-cd ~/saveboard
+cd /Users/cl/saveboard/.claude/worktrees/perth-korean-guides
 git add marketing/guides-routine-prompt.md
 git commit -m "$(cat <<'EOF'
 Add weekly /guides/ routine prompt
