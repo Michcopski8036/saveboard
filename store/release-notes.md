@@ -16,17 +16,13 @@ below stays platform-neutral.
 ### English
 
 ```
-If a payment ever fails, SaveBoard now explains what happened and lets you update your card right from the Billing screen — no more dead ends, and nothing you saved is ever deleted.
-
-Also: cleaner, tidier layout on iPhone, and a smoother billing screen.
+YouTube videos play inside SaveBoard again — tap a video card and it plays right there, no bouncing out. And if a payment ever fails, SaveBoard now explains what happened and lets you update your card from the Billing screen — nothing you saved is ever deleted. Plus a cleaner, tidier layout on iPhone.
 ```
 
 ### 한국어
 
 ```
-결제가 실패했을 때 무슨 일이 있었는지 알려드리고, 결제 화면에서 바로 카드를 변경할 수 있게 했어요. 저장하신 링크는 어떤 경우에도 삭제되지 않아요.
-
-그리고 아이폰에서 화면이 더 깔끔하게 정리됐어요.
+유튜브 영상이 SaveBoard 안에서 다시 재생돼요 — 영상 카드를 누르면 바로 그 자리에서 재생됩니다. 결제가 실패하면 무슨 일인지 알려드리고 결제 화면에서 바로 카드를 변경할 수 있어요(저장한 링크는 삭제되지 않아요). 아이폰 화면도 더 깔끔해졌어요.
 ```
 
 ---

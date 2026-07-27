@@ -4,6 +4,8 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { isPlaceholder, getPlatformFromPlaceholder, PlatformPlaceholder } from './PlatformPlaceholder';
 import { RichTextEditor } from './RichTextEditor';
+import { YouTubePlayer } from './YouTubePlayer';
+import { getYouTubeId } from '../lib/youtube';
 import { TAG_COLORS, deriveAiTags } from './LinkCard';
 import type { LinkData } from './LinkCard';
 
@@ -70,7 +72,7 @@ function getEmbedUrl(url: string): string {
   ];
   for (const p of ytPatterns) {
     const m = url.match(p);
-    if (m?.[1]) return `https://www.youtube.com/embed/${m[1]}?autoplay=0`;
+    if (m?.[1]) return `https://www.youtube.com/embed/${m[1]}?autoplay=0&playsinline=1`;
   }
   // Vimeo
   const vm = url.match(/vimeo\.com\/(?:.*\/)?(\d+)/);
@@ -437,8 +439,14 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
                     }}
                   />
                 </div>
+              ) : (/youtube\.com|youtu\.be/.test(selected.url) && getYouTubeId(selected.url)) ? (
+                /* YouTube: IFrame Player API — a bare <iframe> embed is rejected
+                   ("Error 153") inside the iOS WKWebView; the API plays fine. */
+                <div style={{ width: '100%', aspectRatio: '16/9' }}>
+                  <YouTubePlayer videoId={getYouTubeId(selected.url)!} autoplay={false} muted={false} loop={false} controls className="w-full h-full" />
+                </div>
               ) : /youtube\.com|youtu\.be|vimeo\.com/.test(selected.url) ? (
-                /* YouTube / Vimeo: 16:9 aspect ratio */
+                /* Vimeo (and any YouTube URL we couldn't parse an id from): 16:9 iframe */
                 <div style={{ width: '100%', aspectRatio: '16/9' }}>
                   <iframe
                     key={iframeKey}

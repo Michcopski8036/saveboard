@@ -5,6 +5,7 @@ import { useDrag, useDrop } from 'react-dnd';
 import { CategoryPopup } from './CategoryPopup';
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl, platformGradient } from './PlatformPlaceholder';
 import { RichTextEditor } from './RichTextEditor';
+import { YouTubePlayer } from './YouTubePlayer';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { sanitizeHtml } from '../lib/sanitize';
@@ -696,9 +697,8 @@ export function LinkCard({
         )}
 
         {isYT && isHovered && (
-          <iframe src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=${isMuted ? '1' : '0'}&controls=0&loop=1&playlist=${ytId}`}
-            className={`absolute inset-0 w-full h-full${isPortraitVideo ? ' object-cover' : ''}`}
-            allow="autoplay; encrypted-media" allowFullScreen />
+          <YouTubePlayer videoId={ytId} muted={isMuted}
+            className={`absolute inset-0 w-full h-full${isPortraitVideo ? ' object-cover' : ''}`} />
         )}
         {isVimeo && isHovered && (
           <iframe src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=${isMuted ? '1' : '0'}&loop=1&background=1`}

@@ -20,7 +20,7 @@ export function BottomNav({ selected, onSelect, onOpenAdd, onFocusSearch, onOpen
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-30 flex flex-col"
+      className="md:hidden fixed bottom-0 inset-x-0 z-30 flex flex-col pt-3"
       style={{
         background: t.bottomNavBg,
         borderTop: `1px solid ${t.bottomNavBorder}`,
