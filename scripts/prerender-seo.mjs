@@ -4,6 +4,7 @@ import path from 'node:path';
 const root = process.cwd();
 const distDir = path.join(root, 'dist');
 const blogDir = path.join(root, 'src', 'blog');
+const guidesDir = path.join(root, 'src', 'guides');
 const baseUrl = 'https://www.saveboard.app';
 const siteName = 'SaveBoard';
 const ogImage = `${baseUrl}/og-image.png`;
@@ -19,12 +20,40 @@ const allPosts = (await Promise.all(files.map(async file => parsePost(await read
 const landings = allPosts.filter(post => post.route);
 const posts = allPosts.filter(post => !post.route);
 
+const guideFiles = (await readdir(guidesDir).catch(() => [])).filter(f => /\.(en|ko)\.md$/.test(f));
+const guidesBySlug = new Map();
+for (const file of guideFiles) {
+  const langMatch = file.match(/\.(en|ko)\.md$/);
+  const lang = langMatch[1];
+  const slug = file.slice(0, -`.${lang}.md`.length);
+  const guide = parseGuide(await readFile(path.join(guidesDir, file), 'utf8'), lang);
+  guide.slug = slug;
+  if (!guidesBySlug.has(slug)) guidesBySlug.set(slug, {});
+  guidesBySlug.get(slug)[lang] = guide;
+}
+const guidePairs = [...guidesBySlug.entries()]
+  .filter(([slug, pair]) => {
+    if (!pair.en || !pair.ko) {
+      console.error(`prerender-seo: guide "${slug}" is missing its ${pair.en ? 'ko' : 'en'} pair — skipping.`);
+      return false;
+    }
+    return true;
+  })
+  .map(([, pair]) => pair)
+  .sort((a, b) => b.en.date.localeCompare(a.en.date));
+
 await writeRoute('blog', blogIndexHtml());
 for (const post of posts) {
   await writeRoute(`blog/${post.slug}`, articleHtml(post, { canonical: `${baseUrl}/blog/${post.slug}`, isLanding: false }));
 }
 for (const page of landings) {
   await writeRoute(page.route, articleHtml(page, { canonical: `${baseUrl}/${page.route}`, isLanding: true }));
+}
+
+await writeRoute('guides', guideIndexHtml());
+for (const pair of guidePairs) {
+  await writeRoute(`guides/${pair.en.slug}`, guideHtml(pair.en, pair.ko));
+  await writeRoute(`guides/${pair.en.slug}-ko`, guideHtml(pair.ko, pair.en));
 }
 
 await writeFile(path.join(distDir, 'sitemap.xml'), sitemapXml(), 'utf8');
@@ -51,6 +80,39 @@ function parsePost(raw) {
     route: data.route ?? '',
     content: match[2].trim(),
   };
+}
+
+// Guides reuse parsePost's frontmatter parser, then add the two guide-only
+// fields and the language pairing implied by the filename suffix.
+function parseGuide(raw, lang) {
+  const post = parsePost(raw);
+  return { ...post, lang, boardUrl: '' , ...extractGuideFrontmatter(raw) };
+}
+
+function extractGuideFrontmatter(raw) {
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) return {};
+  const data = {};
+  for (const line of match[1].split('\n')) {
+    const colon = line.indexOf(':');
+    if (colon === -1) continue;
+    const key = line.slice(0, colon).trim();
+    const val = line.slice(colon + 1).trim().replace(/^"|"$/g, '');
+    if (key === 'lang') data.lang = val;
+    if (key === 'board_url') data.boardUrl = val;
+  }
+  return data;
+}
+
+// Parses "## The List" / "## 리스트" numbered items: "1. **Name** (address) — note"
+function extractListItems(md) {
+  const items = [];
+  const re = /^\d+\.\s+\*\*(.+?)\*\*\s*\(([^)]+)\)\s*(?:—|-)?\s*(.*)$/gm;
+  let m;
+  while ((m = re.exec(md))) {
+    items.push({ name: m[1].trim(), address: m[2].trim(), note: m[3].trim() });
+  }
+  return items;
 }
 
 async function writeRoute(route, html) {
@@ -201,6 +263,102 @@ function articleHtml(post, { canonical, isLanding }) {
   }, body);
 }
 
+function guideHtml(guide, otherLang) {
+  const content = guide.content.replace(new RegExp(`^#\\s+${escapeRegExp(guide.title)}\\s*\\n+`), '');
+  const article = markdownToHtml(content);
+  const faqs = extractFaq(content);
+  const items = extractListItems(content);
+  const enUrl = `${baseUrl}/guides/${otherLang && guide.lang === 'ko' ? otherLang.slug : guide.slug}`;
+  const koSlug = guide.lang === 'ko' ? guide.slug : (otherLang ? otherLang.slug : guide.slug);
+  const canonical = guide.lang === 'ko' ? `${baseUrl}/guides/${koSlug}-ko` : `${baseUrl}/guides/${guide.slug}`;
+  const otherHref = guide.lang === 'ko' ? `/guides/${koSlug}` : `/guides/${koSlug}-ko`;
+  const otherLabel = guide.lang === 'ko' ? 'English' : '한국어';
+
+  const boardCta = guide.boardUrl
+    ? `<p><a href="${escAttr(guide.boardUrl)}">${guide.lang === 'ko' ? 'SaveBoard에서 전체 리스트 열기 →' : 'Open the full list as a SaveBoard →'}</a></p>`
+    : '';
+
+  const body = `
+    <main class="seo-page">
+      <article>
+        <p><a href="/guides">${guide.lang === 'ko' ? '전체 가이드' : 'All guides'}</a> · <a href="${escAttr(otherHref)}">${otherLabel}</a></p>
+        <header>
+          <p><time datetime="${esc(guide.date)}">${esc(formatDate(guide.date))}</time></p>
+          <h1>${esc(guide.title)}</h1>
+          <p>${esc(guide.description)}</p>
+        </header>
+        ${boardCta}
+        ${article}
+      </article>
+    </main>`;
+
+  const jsonLd = [{
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: guide.title,
+    description: guide.description,
+    url: canonical,
+    image: ogImage,
+    datePublished: guide.date,
+    dateModified: guide.date,
+    inLanguage: guide.lang,
+    author: { '@type': 'Organization', name: siteName },
+    publisher: organization(),
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+  }];
+  if (items.length) {
+    jsonLd.push({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: items.map((item, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        item: { '@type': 'LocalBusiness', name: item.name, address: item.address },
+      })),
+    });
+  }
+  if (faqs.length) {
+    jsonLd.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(faq => ({
+        '@type': 'Question',
+        name: faq.q,
+        acceptedAnswer: { '@type': 'Answer', text: faq.a },
+      })),
+    });
+  }
+
+  return withSeo({
+    title: `${guide.title} — SaveBoard Guides`,
+    description: guide.description,
+    keywords: guide.keywords,
+    canonical,
+    jsonLd,
+  }, body);
+}
+
+function guideIndexHtml() {
+  const title = 'Perth Guides — SaveBoard';
+  const description = 'Local Perth lists, curated as SaveBoards — open one, save what you need, done.';
+  const canonical = `${baseUrl}/guides`;
+  const body = `
+    <main class="seo-page">
+      <h1>Perth Guides</h1>
+      <p>${esc(description)}</p>
+      <section>
+        ${guidePairs.map(pair => `
+          <article>
+            <p><time datetime="${esc(pair.en.date)}">${esc(formatDate(pair.en.date))}</time></p>
+            <h2><a href="/guides/${esc(pair.en.slug)}">${esc(pair.en.title)}</a></h2>
+            <p>${esc(pair.en.description)}</p>
+          </article>
+        `).join('')}
+      </section>
+    </main>`;
+  return withSeo({ title, description, canonical, jsonLd: [] }, body);
+}
+
 // Parse an "## FAQ" / "## Frequently Asked Questions" section: each "### Question"
 // followed by paragraph text becomes a Q&A pair for FAQPage structured data.
 function extractFaq(md) {
@@ -293,6 +451,11 @@ function sitemapXml() {
       changefreq: 'monthly',
       priority: '0.8',
     })),
+    { loc: `${baseUrl}/guides`, lastmod: guidePairs[0]?.en.date ?? today, changefreq: 'weekly', priority: '0.7' },
+    ...guidePairs.flatMap(pair => [
+      { loc: `${baseUrl}/guides/${pair.en.slug}`, lastmod: pair.en.date, changefreq: 'monthly', priority: '0.8' },
+      { loc: `${baseUrl}/guides/${pair.en.slug}-ko`, lastmod: pair.ko.date, changefreq: 'monthly', priority: '0.7' },
+    ]),
   ];
 
   return `<?xml version="1.0" encoding="UTF-8"?>
