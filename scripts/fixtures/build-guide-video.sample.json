@@ -1,0 +1,7 @@
+{
+  "slug": "test-fixture",
+  "cards": [
+    { "photoUrl": "https://picsum.photos/1080/1920?random=1", "caption": "Test Restaurant One — Northbridge", "durationSec": 2 },
+    { "photoUrl": "https://picsum.photos/1080/1920?random=2", "caption": "Test Restaurant Two — Victoria Park", "durationSec": 2 }
+  ]
+}
