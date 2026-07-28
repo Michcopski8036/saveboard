@@ -17,3 +17,4 @@ ExportOptions.plist
 # macOS / IDE state
 .DS_Store
 android/.idea/
+.env*

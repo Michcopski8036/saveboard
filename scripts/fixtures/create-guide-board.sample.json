@@ -1,0 +1,7 @@
+{
+  "boardName": "Test — Top 10 Korean BBQ Perth",
+  "items": [
+    { "title": "Test Restaurant One", "url": "https://example.com/one", "description": "1 Test St, Northbridge", "image": "https://example.com/one.jpg" },
+    { "title": "Test Restaurant Two", "url": "https://example.com/two", "description": "2 Test St, Victoria Park", "image": "https://example.com/two.jpg" }
+  ]
+}
