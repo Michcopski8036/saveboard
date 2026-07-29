@@ -387,6 +387,8 @@ EOF
 **Interfaces:**
 - Produces: CLI `node scripts/create-guide-board.mjs <input.json>` where input is `{ "boardName": string, "items": [{ "title": string, "url": string, "description": string, "image": string }] }`. Prints `{ "boardId": string, "shareUrl": string }` as its only stdout line on success (so a calling routine/agent can parse it), exits non-zero with a stderr message on failure. Task 5's routine prompt references this exact CLI contract.
 
+> **Correction applied 2026-07-29 (Task 4).** The Step 2 code below was wrong in two ways and the shipped script differs: (1) public read-only sharing is a row in **`shared_boards`** (token + `links_snapshot`, read anonymously via the `get_shared_board` RPC) — `boards.invite_token` is the *login-required collaborator join* link, a different mechanism; (2) the public route is **`/share/<token>`**, not `/shared/<token>`. Task 2's original "share URL returns 200" check could not catch this: SaveBoard is an SPA, so every path returns 200. Verify a share URL by calling `get_shared_board` with the **anon** key and checking it returns a row.
+
 - [ ] **Step 1: One-time setup — create the guides-bot Supabase auth user**
 
 This is a one-time interactive step, not part of the repeatable script (creating an auth user twice would fail on the duplicate email). Run once:

@@ -41,13 +41,6 @@ const { error: memberError } = await supabase
   .insert({ board_id: board.id, user_id: GUIDES_BOT_USER_ID, role: 'owner' });
 if (memberError) { console.error('board_members insert failed:', memberError.message); process.exit(1); }
 
-const inviteToken = randomUUID();
-const { error: tokenError } = await supabase
-  .from('boards')
-  .update({ invite_token: inviteToken })
-  .eq('id', board.id);
-if (tokenError) { console.error('invite_token update failed:', tokenError.message); process.exit(1); }
-
 const linkRows = items.map(item => ({
   id: randomUUID(),
   user_id: GUIDES_BOT_USER_ID,
@@ -61,7 +54,36 @@ const linkRows = items.map(item => ({
 const { error: linksError } = await supabase.from('links').insert(linkRows);
 if (linksError) { console.error('links insert failed:', linksError.message); process.exit(1); }
 
+// The public read-only page (/share/<token>) reads shared_boards via the anon
+// get_shared_board RPC — it is NOT boards.invite_token, which is the
+// login-required collaborator join link (/join/<token>). A guide board needs a
+// shared_boards row carrying its own snapshot of the links, same as what
+// BoardShareModal's pushSnapshot writes for a human user.
+const snapshot = linkRows.map(row => ({
+  id: row.id,
+  url: row.url,
+  title: row.title,
+  description: row.description,
+  image: row.image,
+  category: boardName,
+  notes: null,
+  saved_at: new Date(row.created_at).toISOString(),
+}));
+const { data: shared, error: sharedError } = await supabase
+  .from('shared_boards')
+  .insert({
+    owner_id: GUIDES_BOT_USER_ID,
+    category: boardName,
+    links_snapshot: snapshot,
+    synced_at: new Date().toISOString(),
+    owner_name: 'SaveBoard Guides',
+    owner_email: 'guides-bot@saveboard.app',
+  })
+  .select('token')
+  .single();
+if (sharedError) { console.error('shared_boards insert failed:', sharedError.message); process.exit(1); }
+
 console.log(JSON.stringify({
   boardId: board.id,
-  shareUrl: `https://www.saveboard.app/shared/${inviteToken}`,
+  shareUrl: `https://www.saveboard.app/share/${shared.token}`,
 }));

@@ -1,0 +1,59 @@
+{
+  "boardName": "Korean BBQ in Perth — 9 verified places",
+  "items": [
+    {
+      "title": "Namoo Korean Restaurant",
+      "url": "https://www.google.com/maps/search/?api=1&query=Namoo+Korean+Restaurant+78+Barrack+St+Perth+WA+6000",
+      "description": "78 Barrack St, Perth WA 6000 — CBD pork-belly specialist, palsaik samgyeopsal (eight marinades). Dinner from 5pm.",
+      "image": ""
+    },
+    {
+      "title": "Arirang Korean BBQ Restaurant",
+      "url": "https://arirang.com.au/",
+      "description": "91-93 Barrack St, Perth WA 6000 — long-running traditional Korean BBQ in the CBD.",
+      "image": "https://arirang.com.au/assets/img/about.jpg"
+    },
+    {
+      "title": "Tong 86",
+      "url": "https://www.google.com/maps/search/?api=1&query=Tong+86+86+Beaufort+St+Perth+WA+6000",
+      "description": "86 Beaufort St, Perth WA 6000 — warehouse-sized room, graffiti walls, K-pop videos. Good for big groups.",
+      "image": ""
+    },
+    {
+      "title": "K Town Restaurant",
+      "url": "https://www.google.com/maps/search/?api=1&query=K+Town+Restaurant+63+Aberdeen+St+Northbridge+WA+6003",
+      "description": "63 Aberdeen St, Northbridge WA 6003 — Aberdeen Street tabletop grilling. Dinner from 5pm.",
+      "image": ""
+    },
+    {
+      "title": "Marubang",
+      "url": "https://www.marubang.com.au/",
+      "description": "318 William St, Northbridge WA 6003 — noodles and braised pork downstairs, Korean BBQ upstairs.",
+      "image": "https://marubang.com.au/wp-content/uploads/2021/04/main-banner.jpg"
+    },
+    {
+      "title": "Sura Korean Restaurant",
+      "url": "https://www.google.com/maps/search/?api=1&query=Sura+Korean+Restaurant+100+Francis+St+Northbridge+WA+6003",
+      "description": "100 Francis St, Northbridge WA 6003 — tabletop grills and a large courtyard for warm evenings.",
+      "image": ""
+    },
+    {
+      "title": "SSAM Korean BBQ & Mini Hot Pot",
+      "url": "https://ssamkorean.com.au/",
+      "description": "313 Albany Hwy, Victoria Park WA 6100 — Korean BBQ plus a per-person mini hot pot.",
+      "image": ""
+    },
+    {
+      "title": "Korean BBQ Village Group",
+      "url": "https://www.google.com/maps/search/?api=1&query=Korean+BBQ+Village+361+Albany+Hwy+Victoria+Park+WA+6100",
+      "description": "361 Albany Hwy, Victoria Park WA 6100 — charcoal grills, and the lunch option (opens 11am).",
+      "image": ""
+    },
+    {
+      "title": "Seoul Buffet",
+      "url": "https://www.seoulbuffet.com/",
+      "description": "425 Albany Hwy, Victoria Park WA 6100 — all-you-can-eat cook-your-own BBQ and steamboat, $49 per adult for a two-hour sitting.",
+      "image": ""
+    }
+  ]
+}

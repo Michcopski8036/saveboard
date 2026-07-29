@@ -25,16 +25,22 @@ if (!slug || !Array.isArray(cards) || !cards.length) {
 const outDir = path.join(process.cwd(), 'marketing', 'guides-social', slug);
 await mkdir(outDir, { recursive: true });
 
+// A card with no photoUrl is a text-only card: no <img> at all (an empty src
+// renders a broken-image icon), caption centred instead of bottom-anchored.
+// Used when a business has no photo we're allowed to publish.
 function cardHtml(photoUrl, caption) {
+  const textOnly = !photoUrl;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
-    html,body{margin:0;width:1080px;height:1920px;background:#000;overflow:hidden}
+    html,body{margin:0;width:1080px;height:1920px;background:#0b0b0b;overflow:hidden}
     .photo{width:1080px;height:1920px;object-fit:cover;position:absolute;inset:0;filter:brightness(0.6)}
     .caption{position:absolute;left:60px;right:60px;bottom:160px;color:#fff;
       font-family:-apple-system,sans-serif;font-size:56px;font-weight:700;
       line-height:1.3;text-shadow:0 2px 12px rgba(0,0,0,0.8)}
+    .caption.center{top:0;bottom:0;display:flex;align-items:center;text-align:center;
+      font-size:64px;line-height:1.45}
   </style></head><body>
-    <img class="photo" src="${photoUrl}">
-    <div class="caption">${caption}</div>
+    ${textOnly ? '' : `<img class="photo" src="${photoUrl}">`}
+    <div class="caption${textOnly ? ' center' : ''}"><span>${caption}</span></div>
   </body></html>`;
 }
 
