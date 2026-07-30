@@ -33,6 +33,9 @@ export function GuidePostPage() {
 
   // The markdown repeats the title as its own H1; the header below renders it.
   const body = guide.content.replace(/^#\s+.*\r?\n+/, '');
+  // The board CTA belongs with the list, above the FAQ — the FAQ is reference
+  // material people scroll past, not the note to end the piece on.
+  const [beforeFaq, faqSection] = splitAtFaq(body);
   const otherHref = `/guides/${guide.slug}${ko ? '' : '-ko'}`;
 
   return (
@@ -75,21 +78,21 @@ export function GuidePostPage() {
           <div className="h-px bg-gray-100 mb-10" />
 
           <article className="prose-style">
-            {renderMarkdown(body)}
+            {renderMarkdown(beforeFaq)}
           </article>
 
           {guide.boardUrl && (
-            <div className="mt-16 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-8 text-center">
+            <div className="mt-10 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-8 text-center">
               <p className="text-[13px] font-semibold text-purple-600 mb-2">
                 {ko ? '이 리스트, 보드로 가져가기' : 'Take this list with you'}
               </p>
               <h2 className="text-[23px] font-extrabold text-gray-900 mb-3">
-                {ko ? '휴대폰에서 한 번에 열기' : 'Open the whole list on your phone'}
+                {ko ? '한 번에 저장하고, 필요할 때 꺼내보기' : 'Save it once, open it whenever'}
               </h2>
               <p className="text-[15px] text-gray-500 mb-6 max-w-sm mx-auto">
                 {ko
-                  ? '로그인 없이 열려요. 각 가게로 한 번에 이동하고, 내 계정으로 가져가 직접 찾은 곳을 더할 수도 있어요.'
-                  : 'No login needed. One tap to each place — and you can copy it into your own account and add your own finds.'}
+                  ? '로그인 없이 열려요. 내 보드로 가져가면 다음에 약속 잡을 때 다시 검색하지 않아도 되고, 직접 찾은 곳도 더할 수 있어요.'
+                  : 'Opens without a login. Copy it to your own board and you won’t be searching for these again next time — and you can add your own finds.'}
               </p>
               {/* Plain <a>: /share/<token> is a different react-router route that
                   reads the board fresh; a client-side Link is fine, but an <a>
@@ -103,12 +106,25 @@ export function GuidePostPage() {
               </a>
             </div>
           )}
+
+          {faqSection && (
+            <article className="prose-style mt-4">
+              {renderMarkdown(faqSection)}
+            </article>
+          )}
         </div>
       </main>
 
       <BlogFooter />
     </div>
   );
+}
+
+/** Splits a guide's body at its FAQ heading so the board CTA can sit between. */
+function splitAtFaq(md: string): [string, string] {
+  const match = md.match(/\n(?=##\s+(?:FAQ|Frequently Asked Questions|자주 묻는 질문))/i);
+  if (!match || match.index === undefined) return [md, ''];
+  return [md.slice(0, match.index).trim(), md.slice(match.index).trim()];
 }
 
 function setMeta(name: string, content: string) {

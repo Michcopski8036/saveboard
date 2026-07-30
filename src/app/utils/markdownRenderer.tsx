@@ -1,29 +1,43 @@
 import React from 'react';
 
+// Recurses into bold/italic/link contents so nesting works — a linked name in
+// bold ("**[Venue](https://…)**") is a link, not literal brackets.
 function inlineFormat(text: string): React.ReactNode {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g);
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**'))
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
+      return <strong key={i}>{inlineFormat(part.slice(2, -2))}</strong>;
     if (part.startsWith('*') && part.endsWith('*'))
-      return <em key={i}>{part.slice(1, -1)}</em>;
+      return <em key={i}>{inlineFormat(part.slice(1, -1))}</em>;
     const m = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
     if (m)
-      return <a key={i} href={m[2]} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">{m[1]}</a>;
+      return <a key={i} href={m[2]} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">{inlineFormat(m[1])}</a>;
     return part;
   });
 }
 
+function splitOnHeadings(block: string): string[] {
+  const out: string[] = [];
+  let buffer: string[] = [];
+  for (const line of block.split('\n')) {
+    if (/^#{1,3} /.test(line)) {
+      if (buffer.length) { out.push(buffer.join('\n')); buffer = []; }
+      out.push(line);
+    } else {
+      buffer.push(line);
+    }
+  }
+  if (buffer.length) out.push(buffer.join('\n'));
+  return out;
+}
+
 export function renderMarkdown(md: string): React.ReactNode {
-  // A heading and the text under it are one block when the author didn't leave a
-  // blank line between them (common in FAQ sections). Split those apart first,
-  // or the whole question-and-answer renders as one oversized heading.
+  // A heading always starts its own block, even when the author forgot the blank
+  // line around it — otherwise a heading glued to a list makes the list stop
+  // looking like a list, and the whole thing renders as one paragraph.
   const blocks = md
     .split(/\n\n+/)
-    .flatMap(block => {
-      const match = block.match(/^(#{1,3} .*)\n([\s\S]+)$/);
-      return match ? [match[1], match[2]] : [block];
-    })
+    .flatMap(splitOnHeadings)
     .filter(b => b.trim());
 
   return blocks.map((block, i) => {

@@ -107,10 +107,22 @@ function extractGuideFrontmatter(raw) {
 // Parses "## The List" / "## 리스트" numbered items: "1. **Name** (address) — note"
 function extractListItems(md) {
   const items = [];
-  const re = /^\d+\.\s+\*\*(.+?)\*\*\s*\(([^)]+)\)\s*(?:—|-)?\s*(.*)$/gm;
+  // "1. **Name** ★ 4.3 · 1,017 reviews (address) — note". The rating segment
+  // between the name and the address is optional and must stay paren-free, or
+  // it would be picked up as the address.
+  const re = /^\d+\.\s+\*\*(.+?)\*\*\s*(?:★[^()]*)?\(([^)]+)\)\s*(?:—|-)?\s*(.*)$/gm;
   let m;
   while ((m = re.exec(md))) {
-    items.push({ name: m[1].trim(), address: m[2].trim(), note: m[3].trim() });
+    // The name may itself be a link — "**[Name](url)**" — so the venue's own
+    // site becomes the LocalBusiness url instead of ending up inside its name.
+    const rawName = m[1].trim();
+    const link = rawName.match(/^\[(.+?)\]\((.+?)\)$/);
+    items.push({
+      name: link ? link[1].trim() : rawName,
+      url: link ? link[2].trim() : '',
+      address: m[2].trim(),
+      note: m[3].trim(),
+    });
   }
   return items;
 }
@@ -265,7 +277,10 @@ function articleHtml(post, { canonical, isLanding }) {
 
 function guideHtml(guide, otherLang) {
   const content = guide.content.replace(new RegExp(`^#\\s+${escapeRegExp(guide.title)}\\s*\\n+`), '');
-  const article = markdownToHtml(content);
+  // Same order as the app page: list, then the board link, then the FAQ.
+  const faqSplit = content.match(/\n(?=##\s+(?:FAQ|Frequently Asked Questions|자주 묻는 질문))/i);
+  const article = markdownToHtml(faqSplit ? content.slice(0, faqSplit.index).trim() : content);
+  const faqArticle = faqSplit ? markdownToHtml(content.slice(faqSplit.index).trim()) : '';
   const faqs = extractFaq(content);
   const items = extractListItems(content);
   const enUrl = `${baseUrl}/guides/${otherLang && guide.lang === 'ko' ? otherLang.slug : guide.slug}`;
@@ -289,6 +304,7 @@ function guideHtml(guide, otherLang) {
         </header>
         ${article}
         ${boardCta}
+        ${faqArticle}
       </article>
     </main>`;
 
@@ -313,7 +329,12 @@ function guideHtml(guide, otherLang) {
       itemListElement: items.map((item, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        item: { '@type': 'LocalBusiness', name: item.name, address: item.address },
+        item: {
+          '@type': 'LocalBusiness',
+          name: item.name,
+          address: item.address,
+          ...(item.url ? { url: item.url } : {}),
+        },
       })),
     });
   }
@@ -389,7 +410,9 @@ function stripMd(text) {
 }
 
 function markdownToHtml(md) {
-  const blocks = md.split(/\n\n+/).filter(block => block.trim());
+  // Mirrors src/app/utils/markdownRenderer.tsx: a heading always starts its own
+  // block, so a heading glued to a list can't stop the list parsing as a list.
+  const blocks = md.split(/\n\n+/).flatMap(splitOnHeadings).filter(block => block.trim());
   return blocks.map(block => {
     const trimmed = block.trim();
     if (trimmed === '---') return '<hr />';
@@ -423,6 +446,21 @@ function tableToHtml(lines) {
       <thead><tr>${cells(header).map(cell => `<th>${cell}</th>`).join('')}</tr></thead>
       <tbody>${body.map(row => `<tr>${cells(row).map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>
     </table>`;
+}
+
+function splitOnHeadings(block) {
+  const out = [];
+  let buffer = [];
+  for (const line of block.split('\n')) {
+    if (/^#{1,3} /.test(line)) {
+      if (buffer.length) { out.push(buffer.join('\n')); buffer = []; }
+      out.push(line);
+    } else {
+      buffer.push(line);
+    }
+  }
+  if (buffer.length) out.push(buffer.join('\n'));
+  return out;
 }
 
 function inline(text) {
