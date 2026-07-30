@@ -15,12 +15,23 @@ function inlineFormat(text: string): React.ReactNode {
 }
 
 export function renderMarkdown(md: string): React.ReactNode {
-  const blocks = md.split(/\n\n+/).filter(b => b.trim());
+  // A heading and the text under it are one block when the author didn't leave a
+  // blank line between them (common in FAQ sections). Split those apart first,
+  // or the whole question-and-answer renders as one oversized heading.
+  const blocks = md
+    .split(/\n\n+/)
+    .flatMap(block => {
+      const match = block.match(/^(#{1,3} .*)\n([\s\S]+)$/);
+      return match ? [match[1], match[2]] : [block];
+    })
+    .filter(b => b.trim());
 
   return blocks.map((block, i) => {
+    // Questions sit a step below section headings: bold and dark, but at body
+    // scale, so the answer under them stays the thing you read.
     if (block.startsWith('### '))
       return (
-        <h3 key={i} className="text-xl font-semibold text-gray-900 mt-8 mb-3 leading-snug">
+        <h3 key={i} className="text-[17px] font-bold text-gray-900 mt-8 mb-2 leading-snug">
           {inlineFormat(block.slice(4).trim())}
         </h3>
       );
@@ -107,8 +118,13 @@ export function renderMarkdown(md: string): React.ReactNode {
       );
     }
 
+    // A paragraph straight after a question is that question's answer: keep it
+    // tucked under it rather than floating a full paragraph gap away.
+    const answersQuestion = i > 0 && blocks[i - 1].startsWith('### ');
     return (
-      <p key={i} className="text-gray-600 leading-relaxed my-5 text-[17px]">
+      <p key={i} className={answersQuestion
+        ? 'text-gray-600 leading-relaxed text-[16px] mt-0 mb-6'
+        : 'text-gray-600 leading-relaxed text-[17px] my-5'}>
         {inlineFormat(block.replace(/\n/g, ' '))}
       </p>
     );
