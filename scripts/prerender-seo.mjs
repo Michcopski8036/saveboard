@@ -287,8 +287,8 @@ function guideHtml(guide, otherLang) {
           <h1>${esc(guide.title)}</h1>
           <p>${esc(guide.description)}</p>
         </header>
-        ${boardCta}
         ${article}
+        ${boardCta}
       </article>
     </main>`;
 

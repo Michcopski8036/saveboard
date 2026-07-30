@@ -118,6 +118,9 @@ export function Nav() {
           <Link to="/blog" className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors">
             {ko ? '블로그' : 'Blog'}
           </Link>
+          <Link to="/guides" className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors">
+            {ko ? '가이드' : 'Guides'}
+          </Link>
           <Link
             to="/?auth=1"
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-xl font-semibold text-[13px] hover:opacity-90 transition-opacity"

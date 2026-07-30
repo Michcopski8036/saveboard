@@ -23,6 +23,8 @@
 
 ## Task 1: Extend `prerender-seo.mjs` to render `src/guides/*.md` under `/guides/`
 
+> **Correction applied 2026-07-30.** This task was incomplete: prerendered HTML lands in `<div id="root">`, which React **replaces on hydration**, so `/guides/*` had no client route and a human visitor got the logged-in app while only crawlers saw the guide. Same shape as the existing `/blog` pages, which do have routes. Fixed by adding `src/app/utils/guideUtils.ts` + `src/app/components/guides/{GuideListPage,GuidePostPage}.tsx` and the `/guides` + `/guides/:slug` routes in `src/main.tsx` — generic, so new posts need no further wiring. Step 7's `open dist/guides/<slug>/index.html` check could not catch this (a static file open never runs the router); **verify a guide by loading the route in a real browser**, not by opening the file or curling for a string.
+
 **Files:**
 - Modify: `scripts/prerender-seo.mjs`
 - Create (fixture, deleted at the end of Task 4 once real content replaces it): `src/guides/top-10-korean-bbq-perth.en.md`, `src/guides/top-10-korean-bbq-perth.ko.md`

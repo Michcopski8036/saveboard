@@ -5,6 +5,8 @@ import { SharedBoardPage } from "./app/components/SharedBoardPage.tsx";
 import { JoinTeamBoard } from "./app/components/JoinTeamBoard.tsx";
 import { BlogListPage } from "./app/components/blog/BlogListPage.tsx";
 import { BlogPostPage } from "./app/components/blog/BlogPostPage.tsx";
+import { GuideListPage } from "./app/components/guides/GuideListPage.tsx";
+import { GuidePostPage } from "./app/components/guides/GuidePostPage.tsx";
 import { LanguageProvider } from "./app/context/LanguageContext.tsx";
 import { ErrorBoundary } from "./app/components/ErrorBoundary.tsx";
 import "./styles/index.css";
@@ -22,6 +24,10 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/team/:token" element={<JoinTeamBoard />} />
           <Route path="/blog" element={<BlogListPage />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
+          {/* Without these two, /guides/* falls through to <App/> and a human
+              visitor gets the dashboard while crawlers see the prerendered HTML. */}
+          <Route path="/guides" element={<GuideListPage />} />
+          <Route path="/guides/:slug" element={<GuidePostPage />} />
           <Route path="/*" element={<App />} />
         </Routes>
       </LanguageProvider>
