@@ -86,7 +86,7 @@ function parsePost(raw) {
 // fields and the language pairing implied by the filename suffix.
 function parseGuide(raw, lang) {
   const post = parsePost(raw);
-  return { ...post, lang, boardUrl: '' , ...extractGuideFrontmatter(raw) };
+  return { ...post, lang, boardUrl: '', boardImage: '', ...extractGuideFrontmatter(raw) };
 }
 
 function extractGuideFrontmatter(raw) {
@@ -100,6 +100,7 @@ function extractGuideFrontmatter(raw) {
     const val = line.slice(colon + 1).trim().replace(/^"|"$/g, '');
     if (key === 'lang') data.lang = val;
     if (key === 'board_url') data.boardUrl = val;
+    if (key === 'board_image') data.boardImage = val;
   }
   return data;
 }
@@ -291,7 +292,7 @@ function guideHtml(guide, otherLang) {
 
   const boardCta = guide.boardUrl
     ? `<figure>
-        <img src="/guides/shared-board-app.jpg" width="520" height="722" loading="lazy"
+        <img src="${escAttr(guide.boardImage || '/guides/shared-board-app.jpg')}" loading="lazy"
           alt="${guide.lang === 'ko' ? '공유된 보드를 휴대폰에서 연 화면' : 'A shared SaveBoard board open on a phone'}" />
         <figcaption><a href="${escAttr(guide.boardUrl)}">${guide.lang === 'ko' ? 'SaveBoard에서 전체 리스트 열기 →' : 'Open the full list as a SaveBoard →'}</a></figcaption>
       </figure>`

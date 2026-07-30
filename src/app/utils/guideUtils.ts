@@ -10,6 +10,8 @@ export interface GuideMeta {
   keywords: string;
   lang: 'en' | 'ko';
   boardUrl: string;
+  /** Optional screenshot of this guide's own board; falls back to a generic app shot. */
+  boardImage: string;
   content: string;
 }
 
@@ -22,7 +24,7 @@ export interface GuidePair {
 
 function parseGuide(raw: string): GuideMeta {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  const empty: GuideMeta = { title: '', date: '', description: '', slug: '', keywords: '', lang: 'en', boardUrl: '', content: raw };
+  const empty: GuideMeta = { title: '', date: '', description: '', slug: '', keywords: '', lang: 'en', boardUrl: '', boardImage: '', content: raw };
   if (!match) return empty;
   const data: Record<string, string> = {};
   match[1].split('\n').forEach(line => {
@@ -38,6 +40,7 @@ function parseGuide(raw: string): GuideMeta {
     keywords: data.keywords ?? '',
     lang: data.lang === 'ko' ? 'ko' : 'en',
     boardUrl: data.board_url ?? '',
+    boardImage: data.board_image ?? '',
     content: match[2].trim(),
   };
 }

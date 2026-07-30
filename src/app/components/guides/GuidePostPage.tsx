@@ -85,12 +85,10 @@ export function GuidePostPage() {
             <div className="mt-10 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-8">
               <div className="flex flex-col sm:flex-row items-center gap-7">
                 <img
-                  src="/guides/shared-board-app.jpg"
-                  alt={ko ? '공유된 보드를 휴대폰에서 연 화면' : 'A shared SaveBoard board open on a phone'}
-                  width={520}
-                  height={722}
+                  src={guide.boardImage || '/guides/shared-board-app.jpg'}
+                  alt={ko ? '이 리스트의 보드를 휴대폰에서 연 화면' : 'This guide’s board open on a phone'}
                   loading="lazy"
-                  className="w-40 sm:w-44 shrink-0 rounded-xl shadow-md"
+                  className="w-44 sm:w-48 shrink-0 rounded-xl shadow-md border border-purple-100"
                 />
                 <div className="text-center sm:text-left">
                   <p className="text-[13px] font-semibold text-purple-600 mb-2">

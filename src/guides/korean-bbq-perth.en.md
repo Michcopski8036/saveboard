@@ -6,6 +6,7 @@ slug: "korean-bbq-perth"
 keywords: "perth korean bbq, korean bbq perth, best korean bbq perth, korean restaurant perth, northbridge korean bbq, victoria park korean bbq"
 lang: "en"
 board_url: "https://www.saveboard.app/share/20b57a01-2ced-43d7-a61f-73ae2e7f66a5"
+board_image: "/guides/korean-bbq-perth-board.jpg"
 ---
 
 # Korean BBQ in Perth, Ranked: Which of the 9 Suits Your Table

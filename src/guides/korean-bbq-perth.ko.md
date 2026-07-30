@@ -6,6 +6,7 @@ slug: "korean-bbq-perth"
 keywords: "퍼스 한식당, 퍼스 고기집, 퍼스 한국식 바베큐, 퍼스 맛집 추천, 노스브릿지 한식당, 빅토리아파크 한식당"
 lang: "ko"
 board_url: "https://www.saveboard.app/share/20b57a01-2ced-43d7-a61f-73ae2e7f66a5"
+board_image: "/guides/korean-bbq-perth-board.jpg"
 ---
 
 # 퍼스 한국식 고깃집 랭킹 9곳 — 어디로 갈지 정해드립니다
