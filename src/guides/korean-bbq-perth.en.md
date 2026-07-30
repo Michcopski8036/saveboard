@@ -10,7 +10,7 @@ board_url: "https://www.saveboard.app/share/20b57a01-2ced-43d7-a61f-73ae2e7f66a5
 
 # Korean BBQ in Perth, Ranked: 9 Places With Verified Addresses
 
-Most "best Korean BBQ in Perth" lists are copied from each other and quietly go stale. While putting this one together we found published lists placing one of these restaurants on the wrong street number, and another in a suburb it doesn't trade in — small errors, but the kind that send you to the wrong door on a Friday night.
+While putting this list together we found published lists placing one of these restaurants on the wrong street number, and another in a suburb it doesn't trade in — small errors, but the kind that send you to the wrong door on a Friday night.
 
 **The ranking below is by Google rating, highest first, with review count breaking ties.** That's a blunt measure, and we're stating it rather than dressing it up as a critic's verdict: we haven't eaten at all nine in the same week, so a score thousands of Perth diners actually gave is a more honest basis than our opinion. A place at 4.3 with 1,017 reviews is a safer bet than one at 4.3 with 491, which is why review count is the tiebreak.
 
