@@ -54,6 +54,13 @@ const COPY = {
       { label: 'Save in seconds',          desc: 'Just paste a link and SaveBoard does the rest. Title, image, description — auto-fetched.' },
       { label: 'Private & just yours',     desc: 'Your links are private. No one sees your board unless you choose to share.' },
     ],
+    shotsTitle: 'This is the app',
+    shotsSub: 'Real screens, not mockups.',
+    shots: [
+      'Every save as a visual card — PDFs, videos and pages side by side.',
+      'A board per activity, with tags and favourites down the side.',
+      'Move a save into another board in one tap.',
+    ],
     howTitle: 'How it works',
     howSub: 'Three steps. Two minutes. Zero lost links.',
     steps: [
@@ -122,6 +129,13 @@ const COPY = {
       { label: '메모 & 알림 추가',       desc: '"6월 1일까지 신청" 같은 메모를 달아 놓치지 않게 하세요.' },
       { label: '몇 초 만에 저장',        desc: '링크만 붙여넣으면 SaveBoard가 알아서 처리해요. 제목·이미지·설명 자동 수집.' },
       { label: '오직 나만의 공간',       desc: '내 링크는 비공개예요. 공유하기 전엔 아무도 내 보드를 못 봐요.' },
+    ],
+    shotsTitle: '앱은 이렇게 생겼어요',
+    shotsSub: '목업이 아니라 실제 화면입니다.',
+    shots: [
+      '저장한 링크가 카드로 — PDF·영상·웹페이지가 한자리에.',
+      '활동별로 보드를 나누고, 옆에 태그와 즐겨찾기.',
+      '저장한 링크를 다른 보드로 한 번에 옮기기.',
     ],
     howTitle: '사용 방법',
     howSub: '세 단계. 2분. 잃어버리는 링크 0개.',
@@ -390,6 +404,35 @@ export function LandingPage({ onGetStarted }: Props) {
                 <h3 className="font-bold text-gray-900 text-[16px] mb-2">{title}</h3>
                 <p className="text-[13px] text-gray-500 leading-relaxed">{desc}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Real app screens — the mockups above are illustrations; these are the product */}
+      <section className="py-16 px-5 bg-gray-50 border-y border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-[32px] font-bold text-center text-gray-900 mb-2">{c.shotsTitle}</h2>
+          <p className="text-gray-500 text-center mb-12 text-[16px]">{c.shotsSub}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6">
+            {[
+              { src: '/app/app-saves.jpg', alt: c.shots[0] },
+              { src: '/app/app-boards.jpg', alt: c.shots[1] },
+              { src: '/app/app-boards-move.jpg', alt: c.shots[2] },
+            ].map(({ src, alt }, i) => (
+              <figure key={src} className="flex flex-col items-center gap-4">
+                <img
+                  src={src}
+                  alt={alt}
+                  width={430}
+                  height={935}
+                  loading="lazy"
+                  className="w-[190px] sm:w-full max-w-[220px] rounded-[22px] border border-gray-200 shadow-xl shadow-gray-200"
+                />
+                <figcaption className="text-[13px] text-gray-500 leading-relaxed text-center max-w-[240px]">
+                  {c.shots[i]}
+                </figcaption>
+              </figure>
             ))}
           </div>
         </div>
