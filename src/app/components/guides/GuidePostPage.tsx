@@ -82,28 +82,40 @@ export function GuidePostPage() {
           </article>
 
           {guide.boardUrl && (
-            <div className="mt-10 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-8 text-center">
-              <p className="text-[13px] font-semibold text-purple-600 mb-2">
-                {ko ? '이 리스트, 보드로 가져가기' : 'Take this list with you'}
-              </p>
-              <h2 className="text-[23px] font-extrabold text-gray-900 mb-3">
-                {ko ? '한 번에 저장하고, 필요할 때 꺼내보기' : 'Save it once, open it whenever'}
-              </h2>
-              <p className="text-[15px] text-gray-500 mb-6 max-w-sm mx-auto">
-                {ko
-                  ? '로그인 없이 열려요. 내 보드로 가져가면 다음에 약속 잡을 때 다시 검색하지 않아도 되고, 직접 찾은 곳도 더할 수 있어요.'
-                  : 'Opens without a login. Copy it to your own board and you won’t be searching for these again next time — and you can add your own finds.'}
-              </p>
-              {/* Plain <a>: /share/<token> is a different react-router route that
-                  reads the board fresh; a client-side Link is fine, but an <a>
-                  also works when this page is opened from prerendered HTML. */}
-              <a
-                href={guide.boardUrl}
-                className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
-              >
-                {ko ? '보드 열기' : 'Open the board'}
-                <ArrowRight className="w-4 h-4" />
-              </a>
+            <div className="mt-10 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-8">
+              <div className="flex flex-col sm:flex-row items-center gap-7">
+                <img
+                  src="/guides/shared-board-app.jpg"
+                  alt={ko ? '공유된 보드를 휴대폰에서 연 화면' : 'A shared SaveBoard board open on a phone'}
+                  width={520}
+                  height={722}
+                  loading="lazy"
+                  className="w-40 sm:w-44 shrink-0 rounded-xl shadow-md"
+                />
+                <div className="text-center sm:text-left">
+                  <p className="text-[13px] font-semibold text-purple-600 mb-2">
+                    {ko ? '이 리스트, 보드로 가져가기' : 'Take this list with you'}
+                  </p>
+                  <h2 className="text-[23px] font-extrabold text-gray-900 mb-3">
+                    {ko ? '한 번에 저장하고, 필요할 때 꺼내보기' : 'Save it once, open it whenever'}
+                  </h2>
+                  <p className="text-[15px] text-gray-500 mb-6">
+                    {ko
+                      ? '로그인 없이 열려요. 내 보드로 가져가면 다음에 약속 잡을 때 다시 검색하지 않아도 되고, 직접 찾은 곳도 더할 수 있어요.'
+                      : 'Opens without a login. Copy it to your own board and you won’t be searching for these again next time — and you can add your own finds.'}
+                  </p>
+                  {/* Plain <a>: /share/<token> is a different react-router route that
+                      reads the board fresh; a client-side Link is fine, but an <a>
+                      also works when this page is opened from prerendered HTML. */}
+                  <a
+                    href={guide.boardUrl}
+                    className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
+                  >
+                    {ko ? '보드 열기' : 'Open the board'}
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
             </div>
           )}
 

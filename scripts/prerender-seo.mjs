@@ -290,7 +290,11 @@ function guideHtml(guide, otherLang) {
   const otherLabel = guide.lang === 'ko' ? 'English' : '한국어';
 
   const boardCta = guide.boardUrl
-    ? `<p><a href="${escAttr(guide.boardUrl)}">${guide.lang === 'ko' ? 'SaveBoard에서 전체 리스트 열기 →' : 'Open the full list as a SaveBoard →'}</a></p>`
+    ? `<figure>
+        <img src="/guides/shared-board-app.jpg" width="520" height="722" loading="lazy"
+          alt="${guide.lang === 'ko' ? '공유된 보드를 휴대폰에서 연 화면' : 'A shared SaveBoard board open on a phone'}" />
+        <figcaption><a href="${escAttr(guide.boardUrl)}">${guide.lang === 'ko' ? 'SaveBoard에서 전체 리스트 열기 →' : 'Open the full list as a SaveBoard →'}</a></figcaption>
+      </figure>`
     : '';
 
   const body = `
