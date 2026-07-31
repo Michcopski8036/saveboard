@@ -12,6 +12,7 @@ interface Props {
 const COPY = {
   en: {
     blog: 'Blog',
+    guides: 'Perth guides',
     signIn: 'Sign in',
     getStarted: 'Get Started Free',
     heroBadge: '😩 Sound familiar?',
@@ -88,6 +89,7 @@ const COPY = {
   },
   ko: {
     blog: '블로그',
+    guides: '퍼스 가이드',
     signIn: '로그인',
     getStarted: '무료로 시작하기',
     heroBadge: '😩 이런 적 있죠?',
@@ -198,6 +200,12 @@ export function LandingPage({ onGetStarted }: Props) {
               className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
               {c.blog}
+            </Link>
+            <Link
+              to="/guides"
+              className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              {c.guides}
             </Link>
             <button
               onClick={onGetStarted}
@@ -552,7 +560,11 @@ export function LandingPage({ onGetStarted }: Props) {
               Save<span className="bg-gradient-to-r from-[#A259FF] via-[#FF7262] to-[#F24E1E] bg-clip-text text-transparent">Board</span>
             </span>
           </div>
-          <p className="text-[12px] text-gray-400">{c.rights}</p>
+          <div className="flex items-center gap-4">
+            <Link to="/blog" className="text-[12px] text-gray-400 hover:text-gray-600 transition-colors">{c.blog}</Link>
+            <Link to="/guides" className="text-[12px] text-gray-400 hover:text-gray-600 transition-colors">{c.guides}</Link>
+            <p className="text-[12px] text-gray-400">{c.rights}</p>
+          </div>
         </div>
       </footer>
 

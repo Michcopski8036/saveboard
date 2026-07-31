@@ -12,7 +12,17 @@ set -euo pipefail
 HOST="www.saveboard.app"
 KEY="2e2b845748b438d03d1c9482566c1758"
 KEY_LOCATION="https://${HOST}/${KEY}.txt"
-SITEMAP="$(dirname "$0")/../public/sitemap.xml"
+# Read the LIVE sitemap, not the repo copy: the real sitemap is generated at
+# build time by prerender-seo.mjs into dist/, so public/sitemap.xml goes stale
+# (it was missing every /guides/ URL). Falls back to the repo copy if the site
+# can't be reached.
+SITEMAP="$(mktemp)"
+if curl -fsS --max-time 20 "https://${HOST}/sitemap.xml" -o "$SITEMAP" && grep -q '<loc>' "$SITEMAP"; then
+  echo "Using live sitemap from https://${HOST}/sitemap.xml"
+else
+  echo "Live sitemap unavailable — falling back to the repo copy" >&2
+  SITEMAP="$(dirname "$0")/../public/sitemap.xml"
+fi
 
 # Extract <loc> URLs from the sitemap (portable — no mapfile, works on bash 3.2).
 URLS=""

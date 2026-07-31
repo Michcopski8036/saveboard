@@ -134,8 +134,14 @@ async function writeRoute(route, html) {
   await writeFile(path.join(dir, 'index.html'), html, 'utf8');
 }
 
-function withSeo({ title, description, canonical, keywords = '', jsonLd = [] }, bodyHtml) {
+/**
+ * `alternates` are hreflang pairs — bilingual guides need them so Google serves
+ * the Korean page to Korean searchers instead of treating the two as duplicates.
+ * `image`, `locale` and the article timestamps are optional per-page overrides.
+ */
+function withSeo({ title, description, canonical, keywords = '', jsonLd = [], alternates = [], image = ogImage, locale = '', published = '', modified = '' }, bodyHtml) {
   const fullTitle = title.includes(siteName) ? title : `${title} — ${siteName}`;
+  const isArticle = jsonLd.some(item => item['@type'] === 'Article');
   const meta = [
     `<title>${esc(fullTitle)}</title>`,
     `<meta name="description" content="${esc(description)}" />`,
@@ -143,16 +149,24 @@ function withSeo({ title, description, canonical, keywords = '', jsonLd = [] }, 
     `<meta name="author" content="${siteName}" />`,
     `<meta name="theme-color" content="#A259FF" />`,
     `<link rel="canonical" href="${esc(canonical)}" />`,
-    `<meta property="og:type" content="${jsonLd.some(item => item['@type'] === 'Article') ? 'article' : 'website'}" />`,
+    ...alternates.map(alt => `<link rel="alternate" hreflang="${esc(alt.hreflang)}" href="${esc(alt.href)}" />`),
+    `<meta property="og:type" content="${isArticle ? 'article' : 'website'}" />`,
+    `<meta property="og:site_name" content="${siteName}" />`,
     `<meta property="og:url" content="${esc(canonical)}" />`,
     `<meta property="og:title" content="${esc(fullTitle)}" />`,
     `<meta property="og:description" content="${esc(description)}" />`,
-    `<meta property="og:image" content="${ogImage}" />`,
+    `<meta property="og:image" content="${esc(image)}" />`,
+    locale ? `<meta property="og:locale" content="${esc(locale)}" />` : '',
+    ...alternates
+      .filter(alt => alt.locale && alt.locale !== locale)
+      .map(alt => `<meta property="og:locale:alternate" content="${esc(alt.locale)}" />`),
+    isArticle && published ? `<meta property="article:published_time" content="${esc(published)}" />` : '',
+    isArticle && modified ? `<meta property="article:modified_time" content="${esc(modified)}" />` : '',
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:url" content="${esc(canonical)}" />`,
     `<meta name="twitter:title" content="${esc(fullTitle)}" />`,
     `<meta name="twitter:description" content="${esc(description)}" />`,
-    `<meta name="twitter:image" content="${ogImage}" />`,
+    `<meta name="twitter:image" content="${esc(image)}" />`,
     ...jsonLd.map(item => `<script type="application/ld+json">${JSON.stringify(item)}</script>`),
   ].filter(Boolean).join('\n    ');
 
@@ -313,19 +327,43 @@ function guideHtml(guide, otherLang) {
       </article>
     </main>`;
 
+  // Social cards are landscape (1.91:1); the board screenshot is a portrait
+  // phone shot and would be centre-cropped to a meaningless slice, so sharing
+  // uses the site card. board_image stays an on-page asset.
+  const guideImage = ogImage;
+  const enHref = `${baseUrl}/guides/${guide.lang === 'ko' ? koSlug : guide.slug}`;
+  const koHref = `${baseUrl}/guides/${koSlug}-ko`;
+  const alternates = [
+    { hreflang: 'en', href: enHref, locale: 'en_AU' },
+    { hreflang: 'ko', href: koHref, locale: 'ko_KR' },
+    { hreflang: 'x-default', href: enHref },
+  ];
+
   const jsonLd = [{
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: guide.title,
     description: guide.description,
     url: canonical,
-    image: ogImage,
+    image: guideImage,
     datePublished: guide.date,
     dateModified: guide.date,
-    inLanguage: guide.lang,
+    inLanguage: guide.lang === 'ko' ? 'ko-KR' : 'en-AU',
+    keywords: guide.keywords,
+    isAccessibleForFree: true,
     author: { '@type': 'Organization', name: siteName },
     publisher: organization(),
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+  }, {
+    // Breadcrumbs give the guides section its own rung in search results
+    // instead of every post looking like a loose page under the domain.
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: siteName, item: baseUrl },
+      { '@type': 'ListItem', position: 2, name: guide.lang === 'ko' ? '퍼스 가이드' : 'Perth guides', item: `${baseUrl}/guides` },
+      { '@type': 'ListItem', position: 3, name: guide.title, item: canonical },
+    ],
   }];
   if (items.length) {
     jsonLd.push({
@@ -335,9 +373,10 @@ function guideHtml(guide, otherLang) {
         '@type': 'ListItem',
         position: i + 1,
         item: {
-          '@type': 'LocalBusiness',
+          '@type': 'Restaurant',
           name: item.name,
-          address: item.address,
+          address: { '@type': 'PostalAddress', streetAddress: item.address, addressCountry: 'AU' },
+          description: item.note,
           ...(item.url ? { url: item.url } : {}),
         },
       })),
@@ -361,6 +400,11 @@ function guideHtml(guide, otherLang) {
     keywords: guide.keywords,
     canonical,
     jsonLd,
+    alternates,
+    image: guideImage,
+    locale: guide.lang === 'ko' ? 'ko_KR' : 'en_AU',
+    published: guide.date,
+    modified: guide.date,
   }, body);
 }
 
@@ -381,8 +425,44 @@ function guideIndexHtml() {
           </article>
         `).join('')}
       </section>
+      <p><a href="/blog">SaveBoard blog</a> · <a href="/">SaveBoard</a></p>
     </main>`;
-  return withSeo({ title, description, canonical, jsonLd: [] }, body);
+
+  const jsonLd = [{
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: title,
+    description,
+    url: canonical,
+    inLanguage: 'en-AU',
+    isPartOf: { '@type': 'WebSite', name: siteName, url: baseUrl },
+    publisher: organization(),
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: guidePairs.map((pair, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${baseUrl}/guides/${pair.en.slug}`,
+        name: pair.en.title,
+      })),
+    },
+  }, {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: siteName, item: baseUrl },
+      { '@type': 'ListItem', position: 2, name: 'Perth guides', item: canonical },
+    ],
+  }];
+
+  return withSeo({
+    title,
+    description,
+    canonical,
+    keywords: 'perth guides, perth korean community, perth local lists, 퍼스 맛집, 퍼스 생활정보',
+    jsonLd,
+    locale: 'en_AU',
+  }, body);
 }
 
 // Parse an "## FAQ" / "## Frequently Asked Questions" section: each "### Question"
@@ -494,17 +574,29 @@ function sitemapXml() {
       changefreq: 'monthly',
       priority: '0.8',
     })),
-    { loc: `${baseUrl}/guides`, lastmod: guidePairs[0]?.en.date ?? today, changefreq: 'weekly', priority: '0.7' },
-    ...guidePairs.flatMap(pair => [
-      { loc: `${baseUrl}/guides/${pair.en.slug}`, lastmod: pair.en.date, changefreq: 'monthly', priority: '0.8' },
-      { loc: `${baseUrl}/guides/${pair.en.slug}-ko`, lastmod: pair.ko.date, changefreq: 'monthly', priority: '0.7' },
-    ]),
+    { loc: `${baseUrl}/guides`, lastmod: guidePairs[0]?.en.date ?? today, changefreq: 'weekly', priority: '0.8' },
+    // Each language pair declares the other in-sitemap, which is the second
+    // half of the hreflang contract (the pages carry <link rel=alternate>).
+    ...guidePairs.flatMap(pair => {
+      const en = `${baseUrl}/guides/${pair.en.slug}`;
+      const ko = `${baseUrl}/guides/${pair.en.slug}-ko`;
+      const alternates = [
+        { hreflang: 'en', href: en },
+        { hreflang: 'ko', href: ko },
+        { hreflang: 'x-default', href: en },
+      ];
+      return [
+        { loc: en, lastmod: pair.en.date, changefreq: 'monthly', priority: '0.9', alternates },
+        { loc: ko, lastmod: pair.ko.date, changefreq: 'monthly', priority: '0.9', alternates },
+      ];
+    }),
   ];
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${routes.map(route => `  <url>
-    <loc>${route.loc}</loc>
+    <loc>${route.loc}</loc>${(route.alternates ?? []).map(alt => `
+    <xhtml:link rel="alternate" hreflang="${alt.hreflang}" href="${alt.href}" />`).join('')}
     <lastmod>${route.lastmod}</lastmod>
     <changefreq>${route.changefreq}</changefreq>
     <priority>${route.priority}</priority>

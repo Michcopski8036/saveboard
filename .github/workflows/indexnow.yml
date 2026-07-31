@@ -10,6 +10,9 @@ on:
     branches: [main]
     paths:
       - 'public/**'
+      - 'src/blog/**'
+      - 'src/guides/**'
+      - 'scripts/prerender-seo.mjs'
   workflow_dispatch:
 
 jobs:
@@ -17,6 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # The script reads the live sitemap, so give Vercel time to finish the
+      # deploy this push triggered — otherwise a brand-new page is missed.
+      - name: Wait for the deploy to land
+        run: sleep 150
       - name: Submit sitemap URLs to IndexNow
         run: |
           chmod +x scripts/indexnow.sh
