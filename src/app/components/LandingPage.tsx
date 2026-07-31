@@ -371,6 +371,35 @@ export function LandingPage({ onGetStarted }: Props) {
         </div>
       </section>
 
+      {/* Real app screens — the mockups above are illustrations; these are the product */}
+      <section className="py-16 px-5 bg-gray-50 border-y border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-[32px] font-bold text-center text-gray-900 mb-2">{c.shotsTitle}</h2>
+          <p className="text-gray-500 text-center mb-12 text-[16px]">{c.shotsSub}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6">
+            {[
+              { src: '/app/app-saves.jpg', alt: c.shots[0] },
+              { src: '/app/app-boards.jpg', alt: c.shots[1] },
+              { src: '/app/app-boards-move.jpg', alt: c.shots[2] },
+            ].map(({ src, alt }, i) => (
+              <figure key={src} className="flex flex-col items-center gap-4">
+                <img
+                  src={src}
+                  alt={alt}
+                  width={430}
+                  height={935}
+                  loading="lazy"
+                  className="w-[190px] sm:w-full max-w-[220px] rounded-[22px] border border-gray-200 shadow-xl shadow-gray-200"
+                />
+                <figcaption className="text-[13px] text-gray-500 leading-relaxed text-center max-w-[240px]">
+                  {c.shots[i]}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Solution */}
       <section className="py-16 px-5 bg-gray-50">
         <div className="max-w-4xl mx-auto">
@@ -417,34 +446,6 @@ export function LandingPage({ onGetStarted }: Props) {
         </div>
       </section>
 
-      {/* Real app screens — the mockups above are illustrations; these are the product */}
-      <section className="py-16 px-5 bg-gray-50 border-y border-gray-100">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-[32px] font-bold text-center text-gray-900 mb-2">{c.shotsTitle}</h2>
-          <p className="text-gray-500 text-center mb-12 text-[16px]">{c.shotsSub}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6">
-            {[
-              { src: '/app/app-saves.jpg', alt: c.shots[0] },
-              { src: '/app/app-boards.jpg', alt: c.shots[1] },
-              { src: '/app/app-boards-move.jpg', alt: c.shots[2] },
-            ].map(({ src, alt }, i) => (
-              <figure key={src} className="flex flex-col items-center gap-4">
-                <img
-                  src={src}
-                  alt={alt}
-                  width={430}
-                  height={935}
-                  loading="lazy"
-                  className="w-[190px] sm:w-full max-w-[220px] rounded-[22px] border border-gray-200 shadow-xl shadow-gray-200"
-                />
-                <figcaption className="text-[13px] text-gray-500 leading-relaxed text-center max-w-[240px]">
-                  {c.shots[i]}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* AI feature highlight */}
       <section className="py-16 px-5 bg-gradient-to-br from-[#F5F3FF] to-[#FFF7ED]">
