@@ -55,8 +55,8 @@ const COPY = {
       { label: 'Save in seconds',          desc: 'Just paste a link and SaveBoard does the rest. Title, image, description — auto-fetched.' },
       { label: 'Private & just yours',     desc: 'Your links are private. No one sees your board unless you choose to share.' },
     ],
-    shotsTitle: 'This is the app',
-    shotsSub: 'Real screens, not mockups.',
+    shotsTitle: 'What it looks like on your phone',
+    shotsSub: 'Actual screens from the app — nothing here is an illustration.',
     shots: [
       'Every save as a visual card — PDFs, videos and pages side by side.',
       'A board per activity, with tags and favourites down the side.',
@@ -132,8 +132,8 @@ const COPY = {
       { label: '몇 초 만에 저장',        desc: '링크만 붙여넣으면 SaveBoard가 알아서 처리해요. 제목·이미지·설명 자동 수집.' },
       { label: '오직 나만의 공간',       desc: '내 링크는 비공개예요. 공유하기 전엔 아무도 내 보드를 못 봐요.' },
     ],
-    shotsTitle: '앱은 이렇게 생겼어요',
-    shotsSub: '목업이 아니라 실제 화면입니다.',
+    shotsTitle: '폰에서는 이렇게 보여요',
+    shotsSub: '그린 이미지가 아니라 앱을 그대로 찍은 화면이에요.',
     shots: [
       '저장한 링크가 카드로 — PDF·영상·웹페이지가 한자리에.',
       '활동별로 보드를 나누고, 옆에 태그와 즐겨찾기.',
