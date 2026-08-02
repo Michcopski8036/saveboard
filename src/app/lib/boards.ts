@@ -20,11 +20,18 @@ export interface BoardMember { user_id: string; role: string; }
 
 /** Boards the current user owns or has joined, ordered for the sidebar. */
 export async function loadBoards(uid: string): Promise<Board[]> {
-  const { data: bdRaw } = await supabase
-    .from('boards')
-    .select('id, name, sort_order, invite_token, owner_id')
-    .order('sort_order', { ascending: true })
-    .order('created_at', { ascending: true });
+  // boards and board_members are fetched together: the membership rows are
+  // needed to annotate the boards, not to find them, and running them back to
+  // back doubled the round-trips on the app's startup path.
+  const [bdRes, memRes] = await Promise.all([
+    supabase
+      .from('boards')
+      .select('id, name, sort_order, invite_token, owner_id')
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true }),
+    supabase.from('board_members').select('board_id, user_id, role'),
+  ]);
+  const { data: bdRaw } = bdRes;
   // 'None' is the unsorted sentinel, not a real board — the Phase 1 backfill
   // created one from links whose category was literally 'None'. Never surface it
   // (match case/whitespace-insensitively, and drop blank names for safety).
@@ -36,7 +43,7 @@ export async function loadBoards(uid: string): Promise<Board[]> {
 
   // board_members is readable for my own rows + (as owner) every member of my
   // boards, so counts are exact for owned boards and my role is always present.
-  const { data: mem } = await supabase.from('board_members').select('board_id, user_id, role');
+  const { data: mem } = memRes;
   const memberCount: Record<string, number> = {};
   const myRole: Record<string, string> = {};
   (mem ?? []).forEach((m: any) => {

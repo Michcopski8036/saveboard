@@ -250,13 +250,25 @@ function AppContent() {
     }
   }, [showAddModal]);
 
+  // Storage usage only feeds a usage bar in the profile menu and billing page,
+  // so it must not sit on the startup path — it was one of the slowest calls
+  // there. Deferred until the browser is idle (or 3s), after the cards render.
   useEffect(() => {
     if (!user) { setCurrentStorageMb(0); return; }
-    supabase.storage.from('pdfs').list(user.id, { limit: 1000 }).then(({ data }) => {
-      if (!data) return;
-      const totalBytes = data.reduce((sum, f) => sum + (f.metadata?.size ?? 0), 0);
-      setCurrentStorageMb(Math.round((totalBytes / (1024 * 1024)) * 10) / 10);
-    });
+    const uid = user.id;
+    const run = () => {
+      supabase.storage.from('pdfs').list(uid, { limit: 1000 }).then(({ data }) => {
+        if (!data) return;
+        const totalBytes = data.reduce((sum, f) => sum + (f.metadata?.size ?? 0), 0);
+        setCurrentStorageMb(Math.round((totalBytes / (1024 * 1024)) * 10) / 10);
+      });
+    };
+    const ric = (window as any).requestIdleCallback;
+    const handle = ric ? ric(run, { timeout: 3000 }) : window.setTimeout(run, 1500);
+    return () => {
+      const cancel = (window as any).cancelIdleCallback;
+      if (ric && cancel) cancel(handle); else clearTimeout(handle);
+    };
   }, [userId]);
 
   const fetchSharedBoards = useCallback(async (uid: string) => {
@@ -438,12 +450,16 @@ function AppContent() {
     try {
       // Boards (source of truth). Brand-new accounts start with none — the
       // sidebar shows a "Curate your board" nudge instead of seeded defaults.
-      const bs = await loadBoards(user!.id);
+      // Boards and my own links are independent queries — run them together.
+      // They used to be serial, so on a cold database the cards could not start
+      // loading until the board round-trips had finished.
+      const [bs, ownRes] = await Promise.all([
+        loadBoards(user!.id),
+        supabase.from('links').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
+      ]);
       setBoards(bs);
       const nameById = new Map(bs.map(b => [b.id, b.name] as const));
-
-      // My own links, plus links from boards I've joined (owned by others).
-      const { data: ownLd } = await supabase.from('links').select('*').eq('user_id', user!.id).order('created_at', { ascending: false });
+      const { data: ownLd } = ownRes;
       const memberIds = bs.filter(b => b.role === 'member').map(b => b.id);
       const { data: sharedLd } = memberIds.length
         ? await supabase.from('links').select('*').in('board_id', memberIds).order('created_at', { ascending: false })
