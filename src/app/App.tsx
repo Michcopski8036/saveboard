@@ -83,6 +83,11 @@ function AppContent() {
   const { tr, language } = useLanguage();
   const ko = language === 'ko';
   const [user, setUser]                 = useState<User | null>(null);
+  // Data effects key off the id, never the user object: every auth event hands
+  // back a fresh object, and the app fires one itself at startup (the last_seen
+  // heartbeat calls auth.updateUser, which emits USER_UPDATED). Keying on the
+  // object re-ran every startup query three times over.
+  const userId = user?.id ?? null;
   const [authLoading, setAuthLoading]   = useState(true);
   const [showAuth, setShowAuth]         = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [links, setLinks]               = useState<LinkData[]>([]);
@@ -236,7 +241,7 @@ function AppContent() {
         setIsPro(active);
         setSubData(data ?? null);
       });
-  }, [user]);
+  }, [userId]);
 
   // Seed the Add modal's board multi-select with the currently-viewed board.
   useEffect(() => {
@@ -252,7 +257,7 @@ function AppContent() {
       const totalBytes = data.reduce((sum, f) => sum + (f.metadata?.size ?? 0), 0);
       setCurrentStorageMb(Math.round((totalBytes / (1024 * 1024)) * 10) / 10);
     });
-  }, [user]);
+  }, [userId]);
 
   const fetchSharedBoards = useCallback(async (uid: string) => {
     const { data } = await supabase
@@ -297,7 +302,7 @@ function AppContent() {
     const onFocus = () => fetchSharedBoards(user.id);
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
-  }, [user, fetchSharedBoards]);
+  }, [userId, fetchSharedBoards]);
 
   // Handle items shared from iOS Share Extension via App Group pending queue
   useEffect(() => {
@@ -333,7 +338,7 @@ function AppContent() {
     };
     window.addEventListener('saveboard-share', handler);
     return () => window.removeEventListener('saveboard-share', handler);
-  }, [user]);
+  }, [userId]);
 
   useEffect(() => {
     if (!user) { setLinks([]); setBoards([]); return; }
@@ -359,7 +364,7 @@ function AppContent() {
         window.history.replaceState({}, '', window.location.pathname);
       }
     })();
-  }, [user]);
+  }, [userId]);
 
   const handlePendingImport = async () => {
     const token = localStorage.getItem('saveboard-pending-import');
