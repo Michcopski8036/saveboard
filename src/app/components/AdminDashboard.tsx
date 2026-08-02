@@ -42,6 +42,13 @@ interface AdminStats {
   }>;
   usersByCountry: Array<{ iso3: string; count: number }>;
   unknownLocationCount: number;
+  activation?: {
+    signedUp: number; everSaved: number; savedThreePlus: number; madeABoard: number;
+    medianFirstSaveHours: number | null;
+    neverSaved: Array<{ email: string; createdAt: string }>;
+    dormant: Array<{ email: string; lastSeen: string | null; linkCount: number }>;
+    excludedTestAccounts: number;
+  };
   traffic?: {
     visits7d: number; visits7dPrev: number; boardClicks7d: number;
     byPath: Array<{ path: string; views: number; boardClicks: number }>;
@@ -643,6 +650,79 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
               )}
 
               {/* USERS */}
+              {activeTab === 'users' && (
+                <>
+                  {stats.activation && (
+                    <Section title="가입한 사람 중 실제로 쓰는 사람" icon={TrendingUp}>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {[
+                          { label: '가입', n: stats.activation.signedUp },
+                          { label: '1개 이상 저장', n: stats.activation.everSaved },
+                          { label: '3개 이상 저장', n: stats.activation.savedThreePlus },
+                          { label: '보드 만듦', n: stats.activation.madeABoard },
+                        ].map(({ label, n }, i, arr) => {
+                          const pct = arr[0].n > 0 ? Math.round((n / arr[0].n) * 100) : 0;
+                          return (
+                            <div key={label} className="rounded-xl p-3" style={{ background: t.hoverBg, border: `1px solid ${t.cardBorder}` }}>
+                              <p className="text-[11px] font-bold mb-1" style={{ color: t.textMuted }}>{label}</p>
+                              <p className="text-[20px] font-extrabold" style={{ color: t.textPrimary }}>{n}</p>
+                              <div className="h-1 rounded-full mt-2" style={{ background: t.cardBorder }}>
+                                <div className="h-1 rounded-full" style={{ width: `${pct}%`, background: i === 0 ? '#7C3AED' : pct >= 50 ? '#10B981' : '#F59E0B' }} />
+                              </div>
+                              <p className="text-[10px] mt-1" style={{ color: t.textFaint }}>{i === 0 ? '테스트 계정 제외' : `${pct}%`}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[11px] mt-3" style={{ color: t.textMuted }}>
+                        {stats.activation.medianFirstSaveHours !== null
+                          ? `가입 후 첫 저장까지 중앙값 ${stats.activation.medianFirstSaveHours < 1
+                              ? `${Math.round(stats.activation.medianFirstSaveHours * 60)}분`
+                              : `${stats.activation.medianFirstSaveHours}시간`}`
+                          : '아직 첫 저장 기록 없음'}
+                        {stats.activation.excludedTestAccounts > 0 && ` · 테스트 계정 ${stats.activation.excludedTestAccounts}개 제외`}
+                      </p>
+                    </Section>
+                  )}
+
+                  {stats.activation && (stats.activation.neverSaved.length > 0 || stats.activation.dormant.length > 0) && (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Section title="가입만 하고 안 쓴 사람" icon={AlertCircle}>
+                        {stats.activation.neverSaved.length === 0 ? (
+                          <p className="text-[12px]" style={{ color: t.textMuted }}>없음 ✓</p>
+                        ) : (
+                          <div className="flex flex-col gap-1">
+                            {stats.activation.neverSaved.map(u => (
+                              <div key={u.email} className="flex items-center justify-between gap-2 py-1 border-b" style={{ borderColor: t.cardBorder }}>
+                                <p className="text-[12px] truncate" style={{ color: t.textPrimary }}>{u.email}</p>
+                                <p className="text-[11px] shrink-0" style={{ color: t.textFaint }}>{u.createdAt.slice(0, 10)} 가입</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </Section>
+
+                      <Section title="쓰다가 끊긴 사람 (2주+)" icon={XCircle}>
+                        {stats.activation.dormant.length === 0 ? (
+                          <p className="text-[12px]" style={{ color: t.textMuted }}>없음 ✓</p>
+                        ) : (
+                          <div className="flex flex-col gap-1">
+                            {stats.activation.dormant.map(u => (
+                              <div key={u.email} className="flex items-center justify-between gap-2 py-1 border-b" style={{ borderColor: t.cardBorder }}>
+                                <p className="text-[12px] truncate" style={{ color: t.textPrimary }}>{u.email}</p>
+                                <p className="text-[11px] shrink-0" style={{ color: t.textFaint }}>
+                                  링크 {u.linkCount} · {u.lastSeen ? u.lastSeen.slice(0, 10) : '기록 없음'}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </Section>
+                    </div>
+                  )}
+                </>
+              )}
+
               {activeTab === 'users' && (
                 <>
                   {/* Who is signed in right now */}

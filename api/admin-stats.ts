@@ -283,7 +283,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const cancelledCount = subs.filter(s => s.status === 'canceled' || s.status === 'cancelled').length;
 
   // Enrich recentUsers with plan info and link counts
-  const { data: linksByUser } = await supabase.from('links').select('user_id');
+  const { data: linksByUser } = await supabase.from('links').select('user_id, created_at');
   const userLinkCount: Record<string, number> = {};
   for (const row of (linksByUser ?? [])) {
     userLinkCount[row.user_id] = (userLinkCount[row.user_id] ?? 0) + 1;
@@ -307,6 +307,58 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // ── Shared boards ─────────────────────────────────────────────────────────
   const totalSharedBoards = (sharedBoardsRes.data ?? []).length;
   const totalShareViews   = sharedViewsRes.count ?? 0;
+
+  // ── Activation ────────────────────────────────────────────────────────────
+  // At this size the useful question is not "how many signed up" but "how many
+  // ever actually used it". Everything here comes from rows already fetched.
+  const firstSaveAt: Record<string, number> = {};
+  for (const row of (linksByUser ?? []) as Array<{ user_id: string; created_at: number | string }>) {
+    const ts = typeof row.created_at === 'number' ? row.created_at : Date.parse(String(row.created_at));
+    if (!Number.isFinite(ts)) continue;
+    if (firstSaveAt[row.user_id] === undefined || ts < firstSaveAt[row.user_id]) {
+      firstSaveAt[row.user_id] = ts;
+    }
+  }
+
+  const realUsers = allUsers.filter(u => !/^sbtest|@apple\.com$|^testuser@/i.test(u.email ?? ''));
+  const everSaved      = realUsers.filter(u => (userLinkCount[u.id] ?? 0) > 0);
+  const savedThreePlus = realUsers.filter(u => (userLinkCount[u.id] ?? 0) >= 3);
+  const madeABoard     = realUsers.filter(u => (userBoardCount[u.id] ?? 0) > 0);
+
+  const firstSaveHours = everSaved
+    .map(u => (firstSaveAt[u.id] - Date.parse(u.created_at)) / 3600000)
+    .filter(h => Number.isFinite(h) && h >= 0)
+    .sort((a, b) => a - b);
+  const medianFirstSaveHours = firstSaveHours.length
+    ? Math.round(firstSaveHours[Math.floor(firstSaveHours.length / 2)] * 10) / 10
+    : null;
+
+  const neverSaved = realUsers
+    .filter(u => (userLinkCount[u.id] ?? 0) === 0)
+    .map(u => ({ email: u.email ?? '', createdAt: u.created_at }))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 12);
+
+  const DORMANT_MS = 14 * 86400000;
+  const dormant = realUsers
+    .map(u => {
+      const seen = (u.user_metadata as any)?.last_seen ?? u.last_sign_in_at ?? null;
+      return { email: u.email ?? '', lastSeen: seen, linkCount: userLinkCount[u.id] ?? 0 };
+    })
+    .filter(u => u.linkCount > 0 && u.lastSeen && Date.now() - Date.parse(u.lastSeen) > DORMANT_MS)
+    .sort((a, b) => Date.parse(a.lastSeen!) - Date.parse(b.lastSeen!))
+    .slice(0, 12);
+
+  const activation = {
+    signedUp: realUsers.length,
+    everSaved: everSaved.length,
+    savedThreePlus: savedThreePlus.length,
+    madeABoard: madeABoard.length,
+    medianFirstSaveHours,
+    neverSaved,
+    dormant,
+    excludedTestAccounts: allUsers.length - realUsers.length,
+  };
 
   // ── Traffic ───────────────────────────────────────────────────────────────
   // page_events is insert-only for everyone but the service role, so this is
@@ -367,6 +419,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     linksOverTime: linksOverTimeArr,
     topSharedBoards: sharedBoardsRes.data ?? [],
     traffic,
+    activation,
     automations: automationRunsRes.data ?? [],
     generatedAt: now.toISOString(),
   });
