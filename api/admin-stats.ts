@@ -314,8 +314,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // table degrades to "no data yet" instead of failing the whole dashboard.
   type PageEvent = { event: string; path: string; referrer: string | null; created_at: string };
   const events = (pageEventsRes.data ?? []) as PageEvent[];
-  const nowMs = Date.now();
-  const ago = (days: number) => nowMs - days * 86400000;
+  const trafficNow = Date.now();
+  const ago = (days: number) => trafficNow - days * 86400000;
   const within = (e: PageEvent, from: number, to: number) => {
     const t = Date.parse(e.created_at);
     return t >= from && t < to;
@@ -326,7 +326,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const byPathMap: Record<string, { path: string; views: number; boardClicks: number }> = {};
   for (const e of events) {
-    if (!within(e, ago(7), nowMs)) continue;
+    if (!within(e, ago(7), trafficNow)) continue;
     const row = byPathMap[e.path] ?? { path: e.path, views: 0, boardClicks: 0 };
     if (e.event === 'pageview')    row.views += 1;
     if (e.event === 'board_click') row.boardClicks += 1;
@@ -335,7 +335,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const refCount: Record<string, number> = {};
   for (const e of views) {
-    if (!e.referrer || !within(e, ago(7), nowMs)) continue;
+    if (!e.referrer || !within(e, ago(7), trafficNow)) continue;
     try {
       const host = new URL(e.referrer).host;
       refCount[host] = (refCount[host] ?? 0) + 1;
@@ -343,9 +343,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const traffic = {
-    visits7d:      views.filter(e => within(e, ago(7), nowMs)).length,
+    visits7d:      views.filter(e => within(e, ago(7), trafficNow)).length,
     visits7dPrev:  views.filter(e => within(e, ago(14), ago(7))).length,
-    boardClicks7d: clicks.filter(e => within(e, ago(7), nowMs)).length,
+    boardClicks7d: clicks.filter(e => within(e, ago(7), trafficNow)).length,
     byPath: Object.values(byPathMap).sort((a, b) => b.views - a.views).slice(0, 12),
     topReferrers: Object.entries(refCount)
       .map(([referrer, n]) => ({ referrer, n }))
