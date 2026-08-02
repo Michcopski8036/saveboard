@@ -107,6 +107,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     sharedBoardsRes,
     sharedViewsRes,
     boardsByUserRes,
+    pageEventsRes,
+    automationRunsRes,
   ] = await Promise.all([
     // All users via admin API
     supabase.auth.admin.listUsers({ perPage: 1000 }),
@@ -137,6 +139,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // All boards (for per-user counts + resolving board_id → name for top boards)
     supabase.from('boards').select('id, owner_id, name'),
+
+    // Anonymous traffic, last 14 days (7d window + the previous 7d to compare against)
+    supabase.from('page_events').select('event, path, referrer, created_at')
+      .gte('created_at', new Date(Date.now() - 14 * 86400000).toISOString()),
+
+    // Routine self-reports
+    supabase.from('automation_runs').select('routine, status, summary, artifact_url, ran_at')
+      .order('ran_at', { ascending: false }).limit(20),
   ]);
 
   // ── Users ─────────────────────────────────────────────────────────────────
@@ -298,6 +308,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const totalSharedBoards = (sharedBoardsRes.data ?? []).length;
   const totalShareViews   = sharedViewsRes.count ?? 0;
 
+  // ── Traffic ───────────────────────────────────────────────────────────────
+  // page_events is insert-only for everyone but the service role, so this is
+  // the only place the rows are ever read. `.data ?? []` also means a missing
+  // table degrades to "no data yet" instead of failing the whole dashboard.
+  type PageEvent = { event: string; path: string; referrer: string | null; created_at: string };
+  const events = (pageEventsRes.data ?? []) as PageEvent[];
+  const nowMs = Date.now();
+  const ago = (days: number) => nowMs - days * 86400000;
+  const within = (e: PageEvent, from: number, to: number) => {
+    const t = Date.parse(e.created_at);
+    return t >= from && t < to;
+  };
+
+  const views  = events.filter(e => e.event === 'pageview');
+  const clicks = events.filter(e => e.event === 'board_click');
+
+  const byPathMap: Record<string, { path: string; views: number; boardClicks: number }> = {};
+  for (const e of events) {
+    if (!within(e, ago(7), nowMs)) continue;
+    const row = byPathMap[e.path] ?? { path: e.path, views: 0, boardClicks: 0 };
+    if (e.event === 'pageview')    row.views += 1;
+    if (e.event === 'board_click') row.boardClicks += 1;
+    byPathMap[e.path] = row;
+  }
+
+  const refCount: Record<string, number> = {};
+  for (const e of views) {
+    if (!e.referrer || !within(e, ago(7), nowMs)) continue;
+    try {
+      const host = new URL(e.referrer).host;
+      refCount[host] = (refCount[host] ?? 0) + 1;
+    } catch { /* unparseable referrer */ }
+  }
+
+  const traffic = {
+    visits7d:      views.filter(e => within(e, ago(7), nowMs)).length,
+    visits7dPrev:  views.filter(e => within(e, ago(14), ago(7))).length,
+    boardClicks7d: clicks.filter(e => within(e, ago(7), nowMs)).length,
+    byPath: Object.values(byPathMap).sort((a, b) => b.views - a.views).slice(0, 12),
+    topReferrers: Object.entries(refCount)
+      .map(([referrer, n]) => ({ referrer, n }))
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 6),
+  };
+
   return res.status(200).json({
     overview: { totalUsers, newThisWeek, newThisMonth, totalLinks, linksThisWeek, totalSharedBoards, totalShareViews },
     subscriptions: { proCount, teamCount, freeCount, monthlyPro, yearlyPro, stripeCount, appleCount, cancelledCount },
@@ -311,6 +366,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     topTags,
     linksOverTime: linksOverTimeArr,
     topSharedBoards: sharedBoardsRes.data ?? [],
+    traffic,
+    automations: automationRunsRes.data ?? [],
     generatedAt: now.toISOString(),
   });
 }

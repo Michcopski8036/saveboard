@@ -42,6 +42,15 @@ interface AdminStats {
   }>;
   usersByCountry: Array<{ iso3: string; count: number }>;
   unknownLocationCount: number;
+  traffic?: {
+    visits7d: number; visits7dPrev: number; boardClicks7d: number;
+    byPath: Array<{ path: string; views: number; boardClicks: number }>;
+    topReferrers: Array<{ referrer: string; n: number }>;
+  };
+  automations?: Array<{
+    routine: string; status: string; summary: string | null;
+    artifact_url: string | null; ran_at: string;
+  }>;
   generatedAt: string;
 }
 
@@ -111,6 +120,47 @@ function KpiCard({ icon: Icon, label, value, sub, color, spark }: {
 }
 
 // ── Section header ─────────────────────────────────────────────────────────
+/** A number with its week-over-week move. "—" when nothing has been recorded yet. */
+function WeekStat({ label, value, prev, hint }: { label: string; value: number; prev?: number; hint?: string }) {
+  const { t } = useTheme();
+  const hasData = value > 0 || (prev ?? 0) > 0;
+  const delta = prev === undefined ? null : value - prev;
+  const deltaColor = delta === null || delta === 0 ? t.textFaint : delta > 0 ? '#10B981' : '#EF4444';
+  return (
+    <div className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+      <p className="text-[11px] font-bold mb-1" style={{ color: t.textMuted }}>{label}</p>
+      <p className="text-[22px] font-extrabold" style={{ color: t.textPrimary }}>
+        {hasData ? value : '—'}
+      </p>
+      <p className="text-[11px]" style={{ color: deltaColor }}>
+        {!hasData ? (hint ?? '아직 데이터 없음') : delta === null ? (hint ?? '') : `${delta > 0 ? '+' : ''}${delta} vs 지난주`}
+      </p>
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  const map: Record<string, { bg: string; fg: string; label: string }> = {
+    success: { bg: 'rgba(16,185,129,0.12)', fg: '#10B981', label: '성공' },
+    partial: { bg: 'rgba(245,158,11,0.12)', fg: '#F59E0B', label: '일부' },
+    failed:  { bg: 'rgba(239,68,68,0.12)',  fg: '#EF4444', label: '실패' },
+  };
+  const v = map[status] ?? { bg: 'rgba(148,163,184,0.12)', fg: '#94A3B8', label: status };
+  return (
+    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: v.bg, color: v.fg }}>
+      {v.label}
+    </span>
+  );
+}
+
+function relativeTime(iso: string) {
+  const diff = Date.now() - Date.parse(iso);
+  const h = Math.floor(diff / 3600000);
+  if (h < 1) return '방금';
+  if (h < 24) return `${h}시간 전`;
+  return `${Math.floor(h / 24)}일 전`;
+}
+
 function Section({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   const { t } = useTheme();
   return (
@@ -396,6 +446,21 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
   // Spark for links over time (last 30 days, show last 14 as spark)
   const spark14 = (stats?.linksOverTime ?? []).slice(-14).map(d => d.count);
 
+  // "확인할 것" — built only from data already on this page, so it can never
+  // claim something needs attention that the dashboard cannot show.
+  const todo: Array<{ text: string; tab: Tab }> = [];
+  const failedRuns = (stats?.automations ?? []).filter(a => a.status !== 'success');
+  if (failedRuns.length) {
+    todo.push({ text: `루틴 ${failedRuns.length}건이 성공하지 못했어요 (${failedRuns[0].routine})`, tab: 'marketing' });
+  }
+  const emptyBoards = (stats?.topSharedBoards ?? []).filter(b => b.view_count === 0);
+  if (emptyBoards.length) {
+    todo.push({ text: `공유 보드 ${emptyBoards.length}개가 아직 조회 0회예요`, tab: 'content' });
+  }
+  if (stats?.traffic && stats.traffic.visits7d > 0 && stats.traffic.boardClicks7d === 0) {
+    todo.push({ text: '방문은 있는데 보드 클릭이 0이에요 — CTA 점검', tab: 'marketing' });
+  }
+
   // Plan overrides are applied before filtering so a just-changed plan sorts/filters correctly.
   const effectivePlanOf = useCallback((u: { id: string; plan: string }) => {
     const o = planOverrides[u.id];
@@ -504,6 +569,37 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
               {/* OVERVIEW */}
               {activeTab === 'overview' && (
                 <>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <WeekStat label="이번 주 가입" value={stats.overview.newThisWeek} />
+                    <WeekStat label="이번 주 저장" value={stats.overview.linksThisWeek} />
+                    <WeekStat label="방문 (7일)" value={stats.traffic?.visits7d ?? 0} prev={stats.traffic?.visits7dPrev} />
+                    <WeekStat label="보드 클릭 (7일)" value={stats.traffic?.boardClicks7d ?? 0}
+                      hint={stats.traffic && stats.traffic.visits7d > 0
+                        ? `방문의 ${Math.round((stats.traffic.boardClicks7d / stats.traffic.visits7d) * 100)}%`
+                        : undefined} />
+                  </div>
+
+                  {todo.length > 0 ? (
+                    <Section title="확인할 것" icon={CheckCircle}>
+                      <div className="flex flex-col gap-2">
+                        {todo.map((item, i) => (
+                          <div key={i} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2"
+                            style={{ background: t.hoverBg, border: `1px solid ${t.cardBorder}` }}>
+                            <p className="text-[12px]" style={{ color: t.textPrimary }}>{item.text}</p>
+                            <button onClick={() => setActiveTab(item.tab)}
+                              className="text-[11px] font-semibold shrink-0" style={{ color: '#7C3AED' }}>
+                              보기 →
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </Section>
+                  ) : (
+                    <div className="rounded-2xl px-4 py-3" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                      <p className="text-[12px]" style={{ color: t.textMuted }}>확인할 것 없음 ✓</p>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <KpiCard icon={Users} label="Total Users" value={stats.overview.totalUsers}
                       sub={`+${stats.overview.newThisWeek} this week`} color="#7C3AED" />
@@ -877,14 +973,78 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
 
               {/* MARKETING */}
               {activeTab === 'marketing' && (
-                <div className="flex flex-col items-center justify-center py-16 gap-4">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                    style={{ background: 'rgba(124,58,237,0.10)', border: '1px solid rgba(124,58,237,0.2)' }}>
-                    <Smartphone className="w-6 h-6" style={{ color: '#7C3AED' }} />
-                  </div>
-                  <p className="text-[16px] font-bold" style={{ color: t.textPrimary }}>AI Marketing Hub</p>
-                  <p className="text-[13px]" style={{ color: t.textMuted }}>Coming next — provide your Anthropic API key to activate</p>
-                </div>
+                <>
+                  <Section title="페이지별 유입 (7일)" icon={TrendingUp}>
+                    {(stats.traffic?.byPath.length ?? 0) === 0 ? (
+                      <p className="text-[12px]" style={{ color: t.textMuted }}>
+                        아직 기록된 방문이 없어요. 방문이 생기면 여기에 경로별로 쌓입니다.
+                      </p>
+                    ) : (
+                      <div className="flex flex-col gap-1">
+                        {stats.traffic!.byPath.map(row => (
+                          <div key={row.path} className="flex items-center justify-between gap-3 py-1.5 border-b"
+                            style={{ borderColor: t.cardBorder }}>
+                            <p className="text-[12px] truncate" style={{ color: t.textPrimary }}>{row.path}</p>
+                            <div className="flex items-center gap-4 shrink-0">
+                              <span className="text-[12px] font-bold" style={{ color: t.textPrimary }}>{row.views}</span>
+                              <span className="text-[11px]" style={{ color: row.boardClicks > 0 ? '#10B981' : t.textFaint }}>
+                                보드 {row.boardClicks}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </Section>
+
+                  <Section title="유입 경로" icon={Globe}>
+                    {(stats.traffic?.topReferrers.length ?? 0) === 0 ? (
+                      <p className="text-[12px]" style={{ color: t.textMuted }}>아직 외부 유입 기록 없음</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {stats.traffic!.topReferrers.map(r => (
+                          <span key={r.referrer} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold"
+                            style={{ background: t.hoverBg, color: t.textMuted, border: `1px solid ${t.cardBorder}` }}>
+                            {r.referrer} · {r.n}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </Section>
+
+                  <Section title="자동으로 도는 것" icon={CheckCircle}>
+                    {(stats.automations?.length ?? 0) === 0 ? (
+                      <p className="text-[12px]" style={{ color: t.textMuted }}>
+                        아직 실행 기록이 없어요. 루틴이 돌면 여기에 남습니다 (첫 주간 가이드 루틴: 매주 수요일).
+                      </p>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {stats.automations!.map((a, i) => (
+                          <div key={i} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2"
+                            style={{ background: t.hoverBg, border: `1px solid ${t.cardBorder}` }}>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-[12px] font-bold truncate" style={{ color: t.textPrimary }}>{a.routine}</p>
+                                <StatusPill status={a.status} />
+                              </div>
+                              <p className="text-[11px] truncate" style={{ color: t.textMuted }}>
+                                {relativeTime(a.ran_at)} · {a.summary ?? '—'}
+                              </p>
+                            </div>
+                            {a.artifact_url && (
+                              <a href={a.artifact_url} target="_blank" rel="noopener noreferrer"
+                                className="text-[11px] font-semibold shrink-0" style={{ color: '#7C3AED' }}>열기 ↗</a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <a href="https://claude.ai/code/routines" target="_blank" rel="noopener noreferrer"
+                      className="inline-block mt-3 text-[11px] font-semibold" style={{ color: '#7C3AED' }}>
+                      루틴 설정 열기 ↗
+                    </a>
+                  </Section>
+                </>
               )}
 
               <p className="text-center text-[10px] pb-4" style={{ color: t.textFaint }}>
