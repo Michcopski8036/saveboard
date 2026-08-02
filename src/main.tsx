@@ -9,27 +9,37 @@ import { GuideListPage } from "./app/components/guides/GuideListPage.tsx";
 import { GuidePostPage } from "./app/components/guides/GuidePostPage.tsx";
 import { LanguageProvider } from "./app/context/LanguageContext.tsx";
 import { ErrorBoundary } from "./app/components/ErrorBoundary.tsx";
+import { usePageviews } from "./app/lib/track.ts";
 import "./styles/index.css";
 
 // ErrorBoundary is outermost so a render-time throw anywhere shows a recoverable
 // card instead of blanking the whole app (the white-screen class of crash).
 // LanguageProvider wraps the whole router, not just <App/>: the share/team/blog
 // routes call tr() too, and outside a provider it falls back to key => key.
+// usePageviews needs router context, so the routes live in a component inside
+// <BrowserRouter> rather than inline.
+function TrackedRoutes() {
+  usePageviews();
+  return (
+    <Routes>
+      <Route path="/share/:token" element={<SharedBoardPage />} />
+      <Route path="/team/:token" element={<JoinTeamBoard />} />
+      <Route path="/blog" element={<BlogListPage />} />
+      <Route path="/blog/:slug" element={<BlogPostPage />} />
+      {/* Without these two, /guides/* falls through to <App/> and a human
+          visitor gets the dashboard while crawlers see the prerendered HTML. */}
+      <Route path="/guides" element={<GuideListPage />} />
+      <Route path="/guides/:slug" element={<GuidePostPage />} />
+      <Route path="/*" element={<App />} />
+    </Routes>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
     <BrowserRouter>
       <LanguageProvider>
-        <Routes>
-          <Route path="/share/:token" element={<SharedBoardPage />} />
-          <Route path="/team/:token" element={<JoinTeamBoard />} />
-          <Route path="/blog" element={<BlogListPage />} />
-          <Route path="/blog/:slug" element={<BlogPostPage />} />
-          {/* Without these two, /guides/* falls through to <App/> and a human
-              visitor gets the dashboard while crawlers see the prerendered HTML. */}
-          <Route path="/guides" element={<GuideListPage />} />
-          <Route path="/guides/:slug" element={<GuidePostPage />} />
-          <Route path="/*" element={<App />} />
-        </Routes>
+        <TrackedRoutes />
       </LanguageProvider>
     </BrowserRouter>
   </ErrorBoundary>

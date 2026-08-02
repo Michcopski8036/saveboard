@@ -5,6 +5,7 @@ import { getGuideByRouteSlug } from '../../utils/guideUtils';
 import { formatDate } from '../../utils/blogUtils';
 import { renderMarkdown } from '../../utils/markdownRenderer';
 import { Nav, BlogFooter } from '../blog/BlogListPage';
+import { track } from '../../lib/track';
 
 const BASE_URL = 'https://www.saveboard.app';
 
@@ -107,6 +108,7 @@ export function GuidePostPage() {
                       also works when this page is opened from prerendered HTML. */}
                   <a
                     href={guide.boardUrl}
+                    onClick={() => track('board_click', { slug: guide.slug, lang: guide.lang })}
                     className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
                   >
                     {ko ? '보드 열기' : 'Open the board'}
