@@ -6,6 +6,7 @@ import { Sidebar, type Collection } from './components/Sidebar';
 import { KanbanView } from './components/KanbanView';
 import { GalleryView } from './components/GalleryView';
 import { Board, loadBoards, createBoard, joinBoard, removeMember } from './lib/boards';
+import { readSnapshot, writeSnapshot, clearSnapshot } from './lib/lastSession';
 import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
@@ -354,6 +355,12 @@ function AppContent() {
 
   useEffect(() => {
     if (!user) { setLinks([]); setBoards([]); return; }
+    // Paint the last known contents first. The first network call can be held
+    // up for seconds by a token refresh or a cold database; none of that needs
+    // to be a blank screen.
+    const snap = readSnapshot(userId);
+    if (snap) { setBoards(snap.boards); setLinks(snap.links); }
+
     (async () => {
       // Auto-join a pending board invite (from the /team/<token> sign-in flow)
       // before loading, so the joined board shows up right away.
@@ -446,7 +453,9 @@ function AppContent() {
   };
 
   const loadData = async (): Promise<Board[]> => {
-    setIsLoading(true);
+    // Only spin when there is nothing on screen; a refresh behind a snapshot
+    // should not blank out the cards the user is already looking at.
+    setIsLoading(links.length === 0);
     try {
       // Boards (source of truth). Brand-new accounts start with none — the
       // sidebar shows a "Curate your board" nudge instead of seeded defaults.
@@ -495,6 +504,7 @@ function AppContent() {
       } catch {}
       setLinks(mapped);
       setFavorites(new Set(all.filter(l => l.is_favorite).map((l: any) => l.id)));
+      writeSnapshot(user!.id, mapped as any, bs);
       return bs;
     } catch (e) { console.error(e); return []; }
     finally { setIsLoading(false); }
@@ -1114,7 +1124,7 @@ function AppContent() {
             </button>
 
             {/* Avatar */}
-            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => supabase.auth.signOut()} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowAdmin={isAdmin(user?.email) ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
+            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => { if (userId) clearSnapshot(userId); await supabase.auth.signOut(); }} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowAdmin={isAdmin(user?.email) ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
           </div>
 
           {/* Payment-failure banner — Pro stays gated on `active`, so tell the user why it lapsed */}
@@ -1715,7 +1725,7 @@ function AppContent() {
           user={user}
           onExport={handleExport}
           onImport={handleImport}
-          onSignOut={async () => { await supabase.auth.signOut(); setShowSettings(false); }}
+          onSignOut={async () => { if (userId) clearSnapshot(userId); await supabase.auth.signOut(); setShowSettings(false); }}
           onDeleteAccount={handleDeleteAccount}
           onShowUpgrade={() => { setShowSettings(false); setShowUpgrade(true); }}
           onShowContact={() => setShowContact(true)}
