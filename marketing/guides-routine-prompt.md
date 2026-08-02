@@ -43,3 +43,20 @@ the format/tone to match.
 9. Do NOT post anything to social media. Captions and video are staged only.
 10. Report back: the published URL, the board's shareUrl, and the path to the staged
     social content — so it can be added to the agent console.
+
+11. Report the run so the admin console can show it. The key below is the public anon key
+    (it already ships in the web bundle) and `automation_runs` is insert-only — there is no
+    select policy, so this grants nothing beyond adding a row:
+
+    ```bash
+    curl -s -X POST "https://mchikdltrcbovhdzdhhf.supabase.co/rest/v1/automation_runs" \
+      -H "apikey: sb_publishable_aITf5gAB5i-gLx_mcS2Z5w_99ov4D9u" \
+      -H "Authorization: Bearer sb_publishable_aITf5gAB5i-gLx_mcS2Z5w_99ov4D9u" \
+      -H "Content-Type: application/json" \
+      -d '{"routine":"perth-guides","status":"success","summary":"<one line>","artifact_url":"<published url>"}'
+    ```
+
+    Use `"partial"` when something was skipped (for example the board could not be created
+    because the service-role key was missing), and `"failed"` when the run produced no post.
+    Send this even when the run failed — a missing row is indistinguishable from a routine
+    that never fired.
