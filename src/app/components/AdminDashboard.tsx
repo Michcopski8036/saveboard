@@ -383,6 +383,10 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
   const [planOverrides, setPlanOverrides] = useState<Record<string, PlanKey>>({});
   const [planError, setPlanError] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  // Round-trip time of the stats call, which is dominated by the database.
+  // The free-tier instance degrades quietly (2026-08-02: a 65-row query took
+  // 14s), so surfacing this makes the next episode visible before it is felt.
+  const [apiMs, setApiMs] = useState<number | null>(null);
   const [userQuery, setUserQuery] = useState('');
   const [userSort, setUserSort] = useState<{ key: UserSortKey; dir: 'asc' | 'desc' }>({ key: 'created_at', dir: 'desc' });
 
@@ -394,9 +398,11 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
       setAccessToken(session.access_token);
+      const startedAt = performance.now();
       const res = await fetch('/api/admin-stats', {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
+      setApiMs(Math.round(performance.now() - startedAt));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setStats(data);
@@ -939,14 +945,18 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     {[{ label: 'WEB', name: 'Vercel', detail: 'saveboard.app' },
-                      { label: 'DATABASE', name: 'Supabase', detail: 'Postgres' }].map(({ label, name, detail }) => (
+                      { label: 'DATABASE', name: 'Supabase',
+                        detail: apiMs === null ? 'Postgres'
+                          : `Postgres · 응답 ${(apiMs / 1000).toFixed(1)}초${apiMs > 3000 ? ' — 느림' : ''}` }].map(({ label, name, detail }) => (
                       <div key={label} className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
                         <div className="flex items-center gap-2 mb-2">
                           <CheckCircle className="w-4 h-4 text-green-400" />
                           <p className="text-[11px] font-bold" style={{ color: t.textMuted }}>{label}</p>
                         </div>
                         <p className="text-[13px] font-bold" style={{ color: t.textPrimary }}>{name}</p>
-                        <p className="text-[11px]" style={{ color: t.textFaint }}>{detail}</p>
+                        <p className="text-[11px]" style={{
+                          color: label === 'DATABASE' && apiMs !== null && apiMs > 3000 ? '#EF4444' : t.textFaint,
+                        }}>{detail}</p>
                       </div>
                     ))}
                   </div>
