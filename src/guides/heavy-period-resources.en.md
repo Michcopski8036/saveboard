@@ -1,7 +1,7 @@
 ---
-title: "Heavy Periods: 7 Sources Worth Reading — And What Each One Actually Counts"
+title: "Heavy Periods: 7 Sources Worth Reading — And Which Measure Each One Uses"
 date: "2026-08-04"
-description: "Seven health-authority and patient-organisation pages on heavy menstrual bleeding, opened one by one to see how each defines 'heavy' — and which ones use a millilitre figure at all."
+description: "Volume, duration, signs, effect — there is more than one way to tell whether a period is heavy. Seven health-authority and patient-organisation pages, opened one by one to see which measure each leads with."
 slug: "heavy-period-resources"
 keywords: "heavy periods, heavy menstrual bleeding, menorrhagia, how much bleeding is too much, period blood loss, iron deficiency periods"
 lang: "en"
@@ -11,13 +11,16 @@ board_url: "https://www.saveboard.app/share/39627f62-7785-49ba-ba0d-06f8d097c204
 
 # Heavy Periods: 7 Sources Worth Reading — And What Each One Actually Counts
 
-Search for whether your period is heavy and you'll meet one sentence everywhere: **more than 80 ml in a cycle is heavy.** Open the health authorities themselves and that number mostly isn't there.
+How do you tell whether your period is heavy? There isn't one measure — there are several.
 
-**The NHS doesn't use it. Australia's healthdirect doesn't. Neither does the patient-facing FAQ from ACOG.** They describe things you can actually observe instead — changing a pad every one to two hours, clots larger than 2.5 cm, bleeding past seven days (eight, in Australia). The 80 ml figure belongs to clinical literature and summaries of it, and clinical practice leans toward judging the **effect on your life** rather than a measured volume.
+- **Volume** — how much you lose in a cycle, in millilitres. Long used clinically; the figure usually quoted is 80 ml per cycle.
+- **Duration** — bleeding past seven days (eight, for Australia's healthdirect).
+- **Signs** — changing a pad every one to two hours, clots bigger than 2.5 cm, having to change overnight.
+- **Effect** — whether it changes your day, and whether tiredness or anaemia follow.
 
-The reason is practical: almost nobody measures their menstrual blood in millilitres. So the organisations that write for patients give you things you can count instead.
+Organisations lead with different ones. Pages written for patients tend to start with **signs you can count today**, while the volume measure is the one available to you **when you've kept a record**. Neither is the correct one; they're different windows onto the same thing.
 
-Everything below was opened and read on 4 August 2026. **This is not medical advice and diagnoses nothing** — it's a record of who says what, and where. Every one of these organisations says the same thing about worry: talk to a doctor.
+Everything below was opened on 4 August 2026 to see which measure each source leads with. **This is not medical advice and diagnoses nothing** — it's a record of who says what, and where. Every one of these organisations says the same thing about worry: talk to a doctor.
 
 ## Pick by where you are
 
@@ -29,7 +32,7 @@ Everything below was opened and read on 4 August 2026. **This is not medical adv
 
 ## At a glance
 
-| Source | What it counts | Millilitre figure |
+| Source | Measure it leads with | Mentions millilitres |
 |---|---|---|
 | **Self-BAT** (Let's Talk Period) | A scored questionnaire you complete yourself | No |
 | **ACOG** (US obstetricians & gynecologists) | Soaking a pad hourly, quarter-sized clots, over 7 days | Not in the patient FAQ |
@@ -39,7 +42,7 @@ Everything below was opened and read on 4 August 2026. **This is not medical adv
 | **KDCA health portal** (Korea) | Describes the normal range first | Yes |
 | **Asan Medical Center** (Korea) | Definition, causes, tests | Yes |
 
-Leaving the number out isn't vagueness. **A sign you can count beats a volume you can't measure.**
+Which measure a source leads with tracks **who it was written for**. Signs can be counted today; volume is there for you once you've kept a record.
 
 ## The List
 
@@ -53,7 +56,7 @@ Leaving the number out isn't vagueness. **A sign you can count beats a volume yo
 
 ## Where the recording happens — one item, off the ranking
 
-Every source above asks for something the appointment itself is bad at producing: **how much, how many days, how it went.** In the room, nobody remembers.
+Using the **volume** measure takes a record — and so, in practice, do duration and signs. Asked in the room how much, how many days, and how it went, most people don't remember.
 
 **[PeriodVol](https://periodvol.app/)** is an app for that record. You log what you used — pads, tampons, a cup — and it estimates the volume in millilitres. The judgement belongs to the clinicians the sources above point you to; what the app does is leave you with **numbers and dates** to bring to them, instead of "I think it's a lot". The record stays on the device and there's no account to create.
 
@@ -67,9 +70,9 @@ Save the seven (plus the tool) to your board in one go — so when you're bookin
 
 **How concrete it is by the time you're in the appointment.** A tool you complete and bring sits top; organisations that list specific, checkable signs come next; general explanation follows. It is not a ranking of authority — all of these are official bodies or their equivalent.
 
-### Is the 80 ml figure wrong?
+### Why do the sources use different measures?
 
-Not wrong — **differently sourced.** It comes from clinical literature and summaries of it, while the patient-facing pages checked here (NHS, healthdirect, ACOG) don't use it. And practically nobody measures menstrual blood in millilitres. Whether you match the signs those organisations list is a far more usable check than whether you crossed 80.
+**They're different windows on the same thing.** Volume has long been the clinical measure; pages written for patients lead with signs and duration, which you can check without measuring anything. They don't contradict each other, and looking at two or three together describes your situation better than any one alone.
 
 ### Why seven?
 
