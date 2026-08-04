@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { MoreVertical, Link2, Check, FileText, ChevronDown, Volume2, VolumeX, Heart, Tag, Trash2, Sparkles, Clock, Play, BookOpen, ExternalLink, Pencil, GripVertical } from 'lucide-react';
 import { useDrag, useDrop } from 'react-dnd';
 import { CategoryPopup } from './CategoryPopup';
-import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl, platformGradient } from './PlatformPlaceholder';
+import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
 import { RichTextEditor } from './RichTextEditor';
 import { YouTubePlayer } from './YouTubePlayer';
 import { useTheme } from '../context/ThemeContext';
@@ -112,10 +112,10 @@ function fakeVideoDuration(id: string): string {
   const n = [...id].reduce((a, c) => a + c.charCodeAt(0), 0);
   return `${2 + (n % 17)}:${(n % 60).toString().padStart(2, '0')}`;
 }
-// Domain-hashed accent color for the text-only card's header strip (used when
-// the link isn't a known brand platform).
-const STRIP_PALETTE = ['#8B5CF6','#6366F1','#3B82F6','#0EA5E9','#10B981','#F59E0B','#EF4444','#EC4899'];
-function domainColor(s: string): string { return STRIP_PALETTE[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % STRIP_PALETTE.length]; }
+// Header strip for text-only cards. One SaveBoard gradient for every card,
+// matching the blog/guide cards — the favicon and domain sit right underneath,
+// so the strip doesn't need to carry which site it is.
+const STRIP_GRADIENT = 'linear-gradient(to right, #A259FF, #FF7262, #F24E1E)';
 
 export interface TagItem { label: string; type: string; }
 
@@ -376,10 +376,7 @@ export function LinkCard({
   // Memo / PDF / file keep their meaningful placeholder tiles.
   const isContentIcon = isMemo || isPdf || link.image === 'placeholder:file';
   const noThumb = (!isContentIcon && isPlaceholder(link.image)) || cardImgError;
-  // Header strip color for text-only cards: platform brand gradient, or a
-  // domain-hashed accent for generic sites.
-  const stripPlatform = detectPlatformFromUrl(link.url);
-  const stripBg = stripPlatform === 'default' ? domainColor(domain || link.url) : platformGradient(stripPlatform);
+  const stripBg = STRIP_GRADIENT;
 
   const sp = (fn: () => void) => (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); fn(); };
   const handleCopyLink  = async (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); try { await navigator.clipboard.writeText(link.url); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); } catch {} setShowMenu(false); };
