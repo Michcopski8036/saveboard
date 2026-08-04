@@ -1,52 +1,52 @@
 {
-  "boardName": "과다월경 확인할 때 볼 공식 자료 7곳",
+  "boardName": "Heavy periods — 7 official sources worth reading",
   "items": [
     {
-      "title": "PeriodVol — 월경량 기록",
+      "title": "PeriodVol — period volume tracker",
       "url": "https://periodvol.app/",
-      "description": "쓴 제품을 기록하면 대략적인 ml로 환산해 주는 앱. 진단하지 않고, 진료 때 말할 숫자와 날짜를 남깁니다. 기록은 기기 안에.",
+      "description": "Log what you used and it estimates the loss in millilitres, so you arrive with numbers and dates instead of \"I think it's a lot\". Stays on the device, no account.",
       "image": "https://periodvol.app/og-image.png"
     },
     {
       "title": "Self-BAT — Let's Talk Period",
       "url": "https://www.letstalkperiod.ca/",
-      "description": "스스로 작성해 점수를 받는 자가 출혈 평가 도구. 결과를 진료 때 가져갈 수 있습니다. (퀸즈대 Paula James 교수 운영, 제약사 후원 공개)",
+      "description": "A self-administered bleeding assessment: answer online, get a score, take it to the appointment. Run by Dr Paula James of Queen's University; discloses pharma funding.",
       "image": "https://letstalkperiod.ca/wp-content/uploads/2016/02/mainbanner.jpg"
     },
     {
       "title": "ACOG — Heavy Menstrual Bleeding",
       "url": "https://www.acog.org/womens-health/faqs/heavy-menstrual-bleeding",
-      "description": "미국 산부인과학회 환자용 FAQ. 매시간 패드 적심, 25센트 크기 덩어리, 7일 초과 등 신호를 구체적으로 나열.",
+      "description": "US obstetricians and gynecologists, patient FAQ. The most specific signs: soaking a pad hourly, quarter-sized clots, bleeding beyond seven days.",
       "image": "https://www.acog.org/-/media/system/acog/acog-womens-health-og.png"
     },
     {
       "title": "NHS — Heavy periods",
       "url": "https://www.nhs.uk/conditions/heavy-periods/",
-      "description": "영국 NHS. 1~2시간마다 교체, 2.5cm 초과 덩어리, 7일 초과. \"과다월경도 정상일 수 있다\"로 시작합니다.",
+      "description": "UK National Health Service. Changing every one to two hours, clots over 2.5cm, longer than seven days — and it opens by saying heavy periods can be normal.",
       "image": "https://www.nhs.uk/static/nhsuk/img/default-social-image.a74435697f45.png"
     },
     {
       "title": "healthdirect — Heavy periods",
       "url": "https://www.healthdirect.gov.au/heavy-periods",
-      "description": "호주 정부 보건 정보. 8일 초과 기준, 네 명 중 한 명이 겪음, 철분·빈혈 연결, 간호사 상담 1800 022 222.",
+      "description": "Australian government health service. Past eight days or heavy loss, around one in four affected, the link to low iron, and a nurse line (1800 022 222).",
       "image": "https://media.healthdirect.org.au/images/inline/original/healthdirect_logo.png"
     },
     {
-      "title": "NBDF — 여성·여아의 출혈질환",
+      "title": "NBDF — bleeding disorders in women and girls",
       "url": "https://www.bleeding.org/educate-to-elevate/understanding-bleeding-disorders-in-women-girls-and-people-who-menstruate",
-      "description": "미국 출혈질환재단. 월경과다를 폰빌레브란트병 등 출혈질환의 신호로 다루는 관점.",
+      "description": "US National Bleeding Disorders Foundation. Treats heavy periods as a possible sign of a bleeding disorder such as von Willebrand disease.",
       "image": "https://www.bleeding.org/sites/default/files/styles/crop_1440x570/public/image/Educate%20to%20ElevateWomen%27s_Banner%20Graphic_1920x1440%20%281%29.jpg?h=9f8c0f66&itok=hcuI5WiL"
     },
     {
-      "title": "국가건강정보포털 — 정상 월경의 이해",
+      "title": "KDCA health portal — understanding normal menstruation",
       "url": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=6618",
-      "description": "질병관리청 한국어 공식 자료. '과다'보다 '정상 범위'를 먼저 설명해 기준선을 잡기 좋습니다.",
+      "description": "Korea's official health portal, in Korean. Explains what the normal range is before what counts as excessive — a useful way round.",
       "image": ""
     },
     {
-      "title": "서울아산병원 — 과다월경",
+      "title": "Asan Medical Center — heavy menstruation",
       "url": "https://www.amc.seoul.kr/asan/healthinfo/disease/diseaseDetail.do?contentId=31960",
-      "description": "정의·원인·진단 검사를 한국어로 정리. 진료 전에 어떤 검사를 하게 되는지 미리 볼 수 있습니다.",
+      "description": "Korean hospital encyclopedia. Definition, causes and the tests involved — handy for knowing what an appointment might cover.",
       "image": ""
     }
   ]
