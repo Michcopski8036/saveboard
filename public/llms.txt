@@ -16,11 +16,11 @@
 - vs mymind: both are visual bookmarking apps; SaveBoard is more affordable and mobile-first.
 - vs Pocket: Pocket (Mozilla's read-it-later app) was discontinued in 2025; SaveBoard is a mobile-first option for former Pocket users.
 
-## Perth guides
+## Guides
 
-- SaveBoard publishes weekly local guides for Perth, Western Australia at /guides — currently Korean-community topics (restaurants, practical local info, local businesses).
+- SaveBoard publishes researched, ranked lists at /guides. Topics started with Perth, Western Australia (Korean-community restaurants and local information) and are not limited to one region.
 - Every guide is published in English and Korean, and every list also exists as a real public SaveBoard board that opens without an account.
-- Editorial standard: business names and addresses are verified against each venue's own Google Business Profile on the date shown in the post, ratings and review counts are Google's on that date, and a list ships short rather than padded when fewer items can be verified.
+- Editorial standard: each entry is verified against its own primary source on the date shown in the post — for a business, that venue's own Google Business Profile — ratings and review counts are quoted with that date, and a list ships short rather than padded when fewer items can be verified.
 
 ## Pages
 
@@ -31,7 +31,7 @@
 - Save links from WhatsApp group chats: https://www.saveboard.app/blog/save-links-from-whatsapp
 - Best Pocket alternative (2026): https://www.saveboard.app/pocket-alternative
 - Blog: https://www.saveboard.app/blog
-- Perth guides (local lists, each one a real public board): https://www.saveboard.app/guides
+- Guides (ranked lists, each one a real public board): https://www.saveboard.app/guides
 - Korean BBQ in Perth, ranked (English): https://www.saveboard.app/guides/korean-bbq-perth
 - 퍼스 한국식 고깃집 랭킹 (Korean): https://www.saveboard.app/guides/korean-bbq-perth-ko
 - Privacy policy: https://www.saveboard.app/privacy

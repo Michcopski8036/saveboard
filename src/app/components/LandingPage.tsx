@@ -12,7 +12,7 @@ interface Props {
 const COPY = {
   en: {
     blog: 'Blog',
-    guides: 'Perth guides',
+    guides: 'Guides',
     signIn: 'Sign in',
     getStarted: 'Get Started Free',
     heroBadge: '😩 Sound familiar?',
@@ -89,7 +89,7 @@ const COPY = {
   },
   ko: {
     blog: '블로그',
-    guides: '퍼스 가이드',
+    guides: '가이드',
     signIn: '로그인',
     getStarted: '무료로 시작하기',
     heroBadge: '😩 이런 적 있죠?',

@@ -361,7 +361,7 @@ function guideHtml(guide, otherLang) {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: siteName, item: baseUrl },
-      { '@type': 'ListItem', position: 2, name: guide.lang === 'ko' ? '퍼스 가이드' : 'Perth guides', item: `${baseUrl}/guides` },
+      { '@type': 'ListItem', position: 2, name: guide.lang === 'ko' ? '가이드' : 'Guides', item: `${baseUrl}/guides` },
       { '@type': 'ListItem', position: 3, name: guide.title, item: canonical },
     ],
   }];
@@ -409,12 +409,12 @@ function guideHtml(guide, otherLang) {
 }
 
 function guideIndexHtml() {
-  const title = 'Perth Guides — SaveBoard';
-  const description = 'Local Perth lists, curated as SaveBoards — open one, save what you need, done.';
+  const title = 'Guides — SaveBoard';
+  const description = 'Researched, ranked lists — every item checked against its own source, and every list opens as a board you can keep.';
   const canonical = `${baseUrl}/guides`;
   const body = `
     <main class="seo-page">
-      <h1>Perth Guides</h1>
+      <h1>Guides</h1>
       <p>${esc(description)}</p>
       <section>
         ${guidePairs.map(pair => `
@@ -451,7 +451,7 @@ function guideIndexHtml() {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: siteName, item: baseUrl },
-      { '@type': 'ListItem', position: 2, name: 'Perth guides', item: canonical },
+      { '@type': 'ListItem', position: 2, name: 'Guides', item: canonical },
     ],
   }];
 
@@ -459,7 +459,7 @@ function guideIndexHtml() {
     title,
     description,
     canonical,
-    keywords: 'perth guides, perth korean community, perth local lists, 퍼스 맛집, 퍼스 생활정보',
+    keywords: 'curated lists, ranked lists, best of lists, saveboard guides, 큐레이션 리스트, 추천 리스트',
     jsonLd,
     locale: 'en_AU',
   }, body);
