@@ -1,0 +1,78 @@
+{
+  "boardName": "Basketball sub apps — 8 checked against their own pricing",
+  "boardNameKo": "농구 교체 관리 앱 8곳 — 무료 범위 직접 확인",
+  "items": [
+    {
+      "title": "CourtClock — live sub tracker",
+      "titleKo": "CourtClock — 실시간 교체 트래커",
+      "url": "https://courtclock-iota.vercel.app/",
+      "description": "Runs in the browser, no account, nothing to buy. Tap a player then a bench player to sub; the bench sorts least-played first. Installs to the home screen and works with no signal.",
+      "descriptionKo": "브라우저에서 바로 돌고 계정도 결제도 없습니다. 코트 선수를 누른 뒤 벤치 선수를 누르면 교체. 벤치는 적게 뛴 순으로 정렬됩니다. 홈 화면 설치, 오프라인 동작.",
+      "image": "https://courtclock-iota.vercel.app/og-image.png"
+    },
+    {
+      "title": "HoopTime",
+      "titleKo": "HoopTime",
+      "url": "https://hooptime.app/",
+      "description": "Basketball-only, in the browser, and the clearest about where free stops: 1 team, plans generated, no saved game history. Paid from $9.95 per 6 months.",
+      "descriptionKo": "농구 전용 웹 도구. 무료 경계를 가장 분명히 밝힙니다 — 팀 1개, 로테이션 생성, 기록 저장 없음. 유료는 6개월 $9.95부터.",
+      "image": "https://hooptime.app/landing-screenshots/demo-rotation-table.png"
+    },
+    {
+      "title": "The Hoops Geek — Substitution Manager",
+      "titleKo": "The Hoops Geek — Substitution Manager",
+      "url": "https://app.thehoopsgeek.com/features/substitution-manager",
+      "description": "Live minutes on phone, tablet or laptop. Free forever tier with exact limits published: 3 rotations, 5 plays, 100 MB. Solo $99 a year.",
+      "descriptionKo": "폰·태블릿·노트북에서 실시간으로 분을 셉니다. 평생 무료 등급의 한도를 숫자로 공개 — 로테이션 3개, 플레이 5개, 100MB. Solo 연 $99.",
+      "image": "https://app.thehoopsgeek.com/assets/illustrations/HoopsGeekHero.png"
+    },
+    {
+      "title": "SubTime: Game Management",
+      "titleKo": "SubTime: Game Management",
+      "url": "https://apps.apple.com/us/app/subtime-game-management/id1248650528",
+      "description": "★ 4.7 from 680 ratings — the only one here with a sample worth reading. Multi-sport. Free tier is capped: recordings longer than 40 minutes need a subscription.",
+      "descriptionKo": "★ 4.7 · 리뷰 680개 — 표본이 의미를 갖는 유일한 앱. 다종목. 무료는 40분 초과 기록에 구독이 필요합니다.",
+      "image": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/96/56/75/96567521-abf4-8580-c447-b0cca7c5173f/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg"
+    },
+    {
+      "title": "SubHero",
+      "titleKo": "SubHero",
+      "url": "https://apps.apple.com/us/app/subhero/id6739369245",
+      "description": "Real-time minutes and sub notifications for soccer, basketball and other team sports. $4.99 a month or $29.99 a year — what the free download includes is not stated.",
+      "descriptionKo": "축구·농구 등 실시간 출전시간과 교체 알림. 월 $4.99 또는 연 $29.99 — 무료 설치 범위는 공개하지 않습니다.",
+      "image": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/e9/32/cd/e932cdb9-7e12-e08f-d1ab-1d73da40ad89/AppIcon-0-0-1x_U007epad-0-85-220.png/512x512bb.jpg"
+    },
+    {
+      "title": "CoachAny",
+      "titleKo": "CoachAny",
+      "url": "https://apps.apple.com/us/app/coachany/id987231566",
+      "description": "★ 3.4 from 12 ratings. Free with no in-app purchases at all — but its own listing says it is for sports played in halves on a running clock, and basketball is not one.",
+      "descriptionKo": "★ 3.4 · 리뷰 12개. 인앱결제가 아예 없는 완전 무료 — 다만 자사 설명이 \"러닝 클록 전·후반\" 종목용이라고 밝힙니다. 농구는 여기 해당하지 않습니다.",
+      "image": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/c8/4c/06/c84c06c6-b31b-771d-6a21-c7e7547b4be2/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg"
+    },
+    {
+      "title": "SmartSubstitution",
+      "titleKo": "SmartSubstitution",
+      "url": "https://apps.apple.com/au/app/smartsubstitution/id6758902741",
+      "description": "Basketball-specific plan generator, free with nothing held back. The only one that handles per-player target percentages rather than an even split.",
+      "descriptionKo": "농구 전용 계획 생성기, 막아둔 기능 없이 무료. 균등 분배가 아니라 선수별 목표 비율을 다루는 건 여기뿐입니다.",
+      "image": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/c5/92/e1/c592e1c1-85c5-4b92-04a4-5a174dd7e9cc/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+      "title": "EqualSubs",
+      "titleKo": "EqualSubs",
+      "url": "https://www.equalsubs.net/",
+      "description": "Free web generator for a printable equal-playing-time schedule. No install, and no account until you want to save a lineup.",
+      "descriptionKo": "인쇄용 균등 출전시간 교체표를 만들어 주는 무료 웹 도구. 설치 없고, 라인업을 저장하기 전까지는 계정도 필요 없습니다.",
+      "image": "https://www.equalsubs.net/EqualSubsLogoSmallCropped.png"
+    },
+    {
+      "title": "Playing Time Calculator",
+      "titleKo": "Playing Time Calculator",
+      "url": "https://www.playingtimecalculator.com/",
+      "description": "Squad size, players on court, game length in — rotation schedule out. No account at all. Covers baseball and volleyball too, so it isn't tuned to basketball.",
+      "descriptionKo": "인원·코트 인원·경기 시간을 넣으면 교체 일정이 나옵니다. 계정이 아예 없습니다. 야구·배구도 함께 다뤄 농구 전용은 아닙니다.",
+      "image": "http://www.playingtimecalculator.com/uploads/2/6/0/4/2604848/6931207.png"
+    }
+  ]
+}
