@@ -115,7 +115,10 @@ function fakeVideoDuration(id: string): string {
 // Header strip for text-only cards. One SaveBoard gradient for every card,
 // matching the blog/guide cards — the favicon and domain sit right underneath,
 // so the strip doesn't need to carry which site it is.
-const STRIP_GRADIENT = 'linear-gradient(to right, #A259FF, #FF7262, #F24E1E)';
+// The coral stop sits at 70% rather than the midpoint so purple — the brand's
+// lead colour — holds most of the bar. Keep in sync with the blog and guide
+// card strips.
+const STRIP_GRADIENT = 'linear-gradient(to right, #A259FF 0%, #FF7262 70%, #F24E1E 100%)';
 
 export interface TagItem { label: string; type: string; }
 
