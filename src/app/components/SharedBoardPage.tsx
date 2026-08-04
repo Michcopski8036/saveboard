@@ -248,7 +248,7 @@ export function SharedBoardPage() {
             {pick(board?.category, board?.category_ko)}
           </h1>
           <p className="text-[14px] text-gray-400 mt-1 mb-4">
-            {links.length} save{links.length !== 1 ? 's' : ''}
+            {ko ? `${links.length}개 저장됨` : `${links.length} save${links.length !== 1 ? 's' : ''}`}
             {board?.synced_at && <span> · {ko ? '공유됨 ' : 'shared '}{timeAgo(board.synced_at, ko)}</span>}
           </p>
           {/* Shared by */}
