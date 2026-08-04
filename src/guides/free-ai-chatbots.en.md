@@ -24,6 +24,21 @@ So on 4 August 2026 we opened each service's own pricing and help pages and read
 - **Maths and coding reasoning** — DeepSeek.
 - **Lowest barrier to just try something** — Gemini or Copilot.
 
+## At a glance
+
+| Service | What you get without paying | Limit published |
+|---|---|---|
+| **Claude** | Top models included, 200k context, web search, memory, files | Yes — stated as 50% of Pro's weekly limits |
+| **Gemini** | Flash plus some Pro, image generation, Deep Research | Partly — only as multipliers (2x, 4x, 20x) |
+| **HuggingChat** | 130 open-source models, Omni auto-routing | N/A — there is no paid tier |
+| **DeepSeek** | Reasoning-focused models | No — no per-user cap published |
+| **ChatGPT** | 27K context (~12 pages in), everything marked "limited" | Yes — clearest about what is limited |
+| **Perplexity** | Unlimited basic search | No — Pro Search cap not stated at source |
+| **Grok** | Text chat (image generation is paid) | No — third-party figures disagree |
+| **Copilot** | Web-knowledge basics | No — unclear since the April 2026 change |
+
+"Limit published" is about **predictability**, not quality. A "no" doesn't mean you can't use it free — it means the company won't tell you when you'll hit the wall.
+
 ## The List
 
 1. **[Claude](https://claude.ai/)** (free, account required) — The free account reaches the same model family as paid, Opus and Sonnet included, with a **200k-token context window**. Unusually, the pricing page states the free allowance in relation to paid — "50% of weekly limits" — rather than hiding it. Web search, memory across conversations, file creation and code execution are all in the free tier. Voice mode is paid.
