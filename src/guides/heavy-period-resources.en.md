@@ -55,9 +55,7 @@ Leaving the number out isn't vagueness. **A sign you can count beats a volume yo
 
 Every source above asks for something the appointment itself is bad at producing: **how much, how many days, how it went.** In the room, nobody remembers.
 
-**[PeriodVol](https://periodvol.app/)** is an app for that record. You log what you used — pads, tampons, a cup — and it estimates the volume in millilitres. It doesn't diagnose and can't: that judgement belongs to the clinicians the sources above point you to. What it does is let you arrive with **numbers and dates** instead of "I think it's a lot". The record stays on the device and there's no account to create.
-
-It sits outside the ranking for a simple reason: the seven above are **sources of information**, and this is a **tool**. Lining them up together wouldn't compare anything.
+**[PeriodVol](https://periodvol.app/)** is an app for that record. You log what you used — pads, tampons, a cup — and it estimates the volume in millilitres. The judgement belongs to the clinicians the sources above point you to; what the app does is leave you with **numbers and dates** to bring to them, instead of "I think it's a lot". The record stays on the device and there's no account to create.
 
 ## Keep the list on your own board
 
