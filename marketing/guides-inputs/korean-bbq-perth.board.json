@@ -1,59 +1,78 @@
 {
   "boardName": "Korean BBQ in Perth — 9 verified places",
+  "boardNameKo": "퍼스 한국식 고깃집 랭킹 9곳",
   "items": [
     {
+      "title": "SSAM Korean BBQ & Mini Hot Pot",
+      "titleKo": "SSAM Korean BBQ & Mini Hot Pot",
+      "url": "https://ssamkorean.com.au/",
+      "description": "313 Albany Hwy, Victoria Park WA 6100 — Korean BBQ plus a per-person mini hot pot.",
+      "descriptionKo": "313 Albany Hwy, Victoria Park WA 6100 — 고깃집에 1인 미니 훠궈가 따로 붙어 있어 고기파와 국물파가 한 테이블에 앉아도 됩니다. 리뷰 수도 평도 이 리스트에서 가장 좋습니다.",
+      "image": ""
+    },
+    {
       "title": "Namoo Korean Restaurant",
+      "titleKo": "Namoo Korean Restaurant",
       "url": "https://www.google.com/maps/search/?api=1&query=Namoo+Korean+Restaurant+78+Barrack+St+Perth+WA+6000",
       "description": "78 Barrack St, Perth WA 6000 — CBD pork-belly specialist, palsaik samgyeopsal (eight marinades). Dinner from 5pm.",
-      "image": ""
-    },
-    {
-      "title": "Arirang Korean BBQ Restaurant",
-      "url": "https://arirang.com.au/",
-      "description": "91-93 Barrack St, Perth WA 6000 — long-running traditional Korean BBQ in the CBD.",
-      "image": "https://arirang.com.au/assets/img/about.jpg"
-    },
-    {
-      "title": "Tong 86",
-      "url": "https://www.google.com/maps/search/?api=1&query=Tong+86+86+Beaufort+St+Perth+WA+6000",
-      "description": "86 Beaufort St, Perth WA 6000 — warehouse-sized room, graffiti walls, K-pop videos. Good for big groups.",
-      "image": ""
-    },
-    {
-      "title": "K Town Restaurant",
-      "url": "https://www.google.com/maps/search/?api=1&query=K+Town+Restaurant+63+Aberdeen+St+Northbridge+WA+6003",
-      "description": "63 Aberdeen St, Northbridge WA 6003 — Aberdeen Street tabletop grilling. Dinner from 5pm.",
+      "descriptionKo": "78 Barrack St, Perth WA 6000 — CBD 삼겹살 전문점. 여덟 가지 양념이 한 판에 올라가는 팔색 삼겹살이 간판입니다. 저녁 5시부터.",
       "image": ""
     },
     {
       "title": "Marubang",
+      "titleKo": "Marubang",
       "url": "https://www.marubang.com.au/",
       "description": "318 William St, Northbridge WA 6003 — noodles and braised pork downstairs, Korean BBQ upstairs.",
+      "descriptionKo": "318 William St, Northbridge WA 6003 — 1층은 국수와 족발, 2층이 고깃집. 늦은 밤 노스브릿지에서 가장 자주 언급되는 이름입니다.",
       "image": "https://marubang.com.au/wp-content/uploads/2021/04/main-banner.jpg"
     },
     {
-      "title": "Sura Korean Restaurant",
-      "url": "https://www.google.com/maps/search/?api=1&query=Sura+Korean+Restaurant+100+Francis+St+Northbridge+WA+6003",
-      "description": "100 Francis St, Northbridge WA 6003 — tabletop grills and a large courtyard for warm evenings.",
-      "image": ""
-    },
-    {
-      "title": "SSAM Korean BBQ & Mini Hot Pot",
-      "url": "https://ssamkorean.com.au/",
-      "description": "313 Albany Hwy, Victoria Park WA 6100 — Korean BBQ plus a per-person mini hot pot.",
-      "image": ""
-    },
-    {
       "title": "Korean BBQ Village Group",
+      "titleKo": "Korean BBQ Village Group",
       "url": "https://www.google.com/maps/search/?api=1&query=Korean+BBQ+Village+361+Albany+Hwy+Victoria+Park+WA+6100",
       "description": "361 Albany Hwy, Victoria Park WA 6100 — charcoal grills, and the lunch option (opens 11am).",
+      "descriptionKo": "361 Albany Hwy, Victoria Park WA 6100 — 숯불에 굽고, 가족 단위 후기가 압도적으로 많습니다. 이 리스트에서 유일하게 오전 11시에 열어 점심도 됩니다.",
+      "image": ""
+    },
+    {
+      "title": "K Town Restaurant",
+      "titleKo": "K Town Restaurant",
+      "url": "https://www.google.com/maps/search/?api=1&query=K+Town+Restaurant+63+Aberdeen+St+Northbridge+WA+6003",
+      "description": "63 Aberdeen St, Northbridge WA 6003 — Aberdeen Street tabletop grilling. Dinner from 5pm.",
+      "descriptionKo": "63 Aberdeen St, Northbridge WA 6003 — 애버딘 스트리트의 오래된 고깃집. 고기보다 김치가 더 많이 칭찬받습니다. 저녁 5시부터.",
+      "image": ""
+    },
+    {
+      "title": "Sura Korean Restaurant",
+      "titleKo": "Sura Korean Restaurant",
+      "url": "https://www.google.com/maps/search/?api=1&query=Sura+Korean+Restaurant+100+Francis+St+Northbridge+WA+6003",
+      "description": "100 Francis St, Northbridge WA 6003 — tabletop grills and a large courtyard for warm evenings.",
+      "descriptionKo": "100 Francis St, Northbridge WA 6003 — 넓은 야외 코트야드에서 굽는 분위기가 핵심이고 BYO가 됩니다. 고기보다 면·식사류 평이 좋습니다.",
+      "image": ""
+    },
+    {
+      "title": "Tong 86",
+      "titleKo": "Tong 86",
+      "url": "https://www.google.com/maps/search/?api=1&query=Tong+86+86+Beaufort+St+Perth+WA+6000",
+      "description": "86 Beaufort St, Perth WA 6000 — warehouse-sized room, graffiti walls, K-pop videos. Good for big groups.",
+      "descriptionKo": "86 Beaufort St, Perth WA 6000 — 그라피티 벽에 K-pop 영상이 도는 창고형 홀. 단체로 시끄럽게 먹기 좋습니다.",
       "image": ""
     },
     {
       "title": "Seoul Buffet",
+      "titleKo": "Seoul Buffet",
       "url": "https://www.seoulbuffet.com/",
       "description": "425 Albany Hwy, Victoria Park WA 6100 — all-you-can-eat cook-your-own BBQ and steamboat, $49 per adult for a two-hour sitting.",
+      "descriptionKo": "425 Albany Hwy, Victoria Park WA 6100 — 직접 구워 먹는 무한리필 BBQ에 샤브샤브까지. 성인 $49에 2시간.",
       "image": ""
+    },
+    {
+      "title": "Arirang Korean BBQ Restaurant",
+      "titleKo": "Arirang Korean BBQ Restaurant",
+      "url": "https://arirang.com.au/",
+      "description": "91-93 Barrack St, Perth WA 6000 — long-running traditional Korean BBQ in the CBD.",
+      "descriptionKo": "91-93 Barrack St, Perth WA 6000 — 오래 버틴 CBD 집. 500g 콤보 세트에 반찬이 딸려 나옵니다.",
+      "image": "https://arirang.com.au/assets/img/about.jpg"
     }
   ]
 }

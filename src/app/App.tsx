@@ -395,7 +395,10 @@ function AppContent() {
         .single();
       if (!data) return;
 
-      const catName = (data as any).category;
+      // Guides boards carry both languages; everything else only has the plain
+      // fields, so this is a no-op for ordinary shared boards.
+      const pickLang = (en?: string, koText?: string) => (language === 'ko' && koText ? koText : en) ?? '';
+      const catName = pickLang((data as any).category, (data as any).category_ko);
       // Ensure a board with this name exists (create via RPC if needed), and
       // point the imported links at it.
       const { data: existingBoard } = await supabase
@@ -437,8 +440,8 @@ function AppContent() {
         id: crypto.randomUUID(),
         user_id: user.id,
         url: l.url,
-        title: l.title,
-        description: l.description || '',
+        title: pickLang(l.title, l.title_ko),
+        description: pickLang(l.description, l.description_ko),
         image: l.image || '',
         category: catName,
         board_id: importBoardId ?? null,

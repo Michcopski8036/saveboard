@@ -8,11 +8,16 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { useLanguage } from '../context/LanguageContext';
 import { sanitizeHtml } from '../lib/sanitize';
 
+// Boards published by SaveBoard Guides carry both languages, because one board
+// serves both the English and the Korean version of a guide post. The `_ko`
+// fields are absent on every board a normal user shares, so they fall back.
 interface SharedLink {
   id: string;
   url: string;
   title: string;
+  title_ko?: string;
   description?: string;
+  description_ko?: string;
   image?: string;
   category: string;
   notes?: string;
@@ -22,6 +27,7 @@ interface SharedLink {
 interface SharedBoard {
   token: string;
   category: string;
+  category_ko?: string;
   owner_name?: string;
   owner_email?: string;
   links_snapshot: SharedLink[];
@@ -74,6 +80,9 @@ function openExternalBrowser(url: string) {
 export function SharedBoardPage() {
   const { tr, language } = useLanguage();
   const ko = language === 'ko';
+  // Korean copy when the app is in Korean AND this board carries it; otherwise
+  // the original field, so ordinary shared boards are untouched.
+  const pick = (en?: string, koText?: string) => (ko && koText ? koText : en) ?? '';
   const { token } = useParams<{ token: string }>();
   const [board, setBoard] = useState<SharedBoard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -120,7 +129,7 @@ export function SharedBoardPage() {
 
     setSaving(true);
     try {
-      const catName = board!.category;
+      const catName = pick(board!.category, board!.category_ko);
 
       // Ensure the target board exists first — its id is what we dedup against.
       const { data: existingBoard } = await supabase.from('boards').select('id').eq('name', catName).eq('owner_id', user.id).maybeSingle();
@@ -166,8 +175,8 @@ export function SharedBoardPage() {
         id: crypto.randomUUID(),
         user_id: user.id,
         url: l.url,
-        title: l.title,
-        description: l.description || '',
+        title: pick(l.title, l.title_ko),
+        description: pick(l.description, l.description_ko),
         image: l.image || '',
         board_id: importBoardId ?? null,
         created_at: Date.now(),
@@ -236,7 +245,7 @@ export function SharedBoardPage() {
         <div>
           <p className="text-[11px] font-bold uppercase tracking-widest mb-2 text-purple-400">{tr('sharedBoardTitle')}</p>
           <h1 className="text-[36px] font-extrabold text-gray-900 leading-tight tracking-tight">
-            {board?.category}
+            {pick(board?.category, board?.category_ko)}
           </h1>
           <p className="text-[14px] text-gray-400 mt-1 mb-4">
             {links.length} save{links.length !== 1 ? 's' : ''}
@@ -289,7 +298,7 @@ export function SharedBoardPage() {
         <div className="max-w-5xl mx-auto px-5 -mt-2 mb-6">
           <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
             <p className="text-[14px] font-semibold text-gray-900 mb-2">
-              {ko ? `“${board!.category}” 보드에 저장됨` : `Saved to your “${board!.category}” board`}
+              {ko ? `“${pick(board!.category, board!.category_ko)}” 보드에 저장됨` : `Saved to your “${board!.category}” board`}
             </p>
             <ul className="space-y-1 text-[13px]">
               <li className="flex items-center gap-2 text-gray-600">
@@ -335,6 +344,8 @@ export function SharedBoardPage() {
                 : (!link.image ? detectPlatformFromUrl(link.url) : null);
               const showPlaceholder = hasPlaceholder || !link.image;
               const showImage = !showPlaceholder && !isMemo && !isPdf;
+              const title = pick(link.title, link.title_ko);
+              const description = pick(link.description, link.description_ko);
 
               return (
                 <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer"
@@ -350,7 +361,7 @@ export function SharedBoardPage() {
                   ) : showImage ? (
                     <img
                       src={link.image!}
-                      alt={link.title}
+                      alt={title}
                       loading="lazy"
                       className="w-full h-auto block bg-gray-50"
                       onError={e => { e.currentTarget.style.display = 'none'; }}
@@ -377,13 +388,13 @@ export function SharedBoardPage() {
                     </div>
 
                     {/* Title */}
-                    <p className="text-[13px] font-semibold text-gray-900 line-clamp-2 leading-snug">{link.title}</p>
+                    <p className="text-[13px] font-semibold text-gray-900 line-clamp-2 leading-snug">{title}</p>
 
                     {/* Description */}
-                    {link.description && (
-                      link.description.trimStart().startsWith('<')
-                        ? <div className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed rich-card-preview" dangerouslySetInnerHTML={{ __html: sanitizeHtml(link.description) }} />
-                        : <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed">{link.description.replace(/^\[sz:(sm|md|lg)\]/, '')}</p>
+                    {description && (
+                      description.trimStart().startsWith('<')
+                        ? <div className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed rich-card-preview" dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }} />
+                        : <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed">{description.replace(/^\[sz:(sm|md|lg)\]/, '')}</p>
                     )}
 
                     {/* External link icon on hover */}

@@ -65,10 +65,12 @@ Rotate the kind of list so the section doesn't become one narrow thing:
 4. Create the board: write a JSON file matching `create-guide-board.mjs`'s input shape
    (`boardName`, `items[].{title,url,description,image}`) under `marketing/guides-inputs/`
    and run `node scripts/create-guide-board.mjs <file>`.
-   - **Write the board in English** — `boardName`, and every item's `title` and
-     `description`. One board serves both the English and the Korean post, and English is
-     the language both audiences can read. The first two boards shipped in Korean and had to
-     be rewritten because English readers clicked through to Korean cards.
+   - **Write the board in BOTH languages.** One board serves both the English and the
+     Korean post, and the share page picks by the reader's app language. So every input
+     needs `boardName` + `boardNameKo`, and every item needs `title`/`titleKo` and
+     `description`/`descriptionKo`. Don't machine-translate — write the Korean from your
+     own `.ko.md`, in the same voice. The script warns if any Korean is missing; treat that
+     warning as a failed run, not a nit.
    - **Fill in `image`.** Fetch each item's `og:image` (or its logo) and check the URL
      actually returns an image — empty images make the board a wall of grey link cards. If
      an origin blocks automated requests (chatgpt.com does), leave that one blank rather

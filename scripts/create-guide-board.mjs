@@ -21,10 +21,21 @@ if (GUIDES_BOT_USER_ID === 'REPLACE_AFTER_STEP_1') {
   process.exit(1);
 }
 
-const { boardName, items } = JSON.parse(await readFile(inputPath, 'utf8'));
+const { boardName, boardNameKo, items } = JSON.parse(await readFile(inputPath, 'utf8'));
 if (!boardName || !Array.isArray(items) || !items.length) {
-  console.error('Input JSON needs { boardName: string, items: Array<{title,url,description,image}> }');
+  console.error('Input JSON needs { boardName, boardNameKo, items: Array<{title,titleKo,url,description,descriptionKo,image}> }');
   process.exit(1);
+}
+
+// One board serves both the English and the Korean version of a guide post, so
+// it carries both languages and the share page picks by the reader's app
+// language. Missing Korean isn't fatal — the page falls back to English — but
+// it means Korean readers get an English board, so say so loudly.
+const missingKo = items.filter(i => !i.titleKo || !i.descriptionKo).map(i => i.title);
+if (!boardNameKo || missingKo.length) {
+  console.warn('⚠️  Korean copy missing — Korean readers will see English.');
+  if (!boardNameKo) console.warn('    boardNameKo is not set');
+  if (missingKo.length) console.warn(`    ${missingKo.length} item(s): ${missingKo.join(', ')}`);
 }
 
 const supabase = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -59,11 +70,13 @@ if (linksError) { console.error('links insert failed:', linksError.message); pro
 // login-required collaborator join link (/join/<token>). A guide board needs a
 // shared_boards row carrying its own snapshot of the links, same as what
 // BoardShareModal's pushSnapshot writes for a human user.
-const snapshot = linkRows.map(row => ({
+const snapshot = linkRows.map((row, i) => ({
   id: row.id,
   url: row.url,
   title: row.title,
+  title_ko: items[i].titleKo ?? null,
   description: row.description,
+  description_ko: items[i].descriptionKo ?? null,
   image: row.image,
   category: boardName,
   notes: null,
@@ -74,6 +87,7 @@ const { data: shared, error: sharedError } = await supabase
   .insert({
     owner_id: GUIDES_BOT_USER_ID,
     category: boardName,
+    category_ko: boardNameKo ?? null,
     links_snapshot: snapshot,
     synced_at: new Date().toISOString(),
     owner_name: 'SaveBoard Guides',
