@@ -6,6 +6,7 @@ slug: "basketball-sub-apps"
 keywords: "basketball sub app, basketball substitution app, playing time tracker basketball, equal playing time basketball, youth basketball rotation app, basketball substitution tracker"
 lang: "en"
 list_type: "software"
+board_image: "/guides/basketball-sub-apps-board.jpg"
 board_url: "https://www.saveboard.app/share/583b4080-255a-4d24-8748-1607a2f3caaf"
 ---
 

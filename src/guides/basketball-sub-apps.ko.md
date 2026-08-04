@@ -6,6 +6,7 @@ slug: "basketball-sub-apps"
 keywords: "농구 교체 앱, 농구 출전시간 관리, 유소년 농구 로테이션, 농구 선수교체 앱, 공평한 출전시간, 농구 코치 앱"
 lang: "ko"
 list_type: "software"
+board_image: "/guides/basketball-sub-apps-board.jpg"
 board_url: "https://www.saveboard.app/share/583b4080-255a-4d24-8748-1607a2f3caaf"
 ---
 
