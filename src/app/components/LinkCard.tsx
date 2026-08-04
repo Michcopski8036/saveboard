@@ -740,7 +740,7 @@ export function LinkCard({
       )}
 
       {/* Text-only card: thin domain-colored accent strip in place of the thumbnail */}
-      {noThumb && <div className="w-full" style={{ height: '20px', background: stripBg }} />}
+      {noThumb && <div className="w-full h-2" style={{ background: stripBg }} />}
       {noThumb && selectMode && (
         <div className="absolute top-2 left-2 z-20">
           <div className="w-5 h-5 rounded-md flex items-center justify-center"
