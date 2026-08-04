@@ -86,7 +86,11 @@ function parsePost(raw) {
 // fields and the language pairing implied by the filename suffix.
 function parseGuide(raw, lang) {
   const post = parsePost(raw);
-  return { ...post, lang, boardUrl: '', boardImage: '', ...extractGuideFrontmatter(raw) };
+  // list_type decides what each list entry *is* in structured data. Places get
+  // Restaurant + PostalAddress; everything else is a Thing with a name and a
+  // link, because marking software up as a restaurant with a street address is
+  // simply false.
+  return { ...post, lang, boardUrl: '', boardImage: '', listType: 'place', ...extractGuideFrontmatter(raw) };
 }
 
 function extractGuideFrontmatter(raw) {
@@ -101,6 +105,7 @@ function extractGuideFrontmatter(raw) {
     if (key === 'lang') data.lang = val;
     if (key === 'board_url') data.boardUrl = val;
     if (key === 'board_image') data.boardImage = val;
+    if (key === 'list_type')   data.listType   = val;
   }
   return data;
 }
@@ -372,13 +377,23 @@ function guideHtml(guide, otherLang) {
       itemListElement: items.map((item, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        item: {
-          '@type': 'Restaurant',
-          name: item.name,
-          address: { '@type': 'PostalAddress', streetAddress: item.address, addressCountry: 'AU' },
-          description: item.note,
-          ...(item.url ? { url: item.url } : {}),
-        },
+        item: guide.listType === 'place'
+          ? {
+              '@type': 'Restaurant',
+              name: item.name,
+              address: { '@type': 'PostalAddress', streetAddress: item.address, addressCountry: 'AU' },
+              description: item.note,
+              ...(item.url ? { url: item.url } : {}),
+            }
+          : {
+              // The parenthesised text is a qualifier here ("free, login required"),
+              // not an address, so it belongs in the description.
+              '@type': guide.listType === 'software' ? 'SoftwareApplication' : 'Thing',
+              name: item.name,
+              description: [item.address, item.note].filter(Boolean).join(' — '),
+              ...(item.url ? { url: item.url } : {}),
+              ...(guide.listType === 'software' ? { applicationCategory: 'WebApplication' } : {}),
+            },
       })),
     });
   }
@@ -550,6 +565,9 @@ function splitOnHeadings(block) {
 
 function inline(text) {
   return esc(text)
+    // Images first: "![alt](src)" would otherwise be consumed by the link rule.
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt, src) =>
+      `<img src="${escAttr(src)}" alt="${escAttr(alt)}" loading="lazy" />`)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label, href) => `<a href="${escAttr(href)}">${label}</a>`);

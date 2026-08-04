@@ -3,8 +3,16 @@ import React from 'react';
 // Recurses into bold/italic/link contents so nesting works — a linked name in
 // bold ("**[Venue](https://…)**") is a link, not literal brackets.
 function inlineFormat(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g);
+  // Images are matched before links: "![alt](src)" also matches the link
+  // pattern, so the image alternative has to come first in the split.
+  const parts = text.split(/(!\[[^\]]*\]\([^)]+\)|\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g);
   return parts.map((part, i) => {
+    const img = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (img)
+      return (
+        <img key={i} src={img[2]} alt={img[1]} loading="lazy"
+          className="rounded-xl border border-gray-100 my-6 w-full" />
+      );
     if (part.startsWith('**') && part.endsWith('**'))
       return <strong key={i}>{inlineFormat(part.slice(2, -2))}</strong>;
     if (part.startsWith('*') && part.endsWith('*'))
