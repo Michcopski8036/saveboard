@@ -6,4 +6,4 @@
 // compressed into the last stretch. Changing the percentages changes the look
 // as much as changing the hexes would.
 export const CARD_STRIP_GRADIENT =
-  'linear-gradient(to right, #1ABCFE 0%, #A259FF 14%, #FF7262 88%, #F24E1E 100%)';
+  'linear-gradient(to right, #1ABCFE 0%, #A259FF 7%, #FF7262 94%, #F24E1E 100%)';
