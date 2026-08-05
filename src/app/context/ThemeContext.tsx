@@ -54,7 +54,6 @@ export interface T {
   dropdownBg: string; dropdownBorder: string; dropdownShadow: string;
   dropdownText: string; dropdownIcon: string; dropdownHoverBg: string; dropdownDivider: string;
   // AI summary panel
-  aiSummaryBg: string; aiSummaryBorder: string; aiSummaryText: string; aiSummaryLabel: string;
   aiTagBg: string; aiTagBorder: string; aiTagText: string;
   // Modal / notes overlay
   modalBg: string; modalBackdrop: string; modalBorder: string; modalShadow: string;
@@ -135,7 +134,6 @@ const light: T = {
   accentChipBg: 'rgba(124,58,237,0.10)', accentChipText: '#7C3AED', accentChipBorder: 'rgba(124,58,237,0.20)',
   dropdownBg: '#FFFFFF', dropdownBorder: 'rgba(0,0,0,0.10)', dropdownShadow: '0 12px 40px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06)',
   dropdownText: '#374151', dropdownIcon: '#9CA3AF', dropdownHoverBg: 'rgba(0,0,0,0.05)', dropdownDivider: 'rgba(0,0,0,0.07)',
-  aiSummaryBg: 'rgba(124,58,237,0.06)', aiSummaryBorder: 'rgba(124,58,237,0.13)', aiSummaryText: '#6B7280', aiSummaryLabel: 'rgba(124,58,237,0.65)',
   aiTagBg: 'rgba(124,58,237,0.09)', aiTagBorder: 'rgba(124,58,237,0.18)', aiTagText: '#6D28D9',
   modalBg: '#FFFFFF', modalBackdrop: 'rgba(0,0,0,0.25)', modalBorder: 'rgba(0,0,0,0.10)', modalShadow: '0 32px 80px rgba(0,0,0,0.18)',
   modalTitle: '#111827', modalSubtitle: '#9CA3AF',
@@ -205,7 +203,6 @@ const dark: T = {
   accentChipBg: 'rgba(124,58,237,0.25)', accentChipText: '#C4B5FD', accentChipBorder: 'rgba(167,139,250,0.25)',
   dropdownBg: '#13132A', dropdownBorder: 'rgba(255,255,255,0.10)', dropdownShadow: '0 20px 60px rgba(0,0,0,0.70)',
   dropdownText: 'rgba(255,255,255,0.65)', dropdownIcon: 'rgba(255,255,255,0.35)', dropdownHoverBg: 'rgba(255,255,255,0.06)', dropdownDivider: 'rgba(255,255,255,0.07)',
-  aiSummaryBg: 'rgba(124,58,237,0.08)', aiSummaryBorder: 'rgba(124,58,237,0.15)', aiSummaryText: 'rgba(255,255,255,0.48)', aiSummaryLabel: 'rgba(167,139,250,0.70)',
   aiTagBg: 'rgba(124,58,237,0.18)', aiTagBorder: 'rgba(167,139,250,0.22)', aiTagText: '#C4B5FD',
   modalBg: '#111119', modalBackdrop: 'rgba(0,0,0,0.60)', modalBorder: 'rgba(255,255,255,0.10)', modalShadow: '0 32px 100px rgba(0,0,0,0.75)',
   modalTitle: 'rgba(255,255,255,0.90)', modalSubtitle: 'rgba(255,255,255,0.32)',

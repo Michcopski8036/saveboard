@@ -239,7 +239,12 @@ export function deriveAiTags(link: LinkData, domain: string): TagItem[] {
 
   return tags.slice(0, 4);
 }
-function getAiSummary(desc: string): string | null {
+// Note: this is the page's own meta description, trimmed — nothing generates
+// it. It used to be surfaced under an "AI Summary" heading, which claimed a
+// feature the app does not have (no LLM call exists anywhere in this codebase)
+// and is exactly the kind of claim App Store review rejects under 2.3.1.
+// Renamed so the name matches what it is.
+function getDescriptionPreview(desc: string): string | null {
   if (!desc || desc.startsWith('Link saved from') || desc.length < 30) return null;
   return desc.length > 130 ? desc.slice(0, 127).trimEnd() + '…' : desc;
 }
@@ -365,7 +370,7 @@ export function LinkCard({
     link.url.includes('dailymotion.com') || link.url.includes('twitch.tv') || link.category === 'Videos';
   const domain    = isMemo ? 'Note' : isPdf ? 'PDF' : (() => { try { return new URL(link.url).hostname.toLowerCase().replace('www.', ''); } catch { return ''; } })();
   const aiTags    = deriveAiTags(link, domain);
-  const aiSummary = getAiSummary(link.description);
+  const descPreview = getDescriptionPreview(link.description);
   const readTime  = getReadTime(link.description);
   const duration  = isYT && ytId ? fakeVideoDuration(ytId) : isVimeo && vimeoId ? fakeVideoDuration(vimeoId) : isTikTok && tikTokId ? fakeVideoDuration(tikTokId) : null;
   const isDefaultPlaceholder = link.image === 'placeholder:default';
@@ -578,7 +583,7 @@ export function LinkCard({
         <a href={href} target={href ? '_blank' : undefined} rel={href ? 'noopener noreferrer' : undefined} className="flex-1 min-w-0" onClick={handleSel}>
           <p className="text-[13px] font-semibold truncate" style={{ color: t.textPrimary }}>{link.title}</p>
           <p className="text-[11px] truncate mt-0.5" style={{ color: t.textMuted }}>{domain}</p>
-          {aiSummary && <p className="text-[11px] truncate mt-0.5" style={{ color: t.textMuted }}>{aiSummary}</p>}
+          {descPreview && <p className="text-[11px] truncate mt-0.5" style={{ color: t.textMuted }}>{descPreview}</p>}
           {(aiTags.length > 0 || (link.tags ?? []).length > 0) && (
             <div className="flex items-center gap-1 flex-wrap mt-1">
               {aiTags.map(tag => <AiTag key={tag.label} label={tag.label} type={tag.type} />)}
@@ -806,14 +811,14 @@ export function LinkCard({
           </button>
         )}
 
-        {!compact && isArticle && aiSummary && (
-          <div className="mb-3 p-2.5 rounded-xl" style={{ background: t.aiSummaryBg, border: `1px solid ${t.aiSummaryBorder}` }}>
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Sparkles className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#7C3AED' }} />
-              <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: t.aiSummaryLabel }}>AI Summary</span>
-            </div>
-            <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: t.aiSummaryText }}>{aiSummary}</p>
-          </div>
+        {/* The page's own description. This used to be presented as an
+            "AI Summary" with a sparkle icon; nothing here is generated, so the
+            heading and the icon are gone and it now renders like any other
+            description preview. */}
+        {!compact && isArticle && descPreview && (
+          <p className="text-[11px] leading-relaxed mb-3 line-clamp-2" style={{ color: t.textMuted }}>
+            {descPreview}
+          </p>
         )}
 
         {!compact && !isMemo && !isArticle && link.description && link.description.length > 0 && !link.description.startsWith('Link saved from') && (
@@ -823,7 +828,7 @@ export function LinkCard({
             : <MarkdownText text={getMemoText(link.description)} className="text-[11px] leading-relaxed mb-2" style={{ color: t.textMuted }} clamp={4} />
         )}
 
-        {!compact && isArticle && aiSummary && (
+        {!compact && isArticle && descPreview && (
           <div className="flex items-center gap-1.5 mb-2.5 flex-wrap">
             <BookOpen className="w-2.5 h-2.5 shrink-0" style={{ color: '#60A5FA', opacity: 0.7 }} />
             <span className="text-[9px]" style={{ color: t.textMuted }}>Article · {readTime} min read</span>

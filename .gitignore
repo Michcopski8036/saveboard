@@ -19,3 +19,4 @@ ExportOptions.plist
 android/.idea/
 .env*
 marketing/guides-social/
+.claude/worktrees/
