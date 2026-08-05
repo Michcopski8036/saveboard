@@ -116,7 +116,7 @@ function extractListItems(md) {
   // "1. **Name** ★ 4.3 · 1,017 reviews (address) — note". The rating segment
   // between the name and the address is optional and must stay paren-free, or
   // it would be picked up as the address.
-  const re = /^\d+\.\s+\*\*(.+?)\*\*\s*(?:★[^()]*)?\(([^)]+)\)\s*(?:—|-)?\s*(.*)$/gm;
+  const re = /^\d+\.\s+\*\*(.+?)\*\*\s*(★[^()]*)?\(([^)]+)\)\s*(?:—|-)?\s*(.*)$/gm;
   let m;
   while ((m = re.exec(md))) {
     // The name may itself be a link — "**[Name](url)**" — so the venue's own
@@ -126,11 +126,31 @@ function extractListItems(md) {
     items.push({
       name: link ? link[1].trim() : rawName,
       url: link ? link[2].trim() : '',
-      address: m[2].trim(),
-      note: m[3].trim(),
+      rating: (m[2] || '').trim(),
+      address: m[3].trim(),
+      note: m[4].trim(),
     });
   }
   return items;
+}
+
+// A place guide without star ratings is the one gap a reader notices first, and
+// it can't be fixed after the fact without re-reading every venue's profile.
+// Every business has a Google rating, so a missing one means it wasn't looked
+// up — fail the build rather than publish the list without it. Software and
+// reference lists are exempt: plenty of those items have no rating anywhere.
+function assertPlaceRatings(guide, items) {
+  if (guide.listType !== 'place') return;
+  const missing = items.filter(i => !i.rating).map(i => i.name);
+  if (!missing.length) return;
+  throw new Error(
+    `${guide.slug}.${guide.lang}.md: ${missing.length} of ${items.length} places have no "★ rating · review count".\n` +
+    `  Missing: ${missing.join(', ')}\n` +
+    `  Read each one off its own Google Business Profile and write it between the name and the address:\n` +
+    `    1. **[Name](url)** ★ 4.4 · 3,592 reviews (address) — write-up.\n` +
+    `  Google Maps needs a real browser — curl and WebFetch only get the JS shell — so this can't be\n` +
+    `  done from the weekly cloud routine. Place guides are written in a session that has one.`
+  );
 }
 
 async function writeRoute(route, html) {
@@ -303,6 +323,7 @@ function guideHtml(guide, otherLang) {
   const faqArticle = faqSplit ? markdownToHtml(content.slice(faqSplit.index).trim()) : '';
   const faqs = extractFaq(content);
   const items = extractListItems(content);
+  assertPlaceRatings(guide, items);
   const enUrl = `${baseUrl}/guides/${otherLang && guide.lang === 'ko' ? otherLang.slug : guide.slug}`;
   const koSlug = guide.lang === 'ko' ? guide.slug : (otherLang ? otherLang.slug : guide.slug);
   const canonical = guide.lang === 'ko' ? `${baseUrl}/guides/${koSlug}-ko` : `${baseUrl}/guides/${guide.slug}`;
