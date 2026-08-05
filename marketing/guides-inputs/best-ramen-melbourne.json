@@ -1,0 +1,70 @@
+{
+  "boardName": "Ramen in Melbourne CBD, Ranked",
+  "boardNameKo": "멜버른 CBD 라멘 랭킹",
+  "items": [
+    {
+      "title": "Hakata Gensuke",
+      "titleKo": "Hakata Gensuke",
+      "url": "https://gensuke.com.au/russell-street/",
+      "description": "Australia's flagship store — tick-sheet ordering, 168 Russell St.",
+      "descriptionKo": "호주 플래그십 매장 — 체크시트 주문, 168 Russell St.",
+      "image": ""
+    },
+    {
+      "title": "Ippudo",
+      "titleKo": "Ippudo",
+      "url": "https://stores.ippudo.com/en_au/AU007",
+      "description": "The global Fukuoka chain's Melbourne outpost, inside QV.",
+      "descriptionKo": "후쿠오카 출신 글로벌 체인의 멜버른 매장, QV 안.",
+      "image": ""
+    },
+    {
+      "title": "Mensho Tokyo",
+      "titleKo": "Mensho Tokyo",
+      "url": "https://www.mensho.com.au/",
+      "description": "28 seats, tori paitan chicken broth — card only, no cash.",
+      "descriptionKo": "28석, 닭육수 토리파이탄 — 카드 전용, 현금 불가.",
+      "image": ""
+    },
+    {
+      "title": "Mr Ramen San",
+      "titleKo": "Mr Ramen San",
+      "url": "https://mrramensan.com.au/",
+      "description": "Bowls under $15, 24-hour tonkotsu broth, Mid City Arcade.",
+      "descriptionKo": "$15 이하 한 그릇, 24시간 돈코츠 국물, Mid City Arcade.",
+      "image": ""
+    },
+    {
+      "title": "Kikanbo",
+      "titleKo": "Kikanbo",
+      "url": "https://www.instagram.com/kikanbo_melbourne/",
+      "description": "Spicy miso ramen, heat dialled from zero to \"oni.\"",
+      "descriptionKo": "매운 미소라멘, 매운맛을 0부터 '오니'까지 조절.",
+      "image": ""
+    },
+    {
+      "title": "Ikkoryu Fukuoka Ramen",
+      "titleKo": "Ikkoryu Fukuoka Ramen",
+      "url": "https://www.ikkoryu.com.au/",
+      "description": "Fukuoka-style tonkotsu and chikuho noodles, running since 2015.",
+      "descriptionKo": "후쿠오카식 돈코츠와 치쿠호 면, 2015년부터.",
+      "image": ""
+    },
+    {
+      "title": "Little Ramen Bar",
+      "titleKo": "Little Ramen Bar",
+      "url": "https://littleramenbar.com.au/",
+      "description": "Chashu tamago tonkotsu, with vegan and gluten-free options.",
+      "descriptionKo": "차슈 타마고 돈코츠, 비건·글루텐프리 옵션 있음.",
+      "image": ""
+    },
+    {
+      "title": "Shop Ramen",
+      "titleKo": "Shop Ramen",
+      "url": "https://www.shopramen.com.au/",
+      "description": "Handmade noodles, Smith St, Fitzroy.",
+      "descriptionKo": "직접 뽑는 면, Smith St, Fitzroy.",
+      "image": ""
+    }
+  ]
+}
