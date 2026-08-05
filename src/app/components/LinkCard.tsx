@@ -9,6 +9,7 @@ import { YouTubePlayer } from './YouTubePlayer';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { sanitizeHtml } from '../lib/sanitize';
+import { CARD_STRIP_GRADIENT } from '../lib/brand';
 
 export const LINK_DRAG_TYPE = 'LINK_TO_BOARD';
 
@@ -115,10 +116,6 @@ function fakeVideoDuration(id: string): string {
 // Header strip for text-only cards. One SaveBoard gradient for every card,
 // matching the blog/guide cards — the favicon and domain sit right underneath,
 // so the strip doesn't need to carry which site it is.
-// The coral stop sits at 70% rather than the midpoint so purple — the brand's
-// lead colour — holds most of the bar. Keep in sync with the blog and guide
-// card strips.
-const STRIP_GRADIENT = 'linear-gradient(to right, #A259FF 0%, #FF7262 70%, #F24E1E 100%)';
 
 export interface TagItem { label: string; type: string; }
 
@@ -379,7 +376,7 @@ export function LinkCard({
   // Memo / PDF / file keep their meaningful placeholder tiles.
   const isContentIcon = isMemo || isPdf || link.image === 'placeholder:file';
   const noThumb = (!isContentIcon && isPlaceholder(link.image)) || cardImgError;
-  const stripBg = STRIP_GRADIENT;
+  const stripBg = CARD_STRIP_GRADIENT;
 
   const sp = (fn: () => void) => (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); fn(); };
   const handleCopyLink  = async (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); try { await navigator.clipboard.writeText(link.url); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); } catch {} setShowMenu(false); };

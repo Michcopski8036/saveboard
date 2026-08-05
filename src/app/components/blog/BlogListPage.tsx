@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Bookmark, ArrowRight } from 'lucide-react';
 import { blogPosts, landingPages, formatDate } from '../../utils/blogUtils';
 import { useLanguage } from '../../context/LanguageContext';
+import { CARD_STRIP_GRADIENT } from '../../lib/brand';
 
 const BASE_URL = 'https://www.saveboard.app';
 
@@ -49,7 +50,7 @@ export function BlogListPage() {
                   to={`/blog/${post.slug}`}
                   className="group flex flex-col rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden"
                 >
-                  <div className="h-2 bg-gradient-to-r from-[#A259FF] via-[#FF7262] via-70% to-[#F24E1E]" />
+                  <div className="h-2" style={{ background: CARD_STRIP_GRADIENT }} />
                   <div className="p-6 flex flex-col flex-1">
                     <p className="text-[12px] text-gray-400 mb-3">{formatDate(post.date)}</p>
                     <h2 className="text-[18px] font-bold text-gray-900 leading-snug mb-3 group-hover:text-purple-700 transition-colors">
