@@ -1,23 +1,35 @@
 // Creates a public SaveBoard board + links for a weekly /guides/ post, owned by
-// the guides-bot system account. Bypasses the create_board/share_board RPCs
-// (which require a real authenticated auth.uid()) by inserting directly via
-// the service-role client, which bypasses RLS. Deliberately does not replicate
-// the per-plan board/share-count limits from those RPCs — this is an internal
-// system account, not a paying user, so those tier caps don't apply.
+// the guides-bot account.
+//
+// This signs in as that account with the publishable (anon) key and goes
+// through the same RLS-guarded path the app uses — create_board, then links,
+// then a shared_boards row. It deliberately does NOT use the service-role key:
+// that key bypasses RLS on every table, so handing it to a scheduled routine
+// would trade "publish one board a week" for full read/write on every user's
+// links and subscriptions.
+//
+// The per-plan board and share caps still apply; guides-bot is exempted from
+// them by public.system_accounts (see 20260805_system_accounts.sql) rather than
+// by a fake subscription, which would show up in admin-stats as a paying
+// customer.
 import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
-const GUIDES_BOT_USER_ID = process.env.GUIDES_BOT_USER_ID ?? 'b749a7b5-ccb6-432f-b475-2abc424d3ff5';
 const SUPABASE_URL = 'https://mchikdltrcbovhdzdhhf.supabase.co';
+const ANON_KEY = 'sb_publishable_aITf5gAB5i-gLx_mcS2Z5w_99ov4D9u';
 
 const inputPath = process.argv[2];
 if (!inputPath) {
   console.error('Usage: node scripts/create-guide-board.mjs <input.json>');
   process.exit(1);
 }
-if (GUIDES_BOT_USER_ID === 'REPLACE_AFTER_STEP_1') {
-  console.error('GUIDES_BOT_USER_ID is not set — run Task 2 Step 1 first, then export GUIDES_BOT_USER_ID.');
+
+const { GUIDES_BOT_EMAIL, GUIDES_BOT_PASSWORD } = process.env;
+if (!GUIDES_BOT_EMAIL || !GUIDES_BOT_PASSWORD) {
+  console.error('GUIDES_BOT_EMAIL and GUIDES_BOT_PASSWORD must be set.');
+  console.error('Not set for this routine yet? Do NOT publish with an empty board_url —');
+  console.error('finish the post, leave it empty, and report the board as the outstanding item.');
   process.exit(1);
 }
 
@@ -38,19 +50,21 @@ if (!boardNameKo || missingKo.length) {
   if (missingKo.length) console.warn(`    ${missingKo.length} item(s): ${missingKo.join(', ')}`);
 }
 
-const supabase = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const supabase = createClient(SUPABASE_URL, ANON_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
 
-const { data: board, error: boardError } = await supabase
-  .from('boards')
-  .insert({ owner_id: GUIDES_BOT_USER_ID, name: boardName, sort_order: 0 })
-  .select()
-  .single();
-if (boardError) { console.error('board insert failed:', boardError.message); process.exit(1); }
+const { data: session, error: authError } = await supabase.auth.signInWithPassword({
+  email: GUIDES_BOT_EMAIL,
+  password: GUIDES_BOT_PASSWORD,
+});
+if (authError) { console.error('guides-bot sign-in failed:', authError.message); process.exit(1); }
+const GUIDES_BOT_USER_ID = session.user.id;
 
-const { error: memberError } = await supabase
-  .from('board_members')
-  .insert({ board_id: board.id, user_id: GUIDES_BOT_USER_ID, role: 'owner' });
-if (memberError) { console.error('board_members insert failed:', memberError.message); process.exit(1); }
+// create_board also adds the owner to board_members and enforces the per-plan
+// board cap, which system_accounts exempts guides-bot from.
+const { data: board, error: boardError } = await supabase.rpc('create_board', { p_name: boardName });
+if (boardError) { console.error('create_board failed:', boardError.message); process.exit(1); }
 
 const linkRows = items.map(item => ({
   id: randomUUID(),
@@ -96,6 +110,8 @@ const { data: shared, error: sharedError } = await supabase
   .select('token')
   .single();
 if (sharedError) { console.error('shared_boards insert failed:', sharedError.message); process.exit(1); }
+
+await supabase.auth.signOut();
 
 console.log(JSON.stringify({
   boardId: board.id,

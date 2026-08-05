@@ -108,9 +108,11 @@ them alone and pick a tools or reference topic.
      candidate and check it actually shows the product, the venue or its logo. If an origin
      blocks automated requests (chatgpt.com does), leave that one blank rather than guessing
      a URL that will 404.
-   - This needs `GUIDES_BOT_USER_ID` and `SUPABASE_SERVICE_ROLE_KEY` in the environment. If
-     `SUPABASE_SERVICE_ROLE_KEY` is not set — expected until it is provisioned for this
-     routine — do NOT skip silently: finish everything else, leave `board_url` empty, and
+   - This needs `GUIDES_BOT_EMAIL` and `GUIDES_BOT_PASSWORD` in the environment. The script
+     signs in as that account and goes through the same RLS-guarded path the app uses; it
+     does **not** take a service-role key, and must never be changed to — that key bypasses
+     RLS on every table, which is far more than publishing a board needs. If the two vars
+     are not set, do NOT skip silently: finish everything else, leave `board_url` empty, and
      put the board at the **top** of your report as the thing that still needs doing.
      An empty `board_url` hides the whole board section, so the post publishes with no CTA
      at all — the reader never learns the board exists. Write the board input JSON anyway
