@@ -5,6 +5,7 @@ import { SharedBoardPage } from "./app/components/SharedBoardPage.tsx";
 import { JoinTeamBoard } from "./app/components/JoinTeamBoard.tsx";
 import { BlogListPage } from "./app/components/blog/BlogListPage.tsx";
 import { BlogPostPage } from "./app/components/blog/BlogPostPage.tsx";
+import { ResetPassword } from './app/components/ResetPassword';
 import { GuideListPage } from "./app/components/guides/GuideListPage.tsx";
 import { GuidePostPage } from "./app/components/guides/GuidePostPage.tsx";
 import { LanguageProvider } from "./app/context/LanguageContext.tsx";
@@ -28,6 +29,7 @@ function TrackedRoutes() {
       <Route path="/blog/:slug" element={<BlogPostPage />} />
       {/* Without these two, /guides/* falls through to <App/> and a human
           visitor gets the dashboard while crawlers see the prerendered HTML. */}
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/guides" element={<GuideListPage />} />
       <Route path="/guides/:slug" element={<GuidePostPage />} />
       <Route path="/*" element={<App />} />

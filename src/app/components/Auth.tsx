@@ -17,6 +17,12 @@ const COPY = {
     noAccount: "Don't have an account? ", haveAccount: 'Already have an account? ',
     confirmEmail: 'Check your email to confirm your account!',
     appleFailed: 'Apple Sign In failed',
+    forgot: 'Forgot your password?',
+    resetTitle: 'Reset your password',
+    resetSub: "Enter your email and we'll send you a link to set a new password.",
+    sendReset: 'Send reset link',
+    resetSent: 'If that email has an account, a reset link is on its way. Check your spam folder too.',
+    backToSignIn: 'Back to sign in',
   },
   ko: {
     welcomeBack: '다시 오신 걸 환영해요', createAccount: '계정 만들기',
@@ -28,6 +34,12 @@ const COPY = {
     noAccount: '계정이 없으신가요? ', haveAccount: '이미 계정이 있으신가요? ',
     confirmEmail: '이메일을 확인해 계정을 인증해주세요!',
     appleFailed: 'Apple 로그인에 실패했어요',
+    forgot: '비밀번호를 잊으셨나요?',
+    resetTitle: '비밀번호 재설정',
+    resetSub: '이메일을 입력하시면 새 비밀번호를 정할 수 있는 링크를 보내드려요.',
+    sendReset: '재설정 링크 보내기',
+    resetSent: '해당 이메일로 가입된 계정이 있다면 재설정 링크가 발송됩니다. 스팸함도 확인해주세요.',
+    backToSignIn: '로그인으로 돌아가기',
   },
 } as const;
 
@@ -41,6 +53,31 @@ export function Auth() {
   const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [isReset, setIsReset] = useState(false);
+
+  // The recovery link always lands on the web app, even for someone who asked
+  // from the native app — the reset screen lives at /reset-password and there is
+  // no native route for it. Supabase only honours a redirectTo that is on the
+  // project's allow-list, so this URL has to stay in sync with Authentication →
+  // URL Configuration.
+  const handleResetRequest = async () => {
+    setLoading(true);
+    setError('');
+    setMessage('');
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://www.saveboard.app/reset-password',
+      });
+      if (error) throw error;
+      // Deliberately the same message whether or not the account exists, so the
+      // form can't be used to find out who has an account here.
+      setMessage(c.resetSent);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEmailAuth = async () => {
     setLoading(true);
@@ -146,13 +183,17 @@ export function Auth() {
         </div>
 
         <h2 className="text-2xl font-bold text-center mb-2">
-          {isLogin ? c.welcomeBack : c.createAccount}
+          {isReset ? c.resetTitle : isLogin ? c.welcomeBack : c.createAccount}
         </h2>
         <p className="text-gray-500 text-center mb-8 text-sm">
-          {isLogin ? c.subLogin : c.subSignup}
+          {isReset ? c.resetSub : isLogin ? c.subLogin : c.subSignup}
         </p>
 
-        {/* Apple */}
+        {/* Apple — hidden while resetting: a password reset is meaningless for an
+            account that signs in with Apple or Google, and offering it here
+            would just muddle the one thing this screen is for. */}
+        {!isReset && (
+        <>
         <button
           onClick={handleAppleSignIn}
           disabled={appleLoading}
@@ -190,6 +231,8 @@ export function Auth() {
           <span className="text-xs text-gray-400">{c.or}</span>
           <div className="flex-1 h-px bg-gray-200" />
         </div>
+        </>
+        )}
 
         <div className="space-y-3">
           <input
@@ -199,19 +242,32 @@ export function Auth() {
             placeholder={c.email}
             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF] focus:border-transparent text-sm"
           />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleEmailAuth()}
-            placeholder={c.password}
-            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF] focus:border-transparent text-sm"
-          />
+          {!isReset && (
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleEmailAuth()}
+              placeholder={c.password}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#A259FF] focus:border-transparent text-sm"
+            />
+          )}
         </div>
 
-        {!isLogin && (
+        {!isLogin && !isReset && (
           <p className="mt-2 text-xs text-gray-400">
             {c.passwordHint}
+          </p>
+        )}
+
+        {isLogin && !isReset && (
+          <p className="mt-2 text-right">
+            <button
+              onClick={() => { setIsReset(true); setError(''); setMessage(''); }}
+              className="text-xs text-gray-400 hover:text-[#A259FF] hover:underline"
+            >
+              {c.forgot}
+            </button>
           </p>
         )}
 
@@ -219,22 +275,33 @@ export function Auth() {
         {message && <p className="mt-3 text-sm text-green-500 text-center">{message}</p>}
 
         <button
-          onClick={handleEmailAuth}
-          disabled={loading || !email || !password}
+          onClick={isReset ? handleResetRequest : handleEmailAuth}
+          disabled={loading || !email || (!isReset && !password)}
           className="w-full mt-4 py-3 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-[10px] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
         >
-          {loading ? c.loading : isLogin ? c.signIn : c.createAccount}
+          {loading ? c.loading : isReset ? c.sendReset : isLogin ? c.signIn : c.createAccount}
         </button>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
-          {isLogin ? c.noAccount : c.haveAccount}
-          <button
-            onClick={() => { setIsLogin(!isLogin); setError(''); setMessage(''); }}
-            className="text-[#A259FF] font-medium hover:underline"
-          >
-            {isLogin ? c.signUp : c.signIn}
-          </button>
-        </p>
+        {isReset ? (
+          <p className="text-center text-sm text-gray-500 mt-4">
+            <button
+              onClick={() => { setIsReset(false); setError(''); setMessage(''); }}
+              className="text-[#A259FF] font-medium hover:underline"
+            >
+              {c.backToSignIn}
+            </button>
+          </p>
+        ) : (
+          <p className="text-center text-sm text-gray-500 mt-4">
+            {isLogin ? c.noAccount : c.haveAccount}
+            <button
+              onClick={() => { setIsLogin(!isLogin); setError(''); setMessage(''); }}
+              className="text-[#A259FF] font-medium hover:underline"
+            >
+              {isLogin ? c.signUp : c.signIn}
+            </button>
+          </p>
+        )}
       </div>
     </div>
   );
