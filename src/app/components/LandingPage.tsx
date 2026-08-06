@@ -77,7 +77,12 @@ const COPY = {
     aiSuggested: 'AI suggested tags',
     shareBadge: 'Sharing',
     shareTitle: 'Share with the whole team',
-    shareDesc: 'Share your Basketball or Gymnastics board with other parents — just send a link. No account needed to view it.',
+    shareDesc: 'Send other parents a link to your Basketball or Gymnastics board — or invite them in so everyone saves to the same place.',
+    sharePoints: [
+      'Invite people to save into the same board',
+      'Invited members join free — they need no plan of their own',
+      'Or send a public link that opens without an account',
+    ],
     shareBoardLabel: 'Shared board',
     shareBoardName: 'My Korea Trip 🇰🇷',
     copyLink: 'Copy link',
@@ -154,7 +159,12 @@ const COPY = {
     aiSuggested: 'AI 추천 태그',
     shareBadge: '공유',
     shareTitle: '팀 전체와 공유',
-    shareDesc: '농구나 체조 보드를 다른 학부모와 공유하세요 — 링크만 보내면 돼요. 보는 데 계정도 필요 없어요.',
+    shareDesc: '농구나 체조 보드를 다른 학부모에게 링크로 보내세요 — 아예 초대해서 다 같이 한 곳에 저장할 수도 있어요.',
+    sharePoints: [
+      '같은 보드에 함께 저장하도록 초대하기',
+      '초대된 멤버는 무료로 참여해요 — 각자 요금제가 없어도 돼요',
+      '공개 링크를 보내면 계정 없이도 열려요',
+    ],
     shareBoardLabel: '공유된 보드',
     shareBoardName: '나의 한국 여행 🇰🇷',
     copyLink: '링크 복사',
@@ -506,6 +516,16 @@ export function LandingPage({ onGetStarted }: Props) {
             <p className="text-[15px] text-gray-500 leading-relaxed">
               {c.shareDesc}
             </p>
+            <div className="mt-5">
+              {c.sharePoints.map(item => (
+                <div key={item} className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 text-orange-500" />
+                  </div>
+                  <span className="text-[13px] text-gray-700 font-medium">{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="flex-1 flex items-center justify-center">
             <div className="bg-gradient-to-br from-[#A259FF] to-[#F24E1E] rounded-2xl p-px shadow-xl w-full max-w-[260px]">
