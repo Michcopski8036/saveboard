@@ -11,6 +11,7 @@ import { BottomNav } from './components/BottomNav';
 import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
 import { LandingPage } from './components/LandingPage';
+import { Onboarding } from './components/Onboarding';
 import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2, Check, AlertCircle } from 'lucide-react';
 
 function GalleryIcon({ className }: { className?: string }) {
@@ -91,6 +92,7 @@ function AppContent() {
   const userId = user?.id ?? null;
   const [authLoading, setAuthLoading]   = useState(true);
   const [showAuth, setShowAuth]         = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
+  const [onboarded, setOnboarded]       = useState(() => localStorage.getItem('sb_onboarded') === '1');
   const [links, setLinks]               = useState<LinkData[]>([]);
   const [boards, setBoards]             = useState<Board[]>([]);
   const [isLoading, setIsLoading]       = useState(false);
@@ -1016,6 +1018,16 @@ function AppContent() {
   );
 
   if (!user) {
+    // Native users already installed the app — the landing page is a pitch to
+    // install it. Show the first-run intro once, then go straight to sign-in.
+    // Deep links (/share/:token, /team/:token, /reset-password, /guides/*) are
+    // separate routes in main.tsx and never reach this branch.
+    if (Capacitor.isNativePlatform()) {
+      if (!onboarded) {
+        return <Onboarding onDone={() => { localStorage.setItem('sb_onboarded', '1'); setOnboarded(true); }} />;
+      }
+      return <Auth />;
+    }
     if (showAuth) return <Auth />;
     return <LandingPage onGetStarted={() => setShowAuth(true)} />;
   }

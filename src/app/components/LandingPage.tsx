@@ -1,5 +1,6 @@
 import { Bookmark, Link2, FileText, Play, StickyNote, Sparkles, Share2, ArrowRight, Check, Search, Shield } from 'lucide-react';
 import { Link } from 'react-router';
+import { Capacitor } from '@capacitor/core';
 import { useLanguage } from '../context/LanguageContext';
 
 interface Props {
@@ -170,6 +171,10 @@ export function LandingPage({ onGetStarted }: Props) {
   const { language } = useLanguage();
   const c = COPY[language as keyof typeof COPY] ?? COPY.en;
 
+  // Onboarding means native never reaches this page — but if a future route ever
+  // lands here, an iOS build must not render a Google Play badge.
+  const isNative = Capacitor.isNativePlatform();
+
   const solutionMeta = [
     { icon: Link2,      bg: '#EDE9FE', color: '#7C3AED' },
     { icon: FileText,   bg: '#CCFBF1', color: '#0D9488' },
@@ -252,6 +257,7 @@ export function LandingPage({ onGetStarted }: Props) {
               </a>
             </div>
             {/* App store download badges */}
+            {!isNative && (
             <div className="flex gap-3 flex-wrap -mt-6 mb-10">
               <a href="https://apps.apple.com/app/id6770486850" target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-black text-white rounded-xl hover:opacity-90 active:scale-95 transition-all">
@@ -275,6 +281,7 @@ export function LandingPage({ onGetStarted }: Props) {
                 </span>
               </a>
             </div>
+            )}
             <div className="flex items-center gap-3">
               <div className="flex">
                 {['🧑‍🦰','👩','🧑','👩‍🦱'].map((e, i) => (
