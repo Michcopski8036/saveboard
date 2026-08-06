@@ -1,7 +1,7 @@
 # SaveBoard — project guide for Claude
 
 Visual, mobile-first bookmark/link-saver. Web (Vercel) + native iOS & Android (Capacitor).
-Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn (call her 누나).
+Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn — address as **대표님** in Korean.
 
 ## Stack
 - React + Vite + TypeScript + Tailwind
