@@ -80,7 +80,6 @@ const COPY = {
     shareDesc: 'Send other parents a link to your Basketball or Gymnastics board — or invite them in so everyone saves to the same place.',
     sharePoints: [
       'Invite people to save into the same board',
-      'Invited members join free — they need no plan of their own',
       'Or send a public link that opens without an account',
     ],
     shareBoardLabel: 'Shared board',
@@ -162,7 +161,6 @@ const COPY = {
     shareDesc: '농구나 체조 보드를 다른 학부모에게 링크로 보내세요 — 아예 초대해서 다 같이 한 곳에 저장할 수도 있어요.',
     sharePoints: [
       '같은 보드에 함께 저장하도록 초대하기',
-      '초대된 멤버는 무료로 참여해요 — 각자 요금제가 없어도 돼요',
       '공개 링크를 보내면 계정 없이도 열려요',
     ],
     shareBoardLabel: '공유된 보드',
