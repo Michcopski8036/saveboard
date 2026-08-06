@@ -2,6 +2,12 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **실행 결과 (2026-08-06):** Task 1·2·3 완료. **Task 4·5는 취소됐다** — 캡쳐하려고
+> 실제 앱을 열어보니 뷰 기능이 모바일에서 아예 안 보이고, 갤러리는 대부분 빈 화면,
+> 칸반은 썸네일이 깨져 있었다. 못 쓰는 기능을 광고할 수 없어 랜딩에서 뺐다. 사유
+> 전문은 스펙의 B2 항목 참조. 그 과정에서 발견한 칸반 버그는 별도로 고쳤다
+> (커밋 `5052504e`).
+
 **Goal:** 네이티브 앱의 로그아웃 화면을 마케팅 랜딩에서 3장짜리 온보딩 → 로그인으로 바꾸고, 웹 랜딩에 빠져 있던 실제 기능(파일 업로드·멀티플랫폼·팀 초대·데스크톱 뷰 3종·6개 언어)을 반영한다.
 
 **Architecture:** `App.tsx`의 로그아웃 분기에 플랫폼 조건을 넣어 네이티브만 새 `Onboarding` 컴포넌트로 보낸다. 웹 경로는 한 줄도 바뀌지 않는다. 랜딩 변경은 전부 `LandingPage.tsx` 한 파일 안의 이중언어 `COPY` 객체 + JSX 편집이며, 새 스크린샷 3장이 `public/app/`에 추가된다.
