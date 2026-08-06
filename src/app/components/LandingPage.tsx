@@ -1,4 +1,4 @@
-import { Bookmark, Link2, FileText, Play, StickyNote, Sparkles, Share2, ArrowRight, Check, Search, Shield } from 'lucide-react';
+import { Bookmark, Link2, FileText, Paperclip, StickyNote, Sparkles, Share2, ArrowRight, Check, Smartphone, Shield } from 'lucide-react';
 import { Link } from 'react-router';
 import { Capacitor } from '@capacitor/core';
 import { useLanguage } from '../context/LanguageContext';
@@ -51,9 +51,9 @@ const COPY = {
     solutions: [
       { label: 'Beautiful visual cards',   desc: 'Every link becomes a rich preview with image, title, and description.' },
       { label: 'Organise by activity',     desc: 'Create boards for Basketball, Gymnastics, Tennis — each activity tidy and separate.' },
-      { label: 'Find in seconds',          desc: 'Search by title, notes, or tags. No more scrolling through hundreds of messages.' },
+      { label: 'Files, not just links',    desc: 'Attach the PDF itself — the registration form sits right next to the schedule link.' },
       { label: 'Add notes & reminders',    desc: 'Add context like "Register by June 1st" so you never forget the details.' },
-      { label: 'Save in seconds',          desc: 'Just paste a link and SaveBoard does the rest. Title, image, description — auto-fetched.' },
+      { label: 'Web, iPhone and Android',  desc: 'Save it on your phone, find it on your laptop. The same boards on every device.' },
       { label: 'Private & just yours',     desc: 'Your links are private. No one sees your board unless you choose to share.' },
     ],
     shotsTitle: 'What it looks like on your phone',
@@ -128,9 +128,9 @@ const COPY = {
     solutions: [
       { label: '예쁜 비주얼 카드',        desc: '모든 링크가 이미지·제목·설명이 담긴 미리보기로 바뀌어요.' },
       { label: '활동별로 정리',          desc: '농구, 체조, 테니스 — 활동마다 보드를 만들어 깔끔하게 분리해요.' },
-      { label: '몇 초 만에 찾기',        desc: '제목·메모·태그로 검색하세요. 더 이상 수백 개 메시지를 스크롤할 필요 없어요.' },
+      { label: '링크만이 아니라 파일도',  desc: 'PDF를 그대로 첨부하세요. 신청서가 일정 링크 바로 옆에 놓여요.' },
       { label: '메모 & 알림 추가',       desc: '"6월 1일까지 신청" 같은 메모를 달아 놓치지 않게 하세요.' },
-      { label: '몇 초 만에 저장',        desc: '링크만 붙여넣으면 SaveBoard가 알아서 처리해요. 제목·이미지·설명 자동 수집.' },
+      { label: '웹·아이폰·안드로이드',    desc: '폰에서 저장하고 노트북에서 찾으세요. 모든 기기에 같은 보드.' },
       { label: '오직 나만의 공간',       desc: '내 링크는 비공개예요. 공유하기 전엔 아무도 내 보드를 못 봐요.' },
     ],
     shotsTitle: '폰에서는 이렇게 보여요',
@@ -167,6 +167,10 @@ const COPY = {
   },
 } as const;
 
+// Six languages ship in LanguageContext but the landing never said so.
+// Written in each language's own name, so it reads regardless of the visitor's.
+const LANGS = 'English · 한국어 · 日本語 · 中文 · Español · Français';
+
 export function LandingPage({ onGetStarted }: Props) {
   const { language } = useLanguage();
   const c = COPY[language as keyof typeof COPY] ?? COPY.en;
@@ -178,9 +182,9 @@ export function LandingPage({ onGetStarted }: Props) {
   const solutionMeta = [
     { icon: Link2,      bg: '#EDE9FE', color: '#7C3AED' },
     { icon: FileText,   bg: '#CCFBF1', color: '#0D9488' },
-    { icon: Search,     bg: '#FEF9C3', color: '#CA8A04' },
+    { icon: Paperclip,  bg: '#FEF9C3', color: '#CA8A04' },
     { icon: StickyNote, bg: '#FFE4E6', color: '#E11D48' },
-    { icon: Play,       bg: '#DBEAFE', color: '#2563EB' },
+    { icon: Smartphone, bg: '#DBEAFE', color: '#2563EB' },
     { icon: Shield,     bg: '#DCFCE7', color: '#16A34A' },
   ];
   const stepColors = ['#A259FF', '#FF7262', '#F24E1E'];
@@ -574,6 +578,9 @@ export function LandingPage({ onGetStarted }: Props) {
             <p className="text-[12px] text-gray-400">{c.rights}</p>
           </div>
         </div>
+        <p className="max-w-5xl mx-auto mt-4 text-center sm:text-left text-[12px] text-gray-400">
+          {LANGS}
+        </p>
       </footer>
 
     </div>
