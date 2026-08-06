@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { MoreVertical, Heart, Trash2, Link2, Check, Sparkles } from 'lucide-react';
-import { isPlaceholder, getPlatformFromPlaceholder, PlatformPlaceholder } from './PlatformPlaceholder';
+import { isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl, PlatformPlaceholder } from './PlatformPlaceholder';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import type { LinkData } from './LinkCard';
@@ -27,6 +27,7 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete }: KanbanCar
   const { t } = useTheme();
   const [showMenu, setShowMenu] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [thumbError, setThumbError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const isMemo = link.image === 'placeholder:memo';
   const dom = isMemo ? 'Note' : link.image === 'placeholder:pdf' ? 'PDF' : domain(link);
@@ -62,9 +63,13 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete }: KanbanCar
 
       <div className="flex gap-2.5 mb-2.5">
         <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0">
-          {isPlaceholder(link.image)
+          {/* A link with no image at all used to fall through to <img src="">, which
+              renders as a broken-image icon. Fall back the way LinkCard does. */}
+          {isPlaceholder(link.image || '')
             ? <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} text={isMemo ? link.description : undefined} className="w-full h-full" />
-            : <img src={link.image} alt={link.title} crossOrigin="anonymous" className="w-full h-full object-cover" />}
+            : !link.image || thumbError
+              ? <PlatformPlaceholder platform={detectPlatformFromUrl(link.url)} className="w-full h-full" />
+              : <img src={link.image} alt={link.title} crossOrigin="anonymous" onError={() => setThumbError(true)} className="w-full h-full object-cover" />}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[12px] font-semibold line-clamp-2 leading-snug" style={{ color: t.kanbanColTitle }}>{link.title}</p>
