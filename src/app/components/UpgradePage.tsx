@@ -24,11 +24,11 @@ interface UpgradePageProps {
 export const FREE_LIMITS = { links: 30, boards: 5, fileSizeMb: 5, storageMb: 50 };
 
 const comparisonRows: { feature: string; free: boolean | string; pro: boolean | string; team: boolean | string }[] = [
-  { feature: 'Saves',            free: '30 max',     pro: '300',       team: 'Unlimited' },
-  { feature: 'Boards',           free: '5 max',      pro: '30',        team: 'Unlimited' },
+  { feature: 'Saves',            free: '30 max',     pro: '100',       team: '300'       },
+  { feature: 'Boards',           free: '5 max',      pro: '15',        team: '50'        },
   { feature: 'Storage',          free: '50MB',       pro: '2GB',       team: '10GB'      },
   { feature: 'File size limit',  free: '5MB',        pro: '20MB',      team: '50MB'      },
-  { feature: 'Team boards (collaborative)', free: '1', pro: '5', team: '25' },
+  { feature: 'Team boards (collaborative)', free: '1', pro: '5', team: '10' },
   { feature: 'Members per board',free: '5',           pro: '10',        team: '25'        },
   { feature: 'Shared boards',    free: true,         pro: true,        team: true        },
   { feature: 'File uploads',     free: true,         pro: true,        team: true        },
@@ -112,8 +112,8 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
         status: 'active',
         billing_cycle: billingCycle,
         current_period_end: tx.expiresDate ?? null,
-        saves_limit: '300',
-        boards_limit: '30',
+        saves_limit: '100',
+        boards_limit: '15',
         file_size_limit: '20MB',
         storage_limit: '2GB',
         source: 'apple',
@@ -141,7 +141,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
       </div>
 
       <ul className="space-y-2.5 px-1">
-        {(ko ? ['저장 300개','보드 30개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['300 saves', '30 boards', '5 team boards (10 members each)', '2GB storage', '20MB file size limit', 'Priority support']).map(f => (
+        {(ko ? ['저장 100개','보드 15개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['100 saves', '15 boards', '5 team boards (10 members each)', '2GB storage', '20MB file size limit', 'Priority support']).map(f => (
           <li key={f} className="flex items-center gap-2.5 text-[14px] text-gray-700">
             <Check className="w-4 h-4 text-purple-500 shrink-0" />{f}
           </li>
@@ -219,7 +219,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
           </div>
           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">{tr('comingSoon')}</span>
         </div>
-        <p className="text-[12px] text-gray-400">{ko ? '무제한 저장, 10GB 저장공간, 팀 공유 — 곧 출시' : 'Unlimited saves, 10GB storage, team sharing — launching soon'}</p>
+        <p className="text-[12px] text-gray-400">{ko ? '저장 300개, 10GB 저장공간, 팀 공유 — 곧 출시' : '300 saves, 10GB storage, team sharing — launching soon'}</p>
       </div>
     </div>
   );
