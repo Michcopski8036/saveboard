@@ -38,6 +38,7 @@ const comparisonRows: { feature: string; free: boolean | string; pro: boolean | 
   { feature: 'Kanban view',      free: true,         pro: true,        team: true        },
   { feature: 'Export saves',     free: true,         pro: true,        team: true        },
   { feature: 'Duplicate & broken link finder', free: false, pro: true, team: true        },
+  { feature: 'Reminders',        free: false,        pro: true,        team: true        },
   { feature: 'View-only member roles', free: false,  pro: false,       team: true        },
 ];
 
@@ -236,6 +237,7 @@ const FEATURE_KO: Record<string, string> = {
   'File uploads': '파일 업로드', 'Notes on cards': '카드 메모', 'Favorites': '즐겨찾기',
   'AI tags & summary': 'AI 태그 & 요약', 'Kanban view': '칸반 보기', 'Export saves': '내보내기',
   'Duplicate & broken link finder': '중복·깨진 링크 정리', 'View-only member roles': '보기 전용 멤버 권한',
+  'Reminders': '리마인더',
 };
 const valueKo = (v: string) =>
   v === 'Unlimited' ? '무제한' : /^(\d+) max$/.test(v) ? `최대 ${v.match(/^(\d+)/)![1]}` : v;

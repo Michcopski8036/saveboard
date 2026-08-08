@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.saveboard.app/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -20,39 +20,9 @@
   </url>
   <url>
     <loc>https://www.saveboard.app/blog</loc>
-    <lastmod>2026-06-21</lastmod>
+    <lastmod>2026-05-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/mymind-alternative</loc>
-    <lastmod>2026-07-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/pocket-alternative</loc>
-    <lastmod>2026-06-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/raindrop-alternative</loc>
-    <lastmod>2026-06-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/saveboard-vs-raindrop</loc>
-    <lastmod>2026-06-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/blog/pocket-shut-down-what-to-use</loc>
-    <lastmod>2026-06-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.saveboard.app/blog/visual-bookmarks-better-than-url-list</loc>
@@ -83,101 +53,5 @@
     <lastmod>2026-05-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides</loc>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides/best-ramen-melbourne</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.saveboard.app/guides/best-ramen-melbourne" />
-    <xhtml:link rel="alternate" hreflang="ko" href="https://www.saveboard.app/guides/best-ramen-melbourne-ko" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.saveboard.app/guides/best-ramen-melbourne" />
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides/best-ramen-melbourne-ko</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.saveboard.app/guides/best-ramen-melbourne" />
-    <xhtml:link rel="alternate" hreflang="ko" href="https://www.saveboard.app/guides/best-ramen-melbourne-ko" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.saveboard.app/guides/best-ramen-melbourne" />
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides/basketball-sub-apps</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.saveboard.app/guides/basketball-sub-apps" />
-    <xhtml:link rel="alternate" hreflang="ko" href="https://www.saveboard.app/guides/basketball-sub-apps-ko" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.saveboard.app/guides/basketball-sub-apps" />
-    <lastmod>2026-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides/basketball-sub-apps-ko</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.saveboard.app/guides/basketball-sub-apps" />
-    <xhtml:link rel="alternate" hreflang="ko" href="https://www.saveboard.app/guides/basketball-sub-apps-ko" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.saveboard.app/guides/basketball-sub-apps" />
-    <lastmod>2026-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides/free-ai-chatbots</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.saveboard.app/guides/free-ai-chatbots" />
-    <xhtml:link rel="alternate" hreflang="ko" href="https://www.saveboard.app/guides/free-ai-chatbots-ko" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.saveboard.app/guides/free-ai-chatbots" />
-    <lastmod>2026-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides/free-ai-chatbots-ko</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.saveboard.app/guides/free-ai-chatbots" />
-    <xhtml:link rel="alternate" hreflang="ko" href="https://www.saveboard.app/guides/free-ai-chatbots-ko" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.saveboard.app/guides/free-ai-chatbots" />
-    <lastmod>2026-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides/heavy-period-resources</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.saveboard.app/guides/heavy-period-resources" />
-    <xhtml:link rel="alternate" hreflang="ko" href="https://www.saveboard.app/guides/heavy-period-resources-ko" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.saveboard.app/guides/heavy-period-resources" />
-    <lastmod>2026-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides/heavy-period-resources-ko</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.saveboard.app/guides/heavy-period-resources" />
-    <xhtml:link rel="alternate" hreflang="ko" href="https://www.saveboard.app/guides/heavy-period-resources-ko" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.saveboard.app/guides/heavy-period-resources" />
-    <lastmod>2026-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides/korean-bbq-perth</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.saveboard.app/guides/korean-bbq-perth" />
-    <xhtml:link rel="alternate" hreflang="ko" href="https://www.saveboard.app/guides/korean-bbq-perth-ko" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.saveboard.app/guides/korean-bbq-perth" />
-    <lastmod>2026-07-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.saveboard.app/guides/korean-bbq-perth-ko</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.saveboard.app/guides/korean-bbq-perth" />
-    <xhtml:link rel="alternate" hreflang="ko" href="https://www.saveboard.app/guides/korean-bbq-perth-ko" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.saveboard.app/guides/korean-bbq-perth" />
-    <lastmod>2026-07-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
   </url>
 </urlset>

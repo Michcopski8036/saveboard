@@ -12,7 +12,7 @@ import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
 import { LandingPage } from './components/LandingPage';
 import { Onboarding } from './components/Onboarding';
-import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2, Check, AlertCircle } from 'lucide-react';
+import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2, Check, AlertCircle, Clock } from 'lucide-react';
 
 function GalleryIcon({ className }: { className?: string }) {
   return (
@@ -50,6 +50,7 @@ import { UpdateGate } from './components/UpdateGate';
 import { UpgradePage, FREE_LIMITS } from './components/UpgradePage';
 import { BillingPage } from './components/BillingPage';
 import { CleanupModal } from './components/CleanupModal';
+import { scheduleLocalReminder } from './utils/reminders';
 import { SettingsPage } from './components/SettingsPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { LanguagePage } from './components/LanguagePage';
@@ -499,6 +500,7 @@ function AppContent() {
           boardId: known ? l.board_id : null,
           category: known ? nameById.get(l.board_id) : 'None',
           savedAt: new Date(l.created_at),
+          remindAt: l.remind_at ? new Date(l.remind_at) : null,
         };
       });
       try {
@@ -565,6 +567,9 @@ function AppContent() {
   // Pinned (announcement) cards always surface first; sort is stable so the
   // chosen order is preserved within the pinned/unpinned groups.
   if (pinnedIds.size) filtered = [...filtered].sort((a, b) => Number(pinnedIds.has(b.id)) - Number(pinnedIds.has(a.id)));
+
+  // Due reminders (Pro) — surfaced in a banner at the top of the main view.
+  const dueReminders = links.filter(l => l.remindAt && l.remindAt.getTime() <= now);
 
   const COLLECTION_LABELS: Record<string, string> = {
     all:       tr('allLinks'),
@@ -799,6 +804,13 @@ function AppContent() {
   };
   const handleToggleSelect    = (id: string) => { setSelectedIds(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; }); };
   const handleCleanupDelete   = async (ids: string[]) => { const del = new Set(ids); await supabase.from('links').delete().in('id', ids); setLinks(p => p.filter(l => !del.has(l.id))); };
+  const handleSetReminder     = async (id: string, when: Date | null) => {
+    if (!isPro) { setShowUpgrade(true); return; }
+    const link = links.find(l => l.id === id);
+    setLinks(p => p.map(l => l.id === id ? { ...l, remindAt: when } : l));
+    await supabase.from('links').update({ remind_at: when ? when.toISOString() : null }).eq('id', id);
+    scheduleLocalReminder(id, link?.title || link?.url || 'Saved link', when);
+  };
   const handleBulkDelete      = async () => { if (!selectedIds.size || !confirm(ko ? `링크 ${selectedIds.size}개를 삭제할까요?` : `Delete ${selectedIds.size} link(s)?`)) return; await supabase.from('links').delete().in('id', Array.from(selectedIds)); setLinks(p => p.filter(l => !selectedIds.has(l.id))); setSelectedIds(new Set()); setSelectMode(false); };
 
   const handleAddCategory = async (name: string) => {
@@ -1001,7 +1013,7 @@ function AppContent() {
     onAddCategory: handleAddCategory, onRenameCategory: handleRenameCategory,
     onDeleteCategory: handleDeleteCategory, onReorderCategory: handleReorderCategory,
     onUpdateNotes: handleUpdateNotes, onUpdateLink: handleUpdateLink, onUpdateTags: handleUpdateTags, onToggleSelect: handleToggleSelect,
-    onToggleFavorite: handleToggleFavorite, onTogglePin: handleTogglePin, onShowUpgrade: () => setShowUpgrade(true), onMoveCard: moveCard,
+    onToggleFavorite: handleToggleFavorite, onTogglePin: handleTogglePin, onSetReminder: handleSetReminder, onShowUpgrade: () => setShowUpgrade(true), onMoveCard: moveCard,
     categories, isPro, suggestedTags,
     selectMode, isSelected: selectedIds.has(link.id), isFavorited: favorites.has(link.id),
     isPinned: pinnedIds.has(link.id), canPin: canPinLink(link),
@@ -1288,6 +1300,26 @@ function AppContent() {
 
         {/* ── Content ────────────────────────────────────────────────── */}
         <main className={`flex-1 pb-28 md:pb-5 ${selected === 'all' ? 'px-4 sm:px-6 py-5' : !isMobile && viewMode === 'gallery' ? 'flex flex-col overflow-hidden px-4 sm:px-6 py-4' : 'px-4 sm:px-6 py-5'}`}>
+          {dueReminders.length > 0 && (
+            <div className="mb-4 p-3 rounded-2xl" style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.35)' }}>
+              <p className="flex items-center gap-1.5 text-[12px] font-bold mb-1.5" style={{ color: '#D97706' }}>
+                <Clock className="w-3.5 h-3.5" />
+                {ko ? `리마인더 ${dueReminders.length}개` : `${dueReminders.length} reminder${dueReminders.length !== 1 ? 's' : ''}`}
+              </p>
+              <div className="space-y-1">
+                {dueReminders.slice(0, 5).map(l => (
+                  <div key={l.id} className="flex items-center gap-2">
+                    {l.url === '#'
+                      ? <span className="flex-1 text-[13px] truncate" style={{ color: t.textPrimary }}>{l.title || (ko ? '메모' : 'Note')}</span>
+                      : <a href={l.url} target="_blank" rel="noopener noreferrer" className="flex-1 text-[13px] truncate underline-offset-2 hover:underline" style={{ color: t.textPrimary }}>{l.title || l.url}</a>}
+                    <button onClick={() => handleSetReminder(l.id, null)} className="text-[11px] font-semibold shrink-0" style={{ color: '#D97706' }}>
+                      {ko ? '완료' : 'Done'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {selected === 'all' ? (
             <HomePage
               links={links}

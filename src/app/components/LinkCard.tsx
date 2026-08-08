@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreVertical, Link2, Check, FileText, ChevronDown, Volume2, VolumeX, Heart, Tag, Trash2, Sparkles, Clock, Play, BookOpen, ExternalLink, Pencil, GripVertical, Pin } from 'lucide-react';
+import { MoreVertical, Link2, Check, FileText, ChevronDown, Volume2, VolumeX, Heart, Tag, Trash2, Sparkles, Clock, Play, BookOpen, ExternalLink, Pencil, GripVertical, Pin, X } from 'lucide-react';
 import { useDrag, useDrop } from 'react-dnd';
 import { CategoryPopup } from './CategoryPopup';
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
@@ -66,6 +66,7 @@ export interface LinkData {
   id: string; url: string; title: string; description: string;
   image: string; category: string; savedAt: Date; comments?: string[]; notes?: string; tags?: string[];
   boardId?: string | null;   // unified boards: which board this link belongs to (null = unsorted)
+  remindAt?: Date | null;    // Pro reminders: when to resurface this link
 }
 
 interface LinkCardProps {
@@ -82,6 +83,7 @@ interface LinkCardProps {
   onToggleSelect?: (linkId: string) => void;
   onToggleFavorite?: (linkId: string) => void;
   onTogglePin?: (linkId: string) => void;
+  onSetReminder?: (linkId: string, when: Date | null) => void;
   onShowUpgrade?: () => void;
   onMoveCard?: (dragId: string, hoverId: string) => void;
   categories?: string[];
@@ -253,12 +255,13 @@ function getReadTime(desc: string): number {
   return Math.max(1, Math.ceil(desc.split(/\s+/).filter(Boolean).length / 200));
 }
 
-function Dropdown({ show, rect, onClose, onCopy, isCopied, onEdit, onCategory, onNotes, onDelete, hasNotes }: {
+function Dropdown({ show, rect, onClose, onCopy, isCopied, onEdit, onCategory, onNotes, onDelete, hasNotes, onRemind, hasReminder, remindPro }: {
   show: boolean; rect: DOMRect | null; onClose: () => void;
   onCopy: (e: React.MouseEvent) => void; isCopied: boolean;
   onEdit: (e: React.MouseEvent) => void;
   onCategory: (e: React.MouseEvent) => void; onNotes: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void; hasNotes?: boolean;
+  onRemind?: (e: React.MouseEvent) => void; hasReminder?: boolean; remindPro?: boolean;
 }) {
   const { t } = useTheme();
   const { tr } = useLanguage();
@@ -291,6 +294,13 @@ function Dropdown({ show, rect, onClose, onCopy, isCopied, onEdit, onCategory, o
             <FileText className="w-4 h-4" style={{ color: hasNotes ? '#3B82F6' : t.dropdownIcon }} />
             <span className="text-[13px]">{hasNotes ? 'Edit notes' : 'Add notes'}</span>
           </button>
+          {onRemind && (
+            <button onClick={onRemind} className={row} style={{ color: t.dropdownText }} {...bg()}>
+              <Clock className="w-4 h-4" style={{ color: hasReminder ? '#F59E0B' : t.dropdownIcon }} />
+              <span className="text-[13px]">{hasReminder ? 'Edit reminder' : 'Remind me'}</span>
+              {remindPro && <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ color: '#7C3AED', background: 'rgba(124,58,237,0.10)' }}>PRO</span>}
+            </button>
+          )}
           <div style={{ borderTop: `1px solid ${t.dropdownDivider}`, margin: '4px 0' }} />
           <button onClick={onDelete} className={row} {...bg(true)}>
             <Trash2 className="w-4 h-4" style={{ color: '#EF4444' }} />
@@ -315,12 +325,13 @@ function AiTag({ label, type }: { label: string; type: string }) {
 
 export function LinkCard({
   link, onUpdateCategory, onDelete, onAddCategory, onRenameCategory, onDeleteCategory, onReorderCategory, onUpdateNotes, onUpdateLink, onUpdateTags,
-  onToggleSelect, onToggleFavorite, onTogglePin, onShowUpgrade, onMoveCard, categories = [], suggestedTags = [], selectMode = false,
+  onToggleSelect, onToggleFavorite, onTogglePin, onSetReminder, onShowUpgrade, onMoveCard, categories = [], suggestedTags = [], selectMode = false,
   isSelected = false, isFavorited = false, isPinned = false, canPin = false, readOnly = false, listMode = false, compact = false, isPro = false,
 }: LinkCardProps) {
   const { t } = useTheme();
   const { tr } = useLanguage();
   const [showCategoryPopup, setShowCategoryPopup] = useState(false);
+  const [showRemind, setShowRemind] = useState(false);
   const [isHovered, setIsHovered]   = useState(false);
   const [imgHovered, setImgHovered] = useState(false);
   const [isMuted, setIsMuted]       = useState(true);
@@ -394,6 +405,7 @@ export function LinkCard({
   const handleMenuTgl   = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setMenuRect(r); setShowMenu(p => !p); };
   const handleFav       = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite?.(link.id); };
   const handlePin       = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); onTogglePin?.(link.id); };
+  const handleRemindClick = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); if (!isPro) { onShowUpgrade?.(); return; } setShowRemind(true); };
   const handleSel       = (e: React.MouseEvent) => { if (selectMode && onToggleSelect) { e.preventDefault(); e.stopPropagation(); onToggleSelect(link.id); } };
 
   const selectedBorder = isSelected && selectMode ? '#7C3AED' : undefined;
@@ -550,6 +562,38 @@ export function LinkCard({
     document.body
   ) : null;
 
+  // Reminder picker (Pro): quick presets anchored to the card menu position.
+  const remindPreset = (days: number) => { const d = new Date(); d.setDate(d.getDate() + days); d.setHours(9, 0, 0, 0); return d; };
+  const remindPortal = showRemind && menuRect ? createPortal(
+    <>
+      <div className="fixed inset-0" style={{ zIndex: 298 }} onClick={() => setShowRemind(false)} />
+      <div className="fixed w-48 rounded-2xl overflow-hidden p-1"
+        style={{ zIndex: 299, bottom: window.innerHeight - menuRect.top + 4, right: window.innerWidth - menuRect.right, background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}
+        onClick={e => e.stopPropagation()}>
+        <p className="px-3 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: t.textMuted }}>Remind me</p>
+        {([['Tomorrow 9am', 1], ['In 3 days', 3], ['Next week', 7]] as const).map(([label, days]) => (
+          <button key={label} onClick={() => { onSetReminder?.(link.id, remindPreset(days)); setShowRemind(false); }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors text-left" style={{ color: t.dropdownText }}
+            onMouseEnter={e => (e.currentTarget.style.background = t.dropdownHoverBg)}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+            <Clock className="w-4 h-4" style={{ color: t.dropdownIcon }} />
+            <span className="text-[13px]">{label}</span>
+          </button>
+        ))}
+        {link.remindAt && (
+          <button onClick={() => { onSetReminder?.(link.id, null); setShowRemind(false); }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors text-left"
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+            <X className="w-4 h-4" style={{ color: '#EF4444' }} />
+            <span className="text-[13px]" style={{ color: '#EF4444' }}>Remove reminder</span>
+          </button>
+        )}
+      </div>
+    </>,
+    document.body
+  ) : null;
+
   // ── List mode ──────────────────────────────────────────────────────────────
   if (listMode) {
     const href = selectMode || isMemo ? undefined : link.url;
@@ -626,10 +670,12 @@ export function LinkCard({
         )}
         <Dropdown show={showMenu} rect={menuRect} onClose={() => setShowMenu(false)}
           onCopy={handleCopyLink} isCopied={isCopied} onEdit={handleEditClick}
-          onCategory={handleCatClick} onNotes={handleNoteClick} onDelete={handleDelClick} hasNotes={!!link.notes} />
+          onCategory={handleCatClick} onNotes={handleNoteClick} onDelete={handleDelClick} hasNotes={!!link.notes}
+          onRemind={readOnly ? undefined : handleRemindClick} hasReminder={!!link.remindAt} remindPro={!isPro} />
         {editPortal}
         {notesPortal}
         {categoryPortal}
+        {remindPortal}
       </div>
     );
   }
@@ -850,6 +896,13 @@ export function LinkCard({
 
         <div className="flex items-center justify-between gap-2 mt-1.5">
           <div className="flex items-center gap-1 flex-wrap min-w-0">
+            {link.remindAt && (
+              <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
+                style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#D97706' }}>
+                <Clock className="w-2.5 h-2.5" />
+                {link.remindAt.getTime() <= Date.now() ? 'now' : link.remindAt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              </span>
+            )}
             {aiTags.map(tag => <AiTag key={tag.label} label={tag.label} type={tag.type} />)}
             {(link.tags ?? []).map(tag => <AiTag key={`u:${tag}`} label={tag} type="user" />)}
           </div>
@@ -888,10 +941,12 @@ export function LinkCard({
 
       <Dropdown show={showMenu} rect={menuRect} onClose={() => setShowMenu(false)}
         onCopy={handleCopyLink} isCopied={isCopied} onEdit={handleEditClick}
-        onCategory={handleCatClick} onNotes={handleNoteClick} onDelete={handleDelClick} hasNotes={!!link.notes} />
+        onCategory={handleCatClick} onNotes={handleNoteClick} onDelete={handleDelClick} hasNotes={!!link.notes}
+        onRemind={readOnly ? undefined : handleRemindClick} hasReminder={!!link.remindAt} remindPro={!isPro} />
       {editPortal}
       {notesPortal}
       {categoryPortal}
+      {remindPortal}
     </div>
   );
 }
