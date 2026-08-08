@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreVertical, Link2, Check, FileText, ChevronDown, Volume2, VolumeX, Heart, Tag, Trash2, Sparkles, Clock, Play, BookOpen, ExternalLink, Pencil, GripVertical } from 'lucide-react';
+import { MoreVertical, Link2, Check, FileText, ChevronDown, Volume2, VolumeX, Heart, Tag, Trash2, Sparkles, Clock, Play, BookOpen, ExternalLink, Pencil, GripVertical, Pin } from 'lucide-react';
 import { useDrag, useDrop } from 'react-dnd';
 import { CategoryPopup } from './CategoryPopup';
 import { PlatformPlaceholder, isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl } from './PlatformPlaceholder';
@@ -81,11 +81,12 @@ interface LinkCardProps {
   onUpdateTags?: (linkId: string, tags: string[]) => void;
   onToggleSelect?: (linkId: string) => void;
   onToggleFavorite?: (linkId: string) => void;
+  onTogglePin?: (linkId: string) => void;
   onShowUpgrade?: () => void;
   onMoveCard?: (dragId: string, hoverId: string) => void;
   categories?: string[];
   suggestedTags?: { label: string; type: string }[];
-  selectMode?: boolean; isSelected?: boolean; isFavorited?: boolean; listMode?: boolean; compact?: boolean; isPro?: boolean;
+  selectMode?: boolean; isSelected?: boolean; isFavorited?: boolean; isPinned?: boolean; canPin?: boolean; listMode?: boolean; compact?: boolean; isPro?: boolean;
 }
 
 function getYouTubeVideoId(url: string): string | null {
@@ -314,8 +315,8 @@ function AiTag({ label, type }: { label: string; type: string }) {
 
 export function LinkCard({
   link, onUpdateCategory, onDelete, onAddCategory, onRenameCategory, onDeleteCategory, onReorderCategory, onUpdateNotes, onUpdateLink, onUpdateTags,
-  onToggleSelect, onToggleFavorite, onShowUpgrade, onMoveCard, categories = [], suggestedTags = [], selectMode = false,
-  isSelected = false, isFavorited = false, listMode = false, compact = false, isPro = false,
+  onToggleSelect, onToggleFavorite, onTogglePin, onShowUpgrade, onMoveCard, categories = [], suggestedTags = [], selectMode = false,
+  isSelected = false, isFavorited = false, isPinned = false, canPin = false, listMode = false, compact = false, isPro = false,
 }: LinkCardProps) {
   const { t } = useTheme();
   const { tr } = useLanguage();
@@ -392,6 +393,7 @@ export function LinkCard({
   const handleEditClick = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); openEditModal(); };
   const handleMenuTgl   = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setMenuRect(r); setShowMenu(p => !p); };
   const handleFav       = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite?.(link.id); };
+  const handlePin       = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); onTogglePin?.(link.id); };
   const handleSel       = (e: React.MouseEvent) => { if (selectMode && onToggleSelect) { e.preventDefault(); e.stopPropagation(); onToggleSelect(link.id); } };
 
   const selectedBorder = isSelected && selectMode ? '#7C3AED' : undefined;
@@ -598,6 +600,13 @@ export function LinkCard({
           </div>
         )}
         <div className="flex items-center gap-0.5 shrink-0">
+          {(canPin || isPinned) && (
+            <button onClick={canPin ? handlePin : undefined} title={isPinned ? 'Unpin' : 'Pin to top'} className="p-2 rounded-xl transition-colors"
+              onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+              <Pin className={`w-4 h-4 ${isPinned ? 'fill-amber-400 text-amber-500' : ''}`} style={{ color: isPinned ? undefined : t.iconAction }} />
+            </button>
+          )}
           <button onClick={handleFav} className="p-2 rounded-xl transition-colors"
             onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
@@ -841,6 +850,13 @@ export function LinkCard({
             {(link.tags ?? []).map(tag => <AiTag key={`u:${tag}`} label={tag} type="user" />)}
           </div>
           <div className="flex items-center gap-0.5 shrink-0 opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity duration-150">
+            {(canPin || isPinned) && (
+              <button onClick={canPin ? handlePin : undefined} title={isPinned ? 'Unpin' : 'Pin to top'} className="p-1.5 rounded-lg transition-colors"
+                onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-amber-400 text-amber-500' : ''}`} style={{ color: isPinned ? undefined : t.iconAction }} />
+              </button>
+            )}
             <button onClick={handleFav} className="p-1.5 rounded-lg transition-colors"
               onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>

@@ -115,6 +115,7 @@ function AppContent() {
   }, []);
   const [sortOption, setSortOption]     = useState<SortOption>('newest');
   const [favorites, setFavorites]       = useState<Set<string>>(new Set());
+  const [pinnedIds, setPinnedIds]       = useState<Set<string>>(new Set());
   const [selectMode, setSelectMode]     = useState(false);
   const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
   const [showAddModal, setShowAddModal] = useState(false);
@@ -509,6 +510,7 @@ function AppContent() {
       } catch {}
       setLinks(mapped);
       setFavorites(new Set(all.filter(l => l.is_favorite).map((l: any) => l.id)));
+      setPinnedIds(new Set(all.filter(l => l.pinned).map((l: any) => l.id)));
       writeSnapshot(user!.id, mapped as any, bs);
       return bs;
     } catch (e) { console.error(e); return []; }
@@ -555,6 +557,10 @@ function AppContent() {
     if (sortOption === 'a-z')    return a.title.localeCompare(b.title);
     return b.title.localeCompare(a.title);
   });
+
+  // Pinned (announcement) cards always surface first; sort is stable so the
+  // chosen order is preserved within the pinned/unpinned groups.
+  if (pinnedIds.size) filtered = [...filtered].sort((a, b) => Number(pinnedIds.has(b.id)) - Number(pinnedIds.has(a.id)));
 
   const COLLECTION_LABELS: Record<string, string> = {
     all:       tr('allLinks'),
@@ -779,6 +785,11 @@ function AppContent() {
     setFavorites(p => { const s = new Set(p); isFav ? s.delete(id) : s.add(id); return s; });
     await supabase.from('links').update({ is_favorite: !isFav }).eq('id', id);
   };
+  const handleTogglePin       = async (id: string) => {
+    const isPinned = pinnedIds.has(id);
+    setPinnedIds(p => { const s = new Set(p); isPinned ? s.delete(id) : s.add(id); return s; });
+    await supabase.from('links').update({ pinned: !isPinned }).eq('id', id);
+  };
   const handleToggleSelect    = (id: string) => { setSelectedIds(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; }); };
   const handleBulkDelete      = async () => { if (!selectedIds.size || !confirm(ko ? `링크 ${selectedIds.size}개를 삭제할까요?` : `Delete ${selectedIds.size} link(s)?`)) return; await supabase.from('links').delete().in('id', Array.from(selectedIds)); setLinks(p => p.filter(l => !selectedIds.has(l.id))); setSelectedIds(new Set()); setSelectMode(false); };
 
@@ -973,15 +984,19 @@ function AppContent() {
     return Object.entries(map).map(([label, type]) => ({ label, type })).sort((a, b) => a.label.localeCompare(b.label));
   })();
 
+  // Pinning is a board-owner action: own boards and unsorted links only.
+  const canPinLink = (l: LinkData) => !l.boardId || boards.find(b => b.id === l.boardId)?.role === 'owner';
+
   const cardProps = (link: LinkData) => ({
     link,
     onUpdateCategory: handleUpdateCategory, onDelete: handleDeleteLink,
     onAddCategory: handleAddCategory, onRenameCategory: handleRenameCategory,
     onDeleteCategory: handleDeleteCategory, onReorderCategory: handleReorderCategory,
     onUpdateNotes: handleUpdateNotes, onUpdateLink: handleUpdateLink, onUpdateTags: handleUpdateTags, onToggleSelect: handleToggleSelect,
-    onToggleFavorite: handleToggleFavorite, onShowUpgrade: () => setShowUpgrade(true), onMoveCard: moveCard,
+    onToggleFavorite: handleToggleFavorite, onTogglePin: handleTogglePin, onShowUpgrade: () => setShowUpgrade(true), onMoveCard: moveCard,
     categories, isPro, suggestedTags,
     selectMode, isSelected: selectedIds.has(link.id), isFavorited: favorites.has(link.id),
+    isPinned: pinnedIds.has(link.id), canPin: canPinLink(link),
   });
 
   const viewModes = [
