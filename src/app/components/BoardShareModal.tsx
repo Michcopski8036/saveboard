@@ -6,7 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import type { LinkData } from './LinkCard';
 import type { User } from '@supabase/supabase-js';
 import type { Board, BoardMember } from '../lib/boards';
-import { shareBoard, loadBoardMembers, removeMember, inviteUrl, sendBoardInviteEmail } from '../lib/boards';
+import { shareBoard, loadBoardMembers, removeMember, setMemberRole, inviteUrl, sendBoardInviteEmail } from '../lib/boards';
 import { publicBase } from '../lib/urls';
 
 interface BoardShareModalProps {
@@ -16,6 +16,7 @@ interface BoardShareModalProps {
   onClose: () => void;
   onBoardsChanged?: () => void;  // refetch boards after invite / leave / remove
   onShowUpgrade?: () => void;
+  ownerPlan?: string;       // the signed-in user's active plan — gates role control (Team)
 }
 
 function deriveOwnerName(user: User): string {
@@ -35,7 +36,7 @@ async function pushSnapshot(links: LinkData[], token: string, ownerName: string,
   return snapshot.length;
 }
 
-export function BoardShareModal({ board, user, links, onClose, onBoardsChanged, onShowUpgrade }: BoardShareModalProps) {
+export function BoardShareModal({ board, user, links, onClose, onBoardsChanged, onShowUpgrade, ownerPlan }: BoardShareModalProps) {
   const { t } = useTheme();
   const { tr } = useLanguage();
   const isOwner = board.owner_id === user.id;
@@ -77,7 +78,7 @@ export function BoardShareModal({ board, user, links, onClose, onBoardsChanged, 
 
         <div className="px-5 py-5 overflow-y-auto">
           {tab === 'invite'
-            ? <InviteTab board={board} user={user} isOwner={isOwner} onClose={onClose} onBoardsChanged={onBoardsChanged} onShowUpgrade={onShowUpgrade} />
+            ? <InviteTab board={board} user={user} isOwner={isOwner} ownerPlan={ownerPlan} onClose={onClose} onBoardsChanged={onBoardsChanged} onShowUpgrade={onShowUpgrade} />
             : <PublicTab board={board} user={user} links={links} isOwner={isOwner} />}
         </div>
       </div>
@@ -86,8 +87,8 @@ export function BoardShareModal({ board, user, links, onClose, onBoardsChanged, 
 }
 
 // ── Invite members (live collaboration) ──────────────────────────────────────
-function InviteTab({ board, user, isOwner, onClose, onBoardsChanged, onShowUpgrade }: {
-  board: Board; user: User; isOwner: boolean; onClose: () => void; onBoardsChanged?: () => void; onShowUpgrade?: () => void;
+function InviteTab({ board, user, isOwner, ownerPlan = 'free', onClose, onBoardsChanged, onShowUpgrade }: {
+  board: Board; user: User; isOwner: boolean; ownerPlan?: string; onClose: () => void; onBoardsChanged?: () => void; onShowUpgrade?: () => void;
 }) {
   const { t } = useTheme();
   const { tr } = useLanguage();
@@ -131,10 +132,21 @@ function InviteTab({ board, user, isOwner, onClose, onBoardsChanged, onShowUpgra
     const { ok } = await sendBoardInviteEmail(email, board.id);
     if (ok) { setInviteMsg(`Invite sent to ${email} ✓`); setInviteEmail(''); return; }
     const subject = `Join my "${board.name}" board on SaveBoard`;
-    const body = `Hi!\n\nI'd like you to join my board "${board.name}" on SaveBoard so we can save links together — it's free for members.\n\nJoin here:\n${inviteUrl(tok)}\n\nSee you there!`;
+    const body = `Hi!\n\nI'd like you to join my board "${board.name}" on SaveBoard so we can save links together.\n\nJoin here:\n${inviteUrl(tok)}\n\nSee you there!`;
     window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     setInviteMsg(`Opened your mail app to invite ${email}.`);
     setInviteEmail('');
+  };
+
+  // Toggle a member between editor ('member') and read-only ('viewer').
+  // Role control is a Team feature — the RPC enforces it server-side too.
+  const toggleRole = async (m: BoardMember) => {
+    if (ownerPlan !== 'team') { setErr('Member roles (view-only) are a Team feature.'); onShowUpgrade?.(); return; }
+    const next = m.role === 'viewer' ? 'member' : 'viewer';
+    const { error } = await setMemberRole(board.id, m.user_id, next);
+    if (error) { setErr(/team_required/.test(error) ? 'Member roles (view-only) are a Team feature.' : 'Could not change the role. Please try again.'); return; }
+    setErr('');
+    setMembers(p => p.map(x => x.user_id === m.user_id ? { ...x, role: next } : x));
   };
 
   const kickMember = async (uid: string) => {
@@ -200,9 +212,16 @@ function InviteTab({ board, user, isOwner, onClose, onBoardsChanged, onShowUpgra
                       {m.user_id === user.id ? 'You' : 'Member'}{m.role === 'owner' ? ' · owner' : ''}
                     </span>
                     {m.role !== 'owner' && (
-                      <button onClick={() => kickMember(m.user_id)} title={tr('removeMember')} className="p-1 rounded-lg" style={{ color: '#EF4444' }}>
-                        <UserMinus className="w-3.5 h-3.5" />
-                      </button>
+                      <>
+                        <button onClick={() => toggleRole(m)} title="Change role"
+                          className="px-2 py-1 rounded-lg text-[11px] font-semibold shrink-0"
+                          style={{ background: t.badgeBg, color: m.role === 'viewer' ? '#F59E0B' : t.badgeText }}>
+                          {m.role === 'viewer' ? 'View only' : 'Can edit'}
+                        </button>
+                        <button onClick={() => kickMember(m.user_id)} title={tr('removeMember')} className="p-1 rounded-lg" style={{ color: '#EF4444' }}>
+                          <UserMinus className="w-3.5 h-3.5" />
+                        </button>
+                      </>
                     )}
                   </div>
                 ))}

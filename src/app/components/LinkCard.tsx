@@ -86,7 +86,7 @@ interface LinkCardProps {
   onMoveCard?: (dragId: string, hoverId: string) => void;
   categories?: string[];
   suggestedTags?: { label: string; type: string }[];
-  selectMode?: boolean; isSelected?: boolean; isFavorited?: boolean; isPinned?: boolean; canPin?: boolean; listMode?: boolean; compact?: boolean; isPro?: boolean;
+  selectMode?: boolean; isSelected?: boolean; isFavorited?: boolean; isPinned?: boolean; canPin?: boolean; readOnly?: boolean; listMode?: boolean; compact?: boolean; isPro?: boolean;
 }
 
 function getYouTubeVideoId(url: string): string | null {
@@ -316,7 +316,7 @@ function AiTag({ label, type }: { label: string; type: string }) {
 export function LinkCard({
   link, onUpdateCategory, onDelete, onAddCategory, onRenameCategory, onDeleteCategory, onReorderCategory, onUpdateNotes, onUpdateLink, onUpdateTags,
   onToggleSelect, onToggleFavorite, onTogglePin, onShowUpgrade, onMoveCard, categories = [], suggestedTags = [], selectMode = false,
-  isSelected = false, isFavorited = false, isPinned = false, canPin = false, listMode = false, compact = false, isPro = false,
+  isSelected = false, isFavorited = false, isPinned = false, canPin = false, readOnly = false, listMode = false, compact = false, isPro = false,
 }: LinkCardProps) {
   const { t } = useTheme();
   const { tr } = useLanguage();
@@ -599,6 +599,9 @@ export function LinkCard({
             <span className="text-[10px]" style={{ color: t.textMuted }}>{readTime}m</span>
           </div>
         )}
+        {readOnly ? (isPinned &&
+          <Pin className="w-4 h-4 fill-amber-400 text-amber-500 shrink-0 m-2" />
+        ) : (
         <div className="flex items-center gap-0.5 shrink-0">
           {(canPin || isPinned) && (
             <button onClick={canPin ? handlePin : undefined} title={isPinned ? 'Unpin' : 'Pin to top'} className="p-2 rounded-xl transition-colors"
@@ -620,6 +623,7 @@ export function LinkCard({
             </button>
           </div>
         </div>
+        )}
         <Dropdown show={showMenu} rect={menuRect} onClose={() => setShowMenu(false)}
           onCopy={handleCopyLink} isCopied={isCopied} onEdit={handleEditClick}
           onCategory={handleCatClick} onNotes={handleNoteClick} onDelete={handleDelClick} hasNotes={!!link.notes} />
@@ -657,7 +661,7 @@ export function LinkCard({
       onMouseEnter={handleCardEnter} onMouseLeave={handleCardLeave}
       onClick={selectMode
         ? (e) => { if ((e.target as HTMLElement).closest('a,button')) return; onToggleSelect?.(link.id); }
-        : (isMemo ? (e) => { if ((e.target as HTMLElement).closest('button')) return; openEditModal(); } : undefined)}>
+        : (isMemo && !readOnly ? (e) => { if ((e.target as HTMLElement).closest('button')) return; openEditModal(); } : undefined)}>
 
       {/* Thumbnail — omitted entirely for text-only cards (no fetchable image) */}
       {!noThumb && (
@@ -849,6 +853,9 @@ export function LinkCard({
             {aiTags.map(tag => <AiTag key={tag.label} label={tag.label} type={tag.type} />)}
             {(link.tags ?? []).map(tag => <AiTag key={`u:${tag}`} label={tag} type="user" />)}
           </div>
+          {readOnly ? (isPinned &&
+            <Pin className="w-3.5 h-3.5 fill-amber-400 text-amber-500 shrink-0 m-1.5" />
+          ) : (
           <div className="flex items-center gap-0.5 shrink-0 opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity duration-150">
             {(canPin || isPinned) && (
               <button onClick={canPin ? handlePin : undefined} title={isPinned ? 'Unpin' : 'Pin to top'} className="p-1.5 rounded-lg transition-colors"
@@ -875,6 +882,7 @@ export function LinkCard({
               </button>
             </div>
           </div>
+          )}
         </div>
       </div>
 

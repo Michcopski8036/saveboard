@@ -157,6 +157,8 @@ function AppContent() {
   const boardByName = new Map(boards.map(b => [b.name, b] as const));
   const boardIdForName = (name: string): string | null =>
     (name && name !== 'None') ? (boardByName.get(name)?.id ?? null) : null;
+  // View-only membership (Team owners can demote members): no adds/edits there.
+  const isViewerBoard = (name: string) => boardByName.get(name)?.role === 'viewer';
 
   // Heartbeat so the admin dashboard can tell who is signed in right now. Only
   // ticks while the app is actually in the foreground, so a backgrounded tab
@@ -250,7 +252,7 @@ function AppContent() {
   // Seed the Add modal's board multi-select with the currently-viewed board.
   useEffect(() => {
     if (showAddModal) {
-      setAddBoards(selected.startsWith('cat:') ? new Set([selected.slice(4)]) : new Set());
+      setAddBoards(selected.startsWith('cat:') && !isViewerBoard(selected.slice(4)) ? new Set([selected.slice(4)]) : new Set());
     }
   }, [showAddModal]);
 
@@ -619,8 +621,9 @@ function AppContent() {
     setErrorMessage(''); setSuccessMessage(''); setInfoMessage(''); setIsAdding(true);
     // Target boards: the multi-select from the Add modal if any, else the
     // currently-viewed board. The same item is copied into each.
-    const defaultCategory = selected.startsWith('cat:') ? selected.slice(4) : 'None';
-    const targetCats = addBoards.size ? Array.from(addBoards) : [defaultCategory];
+    const defaultCategory = selected.startsWith('cat:') && !isViewerBoard(selected.slice(4)) ? selected.slice(4) : 'None';
+    const picked = (addBoards.size ? Array.from(addBoards) : [defaultCategory]).filter(c => !isViewerBoard(c));
+    const targetCats = picked.length ? picked : ['None'];
     const boardSuffix = (n: number) => n > 1 ? ` to ${n} boards` : '';
     try {
       const { fetchMetadata, generateId } = await import('./utils/metadataFetcher');
@@ -680,7 +683,9 @@ function AppContent() {
 
     // Target boards: the Add modal multi-select if any, else the current board.
     // Each uploaded file is copied (as a link row) into every target board.
-    const targetCats = addBoards.size ? Array.from(addBoards) : [selected.startsWith('cat:') ? selected.slice(4) : 'None'];
+    const uploadDefault = selected.startsWith('cat:') && !isViewerBoard(selected.slice(4)) ? selected.slice(4) : 'None';
+    const uploadPicked = (addBoards.size ? Array.from(addBoards) : [uploadDefault]).filter(c => !isViewerBoard(c));
+    const targetCats = uploadPicked.length ? uploadPicked : ['None'];
 
     if (files.length > MAX_UPLOAD_BATCH) {
       info.push(`Max ${MAX_UPLOAD_BATCH} files at once — extra files skipped.`);
@@ -997,6 +1002,7 @@ function AppContent() {
     categories, isPro, suggestedTags,
     selectMode, isSelected: selectedIds.has(link.id), isFavorited: favorites.has(link.id),
     isPinned: pinnedIds.has(link.id), canPin: canPinLink(link),
+    readOnly: !!link.boardId && boards.find(b => b.id === link.boardId)?.role === 'viewer',
   });
 
   const viewModes = [
@@ -1395,7 +1401,7 @@ function AppContent() {
                   Add to board{addBoards.size > 1 ? `s · ${addBoards.size} selected` : ''}
                 </p>
                 <div className="flex flex-wrap gap-1.5 max-h-[96px] overflow-y-auto">
-                  {categories.map(cat => {
+                  {categories.filter(cat => !isViewerBoard(cat)).map(cat => {
                     const on = addBoards.has(cat);
                     return (
                       <button key={cat} type="button"
@@ -1690,6 +1696,7 @@ function AppContent() {
           onClose={() => setShareBoardTarget(null)}
           onBoardsChanged={() => loadBoards(user.id).then(setBoards)}
           onShowUpgrade={() => setShowUpgrade(true)}
+          ownerPlan={subData?.status === 'active' ? (subData.plan ?? 'free') : 'free'}
         />
       )}
 

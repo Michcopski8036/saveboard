@@ -13,7 +13,7 @@ export interface Board {
   sort_order: number;
   invite_token: string | null;   // set once the board has been shared
   owner_id: string;
-  role: 'owner' | 'member';      // the current user's role on this board
+  role: 'owner' | 'member' | 'viewer';  // the current user's role on this board
   memberCount: number;           // accurate for boards you own; ≥1 otherwise
 }
 export interface BoardMember { user_id: string; role: string; }
@@ -57,7 +57,7 @@ export async function loadBoards(uid: string): Promise<Board[]> {
     sort_order: b.sort_order ?? 0,
     invite_token: b.invite_token ?? null,
     owner_id: b.owner_id,
-    role: (myRole[b.id] as 'owner' | 'member') ?? (b.owner_id === uid ? 'owner' : 'member'),
+    role: (myRole[b.id] as Board['role']) ?? (b.owner_id === uid ? 'owner' : 'member'),
     memberCount: memberCount[b.id] ?? 1,
   }));
 }
@@ -95,6 +95,12 @@ export async function getBoardByToken(token: string): Promise<{ id: string; name
 export async function loadBoardMembers(boardId: string): Promise<BoardMember[]> {
   const { data } = await supabase.from('board_members').select('user_id, role').eq('board_id', boardId);
   return (data ?? []) as BoardMember[];
+}
+
+/** Change a member's role (Team-plan board owners only — enforced in the RPC). */
+export async function setMemberRole(boardId: string, userId: string, role: 'member' | 'viewer'): Promise<{ error?: string }> {
+  const { error } = await supabase.rpc('set_member_role', { p_board: boardId, p_user: userId, p_role: role });
+  return { error: error?.message };
 }
 
 /** Remove a member (owner) or leave a board (self) — same table delete, RLS-gated. */
