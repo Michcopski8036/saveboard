@@ -49,6 +49,7 @@ import { BoardShareModal } from './components/BoardShareModal';
 import { UpdateGate } from './components/UpdateGate';
 import { UpgradePage, FREE_LIMITS } from './components/UpgradePage';
 import { BillingPage } from './components/BillingPage';
+import { CleanupModal } from './components/CleanupModal';
 import { SettingsPage } from './components/SettingsPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { LanguagePage } from './components/LanguagePage';
@@ -131,6 +132,7 @@ function AppContent() {
   const [showUpgrade, setShowUpgrade]   = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
+  const [showCleanup, setShowCleanup] = useState(false);
   const [showContact, setShowContact]   = useState(false);
   const [deleteBoardConfirm, setDeleteBoardConfirm] = useState<{ cat: string; count: number } | null>(null);
   const [showMobileBoardMenu, setShowMobileBoardMenu] = useState(false);
@@ -796,6 +798,7 @@ function AppContent() {
     await supabase.from('links').update({ pinned: !isPinned }).eq('id', id);
   };
   const handleToggleSelect    = (id: string) => { setSelectedIds(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; }); };
+  const handleCleanupDelete   = async (ids: string[]) => { const del = new Set(ids); await supabase.from('links').delete().in('id', ids); setLinks(p => p.filter(l => !del.has(l.id))); };
   const handleBulkDelete      = async () => { if (!selectedIds.size || !confirm(ko ? `링크 ${selectedIds.size}개를 삭제할까요?` : `Delete ${selectedIds.size} link(s)?`)) return; await supabase.from('links').delete().in('id', Array.from(selectedIds)); setLinks(p => p.filter(l => !selectedIds.has(l.id))); setSelectedIds(new Set()); setSelectMode(false); };
 
   const handleAddCategory = async (name: string) => {
@@ -1160,7 +1163,7 @@ function AppContent() {
             </button>
 
             {/* Avatar */}
-            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => { if (userId) clearSnapshot(userId); await supabase.auth.signOut(); }} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowAdmin={isAdmin(user?.email) ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
+            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => { if (userId) clearSnapshot(userId); await supabase.auth.signOut(); }} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowCleanup={() => (isPro ? setShowCleanup(true) : setShowUpgrade(true))} onShowAdmin={isAdmin(user?.email) ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
           </div>
 
           {/* Payment-failure banner — Pro stays gated on `active`, so tell the user why it lapsed */}
@@ -1737,6 +1740,15 @@ function AppContent() {
           currentBoards={categories.length}
           currentStorageMb={currentStorageMb}
           subData={subData}
+        />
+      )}
+
+      {/* ── Clean up links (Pro): duplicates + broken links ───────────── */}
+      {showCleanup && (
+        <CleanupModal
+          links={links.filter(l => !l.boardId || boards.find(b => b.id === l.boardId)?.role !== 'viewer')}
+          onClose={() => setShowCleanup(false)}
+          onDeleteLinks={handleCleanupDelete}
         />
       )}
 

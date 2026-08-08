@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, LogOut, Download, Upload, Settings, Globe, HelpCircle, Zap, CreditCard, BarChart2 } from 'lucide-react';
+import { ChevronDown, LogOut, Download, Upload, Settings, Globe, HelpCircle, Zap, CreditCard, BarChart2, Sparkles } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { useTheme, type ThemeMode } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -15,6 +15,7 @@ interface ProfileMenuProps {
   onShowHelp?: () => void;
   onShowBilling?: () => void;
   onShowAdmin?: () => void;
+  onShowCleanup?: () => void;
   user?: SupabaseUser | null;
   isPro?: boolean;
   currentLinks?: number;
@@ -22,7 +23,7 @@ interface ProfileMenuProps {
   currentStorageMb?: number;
 }
 
-export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onShowBilling, onShowSettings, onShowLanguage, onShowHelp, onShowAdmin, user, isPro, currentLinks = 0, currentBoards = 0, currentStorageMb = 0 }: ProfileMenuProps) {
+export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onShowBilling, onShowSettings, onShowLanguage, onShowHelp, onShowAdmin, onShowCleanup, user, isPro, currentLinks = 0, currentBoards = 0, currentStorageMb = 0 }: ProfileMenuProps) {
   const { theme, setTheme } = useTheme();
   const { tr } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
@@ -98,16 +99,16 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
               {/* Usage stats */}
               <div className="mx-3 mb-2 p-2.5 rounded-xl" style={{ background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
                 {[
-                  { label: 'Saves', used: currentLinks, limit: isPro ? 300 : 30 },
-                  { label: 'Boards', used: currentBoards, limit: isPro ? 30 : 5 },
+                  { label: 'Saves', used: currentLinks, limit: isPro ? Infinity : 30 },
+                  { label: 'Boards', used: currentBoards, limit: isPro ? 15 : 5 },
                   { label: 'Storage', used: currentStorageMb, limit: isPro ? 2048 : 50, isStorage: true },
                 ].map(({ label, used, limit, isStorage }) => {
-                  const pct = Math.min((used / limit) * 100, 100);
+                  const pct = Number.isFinite(limit) ? Math.min((used / limit) * 100, 100) : 0;
                   const over = pct >= 100;
                   const warn = pct >= 80;
                   const fmtMb = (mb: number) => mb >= 1024 ? `${(mb / 1024).toFixed(1)}GB` : `${mb}MB`;
                   const usedStr = isStorage ? fmtMb(used) : used;
-                  const limitStr = isStorage ? fmtMb(limit) : limit;
+                  const limitStr = !Number.isFinite(limit) ? '∞' : isStorage ? fmtMb(limit) : limit;
                   return (
                     <div key={label} className="mb-2 last:mb-0">
                       <div className="flex justify-between items-center mb-1">
@@ -165,6 +166,11 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
               <button onClick={handleImportClick} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
                 <Upload className="w-4 h-4 text-gray-500" />
                 <span className="text-sm text-gray-700">{tr('importLinks')}</span>
+                {!isPro && <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ color: '#7C3AED', background: 'rgba(124,58,237,0.10)' }}>PRO</span>}
+              </button>
+              <button onClick={() => { onShowCleanup?.(); setShowMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
+                <Sparkles className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-700">Clean up links</span>
                 {!isPro && <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ color: '#7C3AED', background: 'rgba(124,58,237,0.10)' }}>PRO</span>}
               </button>
               <div className="border-t border-gray-200 my-1" />

@@ -37,6 +37,8 @@ const comparisonRows: { feature: string; free: boolean | string; pro: boolean | 
   { feature: 'AI tags & summary',free: true,         pro: true,        team: true        },
   { feature: 'Kanban view',      free: true,         pro: true,        team: true        },
   { feature: 'Export saves',     free: true,         pro: true,        team: true        },
+  { feature: 'Duplicate & broken link finder', free: false, pro: true, team: true        },
+  { feature: 'View-only member roles', free: false,  pro: false,       team: true        },
 ];
 
 function Cell({ value, highlight }: { value: boolean | string; highlight?: boolean }) {
@@ -141,7 +143,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
       </div>
 
       <ul className="space-y-2.5 px-1">
-        {(ko ? ['무제한 저장','보드 15개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['Unlimited saves', '15 boards', '5 team boards (10 members each)', '2GB storage', '20MB file size limit', 'Priority support']).map(f => (
+        {(ko ? ['무제한 저장','보드 15개','팀 보드 5개 (각 10명)','중복·깨진 링크 정리','2GB 저장공간','우선 지원'] : ['Unlimited saves', '15 boards', '5 team boards (10 members each)', 'Duplicate & broken link finder', '2GB storage', 'Priority support']).map(f => (
           <li key={f} className="flex items-center gap-2.5 text-[14px] text-gray-700">
             <Check className="w-4 h-4 text-purple-500 shrink-0" />{f}
           </li>
@@ -233,6 +235,7 @@ const FEATURE_KO: Record<string, string> = {
   'Team boards (collaborative)': '팀 보드(협업)', 'Members per board': '보드당 멤버', 'Shared boards': '공유 보드',
   'File uploads': '파일 업로드', 'Notes on cards': '카드 메모', 'Favorites': '즐겨찾기',
   'AI tags & summary': 'AI 태그 & 요약', 'Kanban view': '칸반 보기', 'Export saves': '내보내기',
+  'Duplicate & broken link finder': '중복·깨진 링크 정리', 'View-only member roles': '보기 전용 멤버 권한',
 };
 const valueKo = (v: string) =>
   v === 'Unlimited' ? '무제한' : /^(\d+) max$/.test(v) ? `최대 ${v.match(/^(\d+)/)![1]}` : v;
@@ -357,7 +360,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.proMo}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                     <p className="text-[12px] font-semibold text-purple-600 mb-5">{ko ? `또는 A$${AUD.proYr}/년 — 47% 할인` : `or A$${AUD.proYr}/yr — save 47%`}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {(ko ? ['무제한 저장','보드 15개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['Unlimited saves','15 boards','5 team boards (10 members each)','2GB storage','20MB file size limit','Priority support']).map(f => (
+                      {(ko ? ['무제한 저장','보드 15개','팀 보드 5개 (각 10명)','중복·깨진 링크 정리','2GB 저장공간','우선 지원'] : ['Unlimited saves','15 boards','5 team boards (10 members each)','Duplicate & broken link finder','2GB storage','Priority support']).map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
                           <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
                         </li>
@@ -398,7 +401,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.teamSeat}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                     <p className="text-[12px] text-gray-400 mb-5">{ko ? '월간 결제' : 'Billed monthly'}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {(ko ? ['협업 팀 보드','공유 보드 10개, 각 25명','무제한 저장 · 보드 50개','10GB 저장공간'] : ['Collaborative team boards','10 shared boards, 25 members each','Unlimited saves · 50 boards','10GB storage']).map(f => (
+                      {(ko ? ['협업 팀 보드','공유 보드 10개, 각 25명','보기 전용 멤버 권한','무제한 저장 · 보드 50개','10GB 저장공간'] : ['Collaborative team boards','10 shared boards, 25 members each','View-only member roles','Unlimited saves · 50 boards','10GB storage']).map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
                           <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />{f}
                         </li>
