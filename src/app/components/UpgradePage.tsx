@@ -24,7 +24,7 @@ interface UpgradePageProps {
 export const FREE_LIMITS = { links: 30, boards: 5, fileSizeMb: 5, storageMb: 50 };
 
 const comparisonRows: { feature: string; free: boolean | string; pro: boolean | string; team: boolean | string }[] = [
-  { feature: 'Saves',            free: '30 max',     pro: '100',       team: '300'       },
+  { feature: 'Saves',            free: '30 max',     pro: 'Unlimited', team: 'Unlimited' },
   { feature: 'Boards',           free: '5 max',      pro: '15',        team: '50'        },
   { feature: 'Storage',          free: '50MB',       pro: '2GB',       team: '10GB'      },
   { feature: 'File size limit',  free: '5MB',        pro: '20MB',      team: '50MB'      },
@@ -112,7 +112,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
         status: 'active',
         billing_cycle: billingCycle,
         current_period_end: tx.expiresDate ?? null,
-        saves_limit: '100',
+        saves_limit: 'unlimited',
         boards_limit: '15',
         file_size_limit: '20MB',
         storage_limit: '2GB',
@@ -141,7 +141,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
       </div>
 
       <ul className="space-y-2.5 px-1">
-        {(ko ? ['저장 100개','보드 15개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['100 saves', '15 boards', '5 team boards (10 members each)', '2GB storage', '20MB file size limit', 'Priority support']).map(f => (
+        {(ko ? ['무제한 저장','보드 15개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['Unlimited saves', '15 boards', '5 team boards (10 members each)', '2GB storage', '20MB file size limit', 'Priority support']).map(f => (
           <li key={f} className="flex items-center gap-2.5 text-[14px] text-gray-700">
             <Check className="w-4 h-4 text-purple-500 shrink-0" />{f}
           </li>
@@ -219,7 +219,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
           </div>
           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">{tr('comingSoon')}</span>
         </div>
-        <p className="text-[12px] text-gray-400">{ko ? '저장 300개, 10GB 저장공간, 팀 공유 — 곧 출시' : '300 saves, 10GB storage, team sharing — launching soon'}</p>
+        <p className="text-[12px] text-gray-400">{ko ? '무제한 저장, 보드 50개, 10GB 저장공간, 팀 공유 — 곧 출시' : 'Unlimited saves, 50 boards, 10GB storage, team sharing — launching soon'}</p>
       </div>
     </div>
   );
@@ -357,7 +357,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.proMo}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                     <p className="text-[12px] font-semibold text-purple-600 mb-5">{ko ? `또는 A$${AUD.proYr}/년 — 47% 할인` : `or A$${AUD.proYr}/yr — save 47%`}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {(ko ? ['저장 100개','보드 15개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['100 saves','15 boards','5 team boards (10 members each)','2GB storage','20MB file size limit','Priority support']).map(f => (
+                      {(ko ? ['무제한 저장','보드 15개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['Unlimited saves','15 boards','5 team boards (10 members each)','2GB storage','20MB file size limit','Priority support']).map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
                           <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
                         </li>
@@ -396,9 +396,9 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{tr('team')}</p>
                     </div>
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.teamSeat}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
-                    <p className="text-[12px] text-gray-400 mb-5">{ko ? '월간 결제 · 초대된 멤버는 무료 참여' : 'Billed monthly · invited members join free'}</p>
+                    <p className="text-[12px] text-gray-400 mb-5">{ko ? '월간 결제' : 'Billed monthly'}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {(ko ? ['협업 팀 보드','공유 보드 10개, 각 25명','멤버 무료 참여','저장 300개 · 보드 50개','10GB 저장공간'] : ['Collaborative team boards','10 shared boards, 25 members each','Members join free','300 saves · 50 boards','10GB storage']).map(f => (
+                      {(ko ? ['협업 팀 보드','공유 보드 10개, 각 25명','무제한 저장 · 보드 50개','10GB 저장공간'] : ['Collaborative team boards','10 shared boards, 25 members each','Unlimited saves · 50 boards','10GB storage']).map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
                           <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />{f}
                         </li>

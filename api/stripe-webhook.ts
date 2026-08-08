@@ -38,7 +38,7 @@ async function upsertSubscription(sub: Stripe.Subscription) {
 
   const plan         = productMeta.plan_type     ?? 'pro';
   const billingCycle = productMeta.billing_cycle ?? 'monthly';
-  const savesLimit   = productMeta.saves_limit   ?? '100';
+  const savesLimit   = productMeta.saves_limit   ?? 'unlimited';
   const boardsLimit  = productMeta.boards_limit  ?? '15';
   const fileSizeLimit = productMeta.file_size_limit ?? '20MB';
   const storagLimit  = productMeta.storage_limit ?? '2GB';

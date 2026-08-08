@@ -36,9 +36,9 @@ const CORS = {
 };
 
 const PLAN_DEFAULTS: Record<string, Record<string, string>> = {
-  pro_monthly: { plan: 'pro', billing_cycle: 'monthly', saves_limit: '100',       boards_limit: '15',        file_size_limit: '20MB', storage_limit: '2GB',  status: 'active' },
-  pro_yearly:  { plan: 'pro', billing_cycle: 'yearly',  saves_limit: '100',       boards_limit: '15',        file_size_limit: '20MB', storage_limit: '2GB',  status: 'active' },
-  team:        { plan: 'team', billing_cycle: 'monthly', saves_limit: '300',      boards_limit: '50',        file_size_limit: '50MB', storage_limit: '10GB', status: 'active' },
+  pro_monthly: { plan: 'pro', billing_cycle: 'monthly', saves_limit: 'unlimited', boards_limit: '15',        file_size_limit: '20MB', storage_limit: '2GB',  status: 'active' },
+  pro_yearly:  { plan: 'pro', billing_cycle: 'yearly',  saves_limit: 'unlimited', boards_limit: '15',        file_size_limit: '20MB', storage_limit: '2GB',  status: 'active' },
+  team:        { plan: 'team', billing_cycle: 'monthly', saves_limit: 'unlimited', boards_limit: '50',       file_size_limit: '50MB', storage_limit: '10GB', status: 'active' },
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

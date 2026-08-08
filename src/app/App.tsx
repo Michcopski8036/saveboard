@@ -892,7 +892,7 @@ function AppContent() {
         status: 'active',
         billing_cycle: isYearly ? 'yearly' : 'monthly',
         current_period_end: tx.expiresDate ?? null,
-        saves_limit: '100',
+        saves_limit: 'unlimited',
         boards_limit: '15',
         file_size_limit: '20MB',
         storage_limit: '2GB',

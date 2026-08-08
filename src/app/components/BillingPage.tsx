@@ -53,12 +53,12 @@ const BRAND_PURPLE = '#7C3AED';
 const BRAND_CORAL  = '#F87171';   // the "over limit / needs attention" red used across the app
 
 function UsageBar({ label, used, limit, isStorage }: { label: string; used: number; limit: number; isStorage?: boolean }) {
-  const pct = Math.min((used / limit) * 100, 100);
+  const pct = Number.isFinite(limit) ? Math.min((used / limit) * 100, 100) : 0;
   const warn = pct >= 80;
   const over = pct >= 100;
   const fmtMb = (mb: number) => mb >= 1024 ? `${(mb / 1024).toFixed(1)}GB` : `${mb}MB`;
   const usedStr = isStorage ? fmtMb(used) : used;
-  const limitStr = isStorage ? fmtMb(limit) : limit;
+  const limitStr = !Number.isFinite(limit) ? '∞' : isStorage ? fmtMb(limit) : limit;
   return (
     <div>
       <div className="flex justify-between items-center mb-1.5">
@@ -95,7 +95,8 @@ export function BillingPage({ onClose, onShowUpgrade, onRestorePurchases, userId
   const needsPayment = ['past_due', 'unpaid', 'incomplete'].includes(status);
 
   // Access is gated on `active`, so a lapsed plan is really on the free limits — show those.
-  const savesLimit   = isActive ? parseInt(subData?.saves_limit  ?? '30') : FREE_LIMITS.links;
+  const savesLimit   = !isActive ? FREE_LIMITS.links
+    : subData?.saves_limit === 'unlimited' ? Infinity : parseInt(subData?.saves_limit ?? '30');
   const boardsLimit  = isActive ? parseInt(subData?.boards_limit ?? '5')  : FREE_LIMITS.boards;
   const storageLimitMb = !isActive ? FREE_LIMITS.storageMb
     : subData?.storage_limit
