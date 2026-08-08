@@ -357,7 +357,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.proMo}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                     <p className="text-[12px] font-semibold text-purple-600 mb-5">{ko ? `또는 A$${AUD.proYr}/년 — 47% 할인` : `or A$${AUD.proYr}/yr — save 47%`}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {(ko ? ['저장 300개','보드 30개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['300 saves','30 boards','5 team boards (10 members each)','2GB storage','20MB file size limit','Priority support']).map(f => (
+                      {(ko ? ['저장 100개','보드 15개','팀 보드 5개 (각 10명)','2GB 저장공간','파일 크기 20MB','우선 지원'] : ['100 saves','15 boards','5 team boards (10 members each)','2GB storage','20MB file size limit','Priority support']).map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-700">
                           <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />{f}
                         </li>
@@ -398,7 +398,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <p className="text-[32px] font-bold text-gray-900 leading-none mb-0.5">A${AUD.teamSeat}<span className="text-[16px] font-normal text-gray-400">/mo</span></p>
                     <p className="text-[12px] text-gray-400 mb-5">{ko ? '월간 결제 · 초대된 멤버는 무료 참여' : 'Billed monthly · invited members join free'}</p>
                     <ul className="space-y-2.5 mb-6 flex-1">
-                      {(ko ? ['협업 팀 보드','최대 보드 25개, 각 25명','멤버 무료 참여','무제한 저장·보드','10GB 저장공간'] : ['Collaborative team boards','Up to 25 boards, 25 members each','Members join free','Unlimited saves & boards','10GB storage']).map(f => (
+                      {(ko ? ['협업 팀 보드','공유 보드 10개, 각 25명','멤버 무료 참여','저장 300개 · 보드 50개','10GB 저장공간'] : ['Collaborative team boards','10 shared boards, 25 members each','Members join free','300 saves · 50 boards','10GB storage']).map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
                           <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />{f}
                         </li>
