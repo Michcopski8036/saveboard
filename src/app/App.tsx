@@ -1377,6 +1377,7 @@ function AppContent() {
               onToggleFavorite={handleToggleFavorite}
               onDelete={handleDeleteLink}
               onUpdateCategory={handleUpdateCategory}
+              onUpdateLink={handleUpdateLink}
             />
           ) : viewMode === 'masonry' ? (
             <ResponsiveMasonry columnsCountBreakPoints={{ 0: 1, 360: 2, 768: 3, 1280: 4, 1600: 5 }}>

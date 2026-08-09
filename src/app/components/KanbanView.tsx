@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useDrag, useDrop } from 'react-dnd';
-import { MoreVertical, Heart, Trash2, Link2, Check, Sparkles } from 'lucide-react';
+import { MoreVertical, Heart, Trash2, Link2, Check, FileText, Pencil } from 'lucide-react';
 import { isPlaceholder, getPlatformFromPlaceholder, detectPlatformFromUrl, PlatformPlaceholder } from './PlatformPlaceholder';
+import { RichTextEditor } from './RichTextEditor';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import type { LinkData } from './LinkCard';
@@ -21,16 +23,28 @@ interface KanbanCardProps {
   link: LinkData; isFavorited: boolean;
   onToggleFavorite: (id: string) => void; onDelete: (id: string) => void;
   onUpdateCategory: (id: string, cat: string) => void; categories: string[];
+  onEdit?: (link: LinkData) => void;
 }
 
-function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete }: KanbanCardProps) {
+function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete, onEdit }: KanbanCardProps) {
   const { t } = useTheme();
   const [showMenu, setShowMenu] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [thumbError, setThumbError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const isMemo = link.image === 'placeholder:memo';
-  const dom = isMemo ? 'Note' : link.image === 'placeholder:pdf' ? 'PDF' : domain(link);
+  const dom = link.image === 'placeholder:pdf' ? 'PDF' : domain(link);
+  // Memo body flattened to plain text; skip a first line repeating the title.
+  const memoBody = isMemo ? (() => {
+    const plain = (link.description ?? '').trimStart().startsWith('<')
+      ? link.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+      : link.description.replace(/^\[sz:(sm|md|lg)\]/, '').trim();
+    if (!plain) return '';
+    const lines = plain.split('\n');
+    return (lines[0].trim() === link.title.trim() ? lines.slice(1).join('\n') : plain).trim();
+  })() : '';
+  const userTags = (link.tags ?? []).slice(0, 2);
+  const hasFooter = userTags.length > 0 || !!link.notes;
 
   const [{ isDragging }, drag] = useDrag({
     type: DRAG_TYPE,
@@ -50,8 +64,15 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete }: KanbanCar
     setShowMenu(false);
   };
 
+  const menuItems = [
+    ...(onEdit ? [{ label: 'Edit', Icon: Pencil, action: (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); onEdit(link); }, isDelete: false }] : []),
+    // A memo's url is '#', so Copy link would copy garbage — hide it there.
+    ...(!isMemo ? [{ label: isCopied ? 'Copied!' : 'Copy link', Icon: isCopied ? Check : Link2, action: handleCopy, isDelete: false }] : []),
+    { label: 'Delete', Icon: Trash2, action: (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); if (confirm('Delete?')) onDelete(link.id); }, isDelete: true },
+  ];
+
   return (
-    <div ref={node => { drag(node); }} className="group rounded-xl p-3 transition-all duration-200 cursor-grab active:cursor-grabbing"
+    <div ref={node => { drag(node); }} className="group relative rounded-xl p-3 transition-all duration-200 cursor-grab active:cursor-grabbing"
       style={{
         background: t.kanbanCardBg,
         border: `1px solid ${t.kanbanCardBorder}`,
@@ -61,12 +82,22 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete }: KanbanCar
       onMouseEnter={e => { if (!isDragging) { e.currentTarget.style.boxShadow = t.kanbanCardHoverShadow; e.currentTarget.style.borderColor = t.kanbanCardHoverBorder; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = t.kanbanCardShadow; e.currentTarget.style.borderColor = t.kanbanCardBorder; e.currentTarget.style.transform = 'translateY(0)'; }}>
 
-      <div className="flex gap-2.5 mb-2.5">
+      {isMemo ? (
+        /* Memo: no tile — a small note marker keeps the title as the headline */
+        <div>
+          <div className="flex items-start gap-1.5">
+            <FileText className="w-3.5 h-3.5 shrink-0 mt-px" style={{ color: '#7C3AED', opacity: 0.75 }} />
+            <p className="text-[12px] font-semibold line-clamp-2 leading-snug flex-1 min-w-0" style={{ color: t.kanbanColTitle }}>{link.title}</p>
+          </div>
+          {memoBody && <p className="text-[10px] leading-relaxed line-clamp-2 mt-1" style={{ color: t.textMuted }}>{memoBody}</p>}
+        </div>
+      ) : (
+      <div className="flex gap-2.5">
         <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0">
           {/* A link with no image at all used to fall through to <img src="">, which
               renders as a broken-image icon. Fall back the way LinkCard does. */}
           {isPlaceholder(link.image || '')
-            ? <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} text={isMemo ? link.description : undefined} className="w-full h-full" />
+            ? <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} className="w-full h-full" />
             : !link.image || thumbError
               ? <PlatformPlaceholder platform={detectPlatformFromUrl(link.url)} className="w-full h-full" />
               : <img src={link.image} alt={link.title} crossOrigin="anonymous" onError={() => setThumbError(true)} className="w-full h-full object-cover" />}
@@ -76,52 +107,55 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete }: KanbanCar
           <p className="text-[10px] mt-0.5 truncate" style={{ color: t.textMuted }}>{dom}</p>
         </div>
       </div>
+      )}
 
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 flex-wrap">
-          {link.category && link.category !== 'None' && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium"
+      {/* Footer only when it has content — the category pill is gone because it
+          always matched the column name (kanban groups by category). */}
+      {hasFooter && (
+        <div className="flex items-center gap-1 flex-wrap mt-2.5">
+          {userTags.map(tag => (
+            <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-full font-medium"
               style={{ background: t.kanbanCatPillBg, color: t.kanbanCatPillText }}>
-              {link.category}
+              #{tag}
             </span>
-          )}
-          {link.notes && <Sparkles className="w-2.5 h-2.5" style={{ color: '#7C3AED' }} />}
+          ))}
+          {link.notes && <FileText className="w-2.5 h-2.5" style={{ color: '#3B82F6', opacity: 0.7 }} />}
         </div>
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 shrink-0">
-          <button onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(link.id); }}
+      )}
+
+      {/* Actions float top-right on hover so an empty footer row never reserves space */}
+      <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-lg"
+        style={{ background: t.kanbanCardBg, boxShadow: t.kanbanCardShadow }}>
+        <button onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(link.id); }}
+          className="p-1 rounded-lg transition-colors"
+          onMouseEnter={e => (e.currentTarget.style.background = t.kanbanActionHoverBg)}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+          <Heart className={`w-3 h-3 ${isFavorited ? 'fill-red-400 text-red-400' : ''}`} style={{ color: isFavorited ? undefined : t.iconAction }} />
+        </button>
+        <div className="relative" ref={menuRef}>
+          <button onClick={e => { e.preventDefault(); e.stopPropagation(); setShowMenu(p => !p); }}
             className="p-1 rounded-lg transition-colors"
             onMouseEnter={e => (e.currentTarget.style.background = t.kanbanActionHoverBg)}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <Heart className={`w-3 h-3 ${isFavorited ? 'fill-red-400 text-red-400' : ''}`} style={{ color: isFavorited ? undefined : t.iconAction }} />
+            <MoreVertical className="w-3 h-3" style={{ color: t.iconMuted }} />
           </button>
-          <div className="relative" ref={menuRef}>
-            <button onClick={e => { e.preventDefault(); e.stopPropagation(); setShowMenu(p => !p); }}
-              className="p-1 rounded-lg transition-colors"
-              onMouseEnter={e => (e.currentTarget.style.background = t.kanbanActionHoverBg)}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-              <MoreVertical className="w-3 h-3" style={{ color: t.iconMuted }} />
-            </button>
-            {showMenu && (
-              <div className="absolute right-0 bottom-full mb-1 z-50 w-40 rounded-xl overflow-hidden"
-                style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
-                <div className="p-1">
-                  {[
-                    { label: isCopied ? 'Copied!' : 'Copy link', Icon: isCopied ? Check : Link2, action: handleCopy, isDelete: false },
-                    { label: 'Delete', Icon: Trash2, action: (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); if (confirm('Delete?')) onDelete(link.id); }, isDelete: true },
-                  ].map(({ label, Icon, action, isDelete }) => (
-                    <button key={label} onClick={action}
-                      className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
-                      style={{ color: isDelete ? '#EF4444' : t.dropdownText }}
-                      onMouseEnter={e => { e.currentTarget.style.background = isDelete ? 'rgba(239,68,68,0.08)' : t.dropdownHoverBg; }}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                      <Icon className="w-3.5 h-3.5" style={{ color: isDelete ? '#EF4444' : (label === 'Copied!' ? '#22C55E' : t.dropdownIcon) }} />
-                      <span className="text-[12px]">{label}</span>
-                    </button>
-                  ))}
-                </div>
+          {showMenu && (
+            <div className="absolute right-0 top-full mt-1 z-50 w-40 rounded-xl overflow-hidden"
+              style={{ background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`, boxShadow: t.dropdownShadow }}>
+              <div className="p-1">
+                {menuItems.map(({ label, Icon, action, isDelete }) => (
+                  <button key={label} onClick={action}
+                    className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-colors"
+                    style={{ color: isDelete ? '#EF4444' : t.dropdownText }}
+                    onMouseEnter={e => { e.currentTarget.style.background = isDelete ? 'rgba(239,68,68,0.08)' : t.dropdownHoverBg; }}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <Icon className="w-3.5 h-3.5" style={{ color: isDelete ? '#EF4444' : (label === 'Copied!' ? '#22C55E' : t.dropdownIcon) }} />
+                    <span className="text-[12px]">{label}</span>
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -132,6 +166,7 @@ interface KanbanViewProps {
   links: LinkData[]; categories: string[]; favorites: Set<string>;
   selected?: string;
   onToggleFavorite: (id: string) => void; onDelete: (id: string) => void; onUpdateCategory: (id: string, cat: string) => void;
+  onUpdateLink?: (id: string, title: string, description: string) => void;
 }
 
 interface KanbanColumnProps {
@@ -142,9 +177,10 @@ interface KanbanColumnProps {
   onToggleFavorite: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdateCategory: (id: string, cat: string) => void;
+  onEdit?: (link: LinkData) => void;
 }
 
-function KanbanColumn({ col, color, favorites, categories, onToggleFavorite, onDelete, onUpdateCategory }: KanbanColumnProps) {
+function KanbanColumn({ col, color, favorites, categories, onToggleFavorite, onDelete, onUpdateCategory, onEdit }: KanbanColumnProps) {
   const { t } = useTheme();
   const { tr } = useLanguage();
 
@@ -201,7 +237,7 @@ function KanbanColumn({ col, color, favorites, categories, onToggleFavorite, onD
           col.links.map(link => (
             <KanbanCard key={link.id} link={link} isFavorited={favorites.has(link.id)}
               onToggleFavorite={onToggleFavorite} onDelete={onDelete}
-              onUpdateCategory={onUpdateCategory} categories={categories} />
+              onUpdateCategory={onUpdateCategory} categories={categories} onEdit={onEdit} />
           ))
         )}
         {isActive && col.links.length > 0 && (
@@ -215,8 +251,25 @@ function KanbanColumn({ col, color, favorites, categories, onToggleFavorite, onD
   );
 }
 
-export function KanbanView({ links, categories, favorites, selected, onToggleFavorite, onDelete, onUpdateCategory }: KanbanViewProps) {
+export function KanbanView({ links, categories, favorites, selected, onToggleFavorite, onDelete, onUpdateCategory, onUpdateLink }: KanbanViewProps) {
+  const { t } = useTheme();
+  const { tr } = useLanguage();
   const selectedCat = selected?.startsWith('cat:') ? selected.slice(4) : null;
+
+  // Lightweight edit modal (title + rich body) — memos have no other edit path here.
+  const [editing, setEditing]     = useState<LinkData | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editBody, setEditBody]   = useState('');
+  const openEdit = onUpdateLink ? (link: LinkData) => {
+    setEditing(link);
+    setEditTitle(link.title);
+    const d = link.description ?? '';
+    setEditBody(d.trimStart().startsWith('<') ? d : d.replace(/^\[sz:(sm|md|lg)\]/, ''));
+  } : undefined;
+  const saveEdit = () => {
+    if (editing && onUpdateLink) onUpdateLink(editing.id, editTitle.trim() || editing.title, editBody);
+    setEditing(null);
+  };
 
   const allColumns = [
     { id: 'none', label: 'Unsorted', links: links.filter(l => !l.category || l.category === 'None') },
@@ -236,9 +289,53 @@ export function KanbanView({ links, categories, favorites, selected, onToggleFav
           <KanbanColumn key={col.id} col={col} color={color}
             favorites={favorites} categories={categories}
             onToggleFavorite={onToggleFavorite} onDelete={onDelete}
-            onUpdateCategory={onUpdateCategory} />
+            onUpdateCategory={onUpdateCategory} onEdit={openEdit} />
         );
       })}
+
+      {editing && createPortal(
+        <>
+          <div className="fixed inset-0 backdrop-blur-sm" style={{ zIndex: 9998, background: t.modalBackdrop }} onClick={() => setEditing(null)} />
+          <div className="fixed w-[500px] max-w-[90vw] rounded-2xl flex flex-col"
+            style={{ zIndex: 9999, top: '60px', left: '50%', transform: 'translateX(-50%)', maxHeight: 'calc(100vh - 80px)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
+            onClick={e => e.stopPropagation()}>
+            <div className="overflow-y-auto p-6 flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <Pencil className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
+                <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>{tr('editContent')}</h3>
+              </div>
+              {editing.url !== '#' && <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{editing.url}</p>}
+              <div className={`space-y-3${editing.url === '#' ? ' mt-3' : ''}`}>
+                <div>
+                  <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>{tr('title')}</label>
+                  <input value={editTitle} onChange={e => setEditTitle(e.target.value)} autoFocus
+                    className="w-full px-4 py-3 rounded-xl focus:outline-none transition-all"
+                    style={{ background: t.modalInputBg, border: `1px solid ${t.modalInputBorder}`, color: t.modalInputText, fontSize: '16px' }}
+                    onFocus={e => { e.currentTarget.style.borderColor = t.inputFocusBorder; e.currentTarget.style.boxShadow = t.inputFocusShadow; }}
+                    onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>{tr('description')}</label>
+                  <RichTextEditor key={editing.id} content={editBody} onChange={setEditBody} />
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 px-6 py-4 shrink-0" style={{ borderTop: `1px solid ${t.modalBorder}` }}>
+              <button onClick={() => setEditing(null)}
+                className="px-4 py-2 rounded-xl text-[13px] font-semibold transition-colors"
+                style={{ color: t.textMuted }}>
+                {tr('cancel')}
+              </button>
+              <button onClick={saveEdit}
+                className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg,#7C3AED,#6366F1)' }}>
+                {tr('save')}
+              </button>
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
     </div>
   );
 }
