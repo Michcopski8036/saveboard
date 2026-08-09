@@ -296,7 +296,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <p className="text-white text-[11px] sm:text-[12px] font-semibold">{limits.links === Infinity ? `${currentLinks}/∞` : `${currentLinks}/${limits.links}`}</p>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-white/20">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${linkPct}%`, background: linkPct >= 90 ? '#F87171' : 'rgba(255,255,255,0.95)' }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${linkPct}%`, background: linkPct >= 90 ? '#F87171' : '#A78BFA' }} />
                   </div>
                 </div>
                 <div className="text-left">
@@ -305,7 +305,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <p className="text-white text-[11px] sm:text-[12px] font-semibold">{currentBoards}/{limits.boards}</p>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-white/20">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${boardPct}%`, background: boardPct >= 90 ? '#F87171' : 'rgba(255,255,255,0.95)' }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${boardPct}%`, background: boardPct >= 90 ? '#F87171' : '#A78BFA' }} />
                   </div>
                 </div>
                 <div className="text-left">
@@ -314,7 +314,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                     <p className="text-white text-[11px] sm:text-[12px] font-semibold">{fmtStorage(currentStorageMb)}/{fmtStorage(limits.storageMb)}</p>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-white/20">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${storagePct}%`, background: storagePct >= 90 ? '#F87171' : 'rgba(255,255,255,0.95)' }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${storagePct}%`, background: storagePct >= 90 ? '#F87171' : '#A78BFA' }} />
                   </div>
                 </div>
               </div>
