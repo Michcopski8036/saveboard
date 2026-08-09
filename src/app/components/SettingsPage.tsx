@@ -20,6 +20,7 @@ interface SettingsPageProps {
   linkCount: number;
   boardCount: number;
   isPro: boolean;
+  plan?: 'free' | 'pro' | 'team';
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -47,7 +48,7 @@ function RowBtn({ icon: Icon, label, right, onClick, danger }: {
   );
 }
 
-export function SettingsPage({ onClose, user, onExport, onImport, onSignOut, onDeleteAccount, onShowUpgrade, onShowContact, onShowHelp, onRate, onShowPrivacy, onShowTerms, linkCount, boardCount, isPro }: SettingsPageProps) {
+export function SettingsPage({ onClose, user, onExport, onImport, onSignOut, onDeleteAccount, onShowUpgrade, onShowContact, onShowHelp, onRate, onShowPrivacy, onShowTerms, linkCount, boardCount, isPro, plan = 'free' }: SettingsPageProps) {
   const { theme, setTheme } = useTheme();
   const { tr } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -110,7 +111,7 @@ export function SettingsPage({ onClose, user, onExport, onImport, onSignOut, onD
                 <div className="min-w-0">
                   <p className="text-[14px] font-semibold text-gray-800 truncate">{email}</p>
                   <p className="text-[12px] text-gray-400 mt-0.5">
-                    {isPro ? tr('proPlan') : tr('freePlan')} · {linkCount} {tr('links')} · {boardCount} {tr('boardsLabel')}
+                    {plan === 'team' ? tr('teamPlan') : isPro ? tr('proPlan') : tr('freePlan')} · {linkCount} {tr('links')} · {boardCount} {tr('boardsLabel')}
                   </p>
                 </div>
               </div>

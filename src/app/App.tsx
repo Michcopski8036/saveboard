@@ -1819,6 +1819,7 @@ function AppContent() {
           linkCount={links.length}
           boardCount={categories.length}
           isPro={isPro}
+          plan={activePlan}
         />
       )}
 
