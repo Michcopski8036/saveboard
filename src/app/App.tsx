@@ -144,6 +144,7 @@ function AppContent() {
   const [showTerms, setShowTerms]       = useState(false);
   const [isPro, setIsPro] = useState(false);
   const [subData, setSubData] = useState<{ plan: string; status: string; billing_cycle: string; current_period_end: string; saves_limit: string; boards_limit: string; storage_limit: string } | null>(null);
+  const activePlan: 'free' | 'pro' | 'team' = subData?.status === 'active' && (subData.plan === 'pro' || subData.plan === 'team') ? subData.plan : 'free';
   const [showBilling, setShowBilling] = useState(false);
   const [showAdmin, setShowAdmin]     = useState(false);
   const [currentStorageMb, setCurrentStorageMb] = useState(0);
@@ -1175,7 +1176,7 @@ function AppContent() {
             </button>
 
             {/* Avatar */}
-            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => { if (userId) clearSnapshot(userId); await supabase.auth.signOut(); }} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowCleanup={() => (isPro ? setShowCleanup(true) : setShowUpgrade(true))} onShowAdmin={isAdmin(user?.email) ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
+            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => { if (userId) clearSnapshot(userId); await supabase.auth.signOut(); }} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowCleanup={() => (isPro ? setShowCleanup(true) : setShowUpgrade(true))} onShowAdmin={isAdmin(user?.email) ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} plan={activePlan} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
           </div>
 
           {/* Payment-failure banner — Pro stays gated on `active`, so tell the user why it lapsed */}
@@ -1756,7 +1757,7 @@ function AppContent() {
           userId={user?.id}
           userEmail={user?.email}
           isPro={isPro}
-          plan={subData?.status === 'active' && (subData.plan === 'pro' || subData.plan === 'team') ? subData.plan : 'free'}
+          plan={activePlan}
           onPurchaseSuccess={refreshSubscription}
           onShowTerms={() => setShowTerms(true)}
           onShowPrivacy={() => setShowPrivacy(true)}

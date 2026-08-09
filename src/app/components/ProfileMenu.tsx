@@ -18,12 +18,13 @@ interface ProfileMenuProps {
   onShowCleanup?: () => void;
   user?: SupabaseUser | null;
   isPro?: boolean;
+  plan?: 'free' | 'pro' | 'team';
   currentLinks?: number;
   currentBoards?: number;
   currentStorageMb?: number;
 }
 
-export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onShowBilling, onShowSettings, onShowLanguage, onShowHelp, onShowAdmin, onShowCleanup, user, isPro, currentLinks = 0, currentBoards = 0, currentStorageMb = 0 }: ProfileMenuProps) {
+export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onShowBilling, onShowSettings, onShowLanguage, onShowHelp, onShowAdmin, onShowCleanup, user, isPro, plan = 'free', currentLinks = 0, currentBoards = 0, currentStorageMb = 0 }: ProfileMenuProps) {
   const { theme, setTheme } = useTheme();
   const { tr } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
@@ -92,7 +93,7 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
                 <div className="px-3 py-2">
                   <p className="text-xs text-gray-400 truncate">{email}</p>
                   {isPro && (
-                    <span className="inline-block mt-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ color: '#7C3AED', background: 'rgba(124,58,237,0.10)' }}>PRO</span>
+                    <span className="inline-block mt-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={plan === 'team' ? { color: '#3B82F6', background: 'rgba(59,130,246,0.10)' } : { color: '#7C3AED', background: 'rgba(124,58,237,0.10)' }}>{plan === 'team' ? 'TEAM' : 'PRO'}</span>
                   )}
                 </div>
               )}
@@ -100,8 +101,8 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
               <div className="mx-3 mb-2 p-2.5 rounded-xl" style={{ background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
                 {[
                   { label: 'Saves', used: currentLinks, limit: isPro ? Infinity : 30 },
-                  { label: 'Boards', used: currentBoards, limit: isPro ? 15 : 5 },
-                  { label: 'Storage', used: currentStorageMb, limit: isPro ? 2048 : 50, isStorage: true },
+                  { label: 'Boards', used: currentBoards, limit: plan === 'team' ? 50 : isPro ? 15 : 5 },
+                  { label: 'Storage', used: currentStorageMb, limit: plan === 'team' ? 10240 : isPro ? 2048 : 50, isStorage: true },
                 ].map(({ label, used, limit, isStorage }) => {
                   const pct = Number.isFinite(limit) ? Math.min((used / limit) * 100, 100) : 0;
                   const over = pct >= 100;
