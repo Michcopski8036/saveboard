@@ -31,6 +31,7 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete, onEdit }: K
   const [showMenu, setShowMenu] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [thumbError, setThumbError] = useState(false);
+  const [faviconError, setFaviconError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const isMemo = link.image === 'placeholder:memo';
   const dom = link.image === 'placeholder:pdf' ? 'PDF' : domain(link);
@@ -95,12 +96,24 @@ function KanbanCard({ link, isFavorited, onToggleFavorite, onDelete, onEdit }: K
       <div className="flex gap-2.5">
         <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0">
           {/* A link with no image at all used to fall through to <img src="">, which
-              renders as a broken-image icon. Fall back the way LinkCard does. */}
-          {isPlaceholder(link.image || '')
-            ? <PlatformPlaceholder platform={getPlatformFromPlaceholder(link.image)} className="w-full h-full" />
-            : !link.image || thumbError
-              ? <PlatformPlaceholder platform={detectPlatformFromUrl(link.url)} className="w-full h-full" />
-              : <img src={link.image} alt={link.title} crossOrigin="anonymous" onError={() => setThumbError(true)} className="w-full h-full object-cover" />}
+              renders as a broken-image icon. Branded platform tiles (YouTube,
+              Instagram, PDF…) carry meaning and stay; the generic purple chain
+              tile is replaced by the site's favicon on a quiet neutral tile. */}
+          {(() => {
+            const phPlatform = isPlaceholder(link.image || '')
+              ? getPlatformFromPlaceholder(link.image)
+              : (!link.image || thumbError) ? detectPlatformFromUrl(link.url) : null;
+            if (phPlatform === 'default') return (
+              <div className="w-full h-full flex items-center justify-center" style={{ background: t.emptyIconContainerBg, border: `1px solid ${t.emptyIconContainerBorder}`, borderRadius: 8 }}>
+                {faviconError || !dom
+                  ? <Link2 className="w-4 h-4" style={{ color: t.textFaint }} />
+                  : <img src={`https://www.google.com/s2/favicons?domain=${dom}&sz=64`} alt=""
+                      className="w-5 h-5 rounded object-contain" onError={() => setFaviconError(true)} />}
+              </div>
+            );
+            if (phPlatform) return <PlatformPlaceholder platform={phPlatform} className="w-full h-full" />;
+            return <img src={link.image} alt={link.title} crossOrigin="anonymous" onError={() => setThumbError(true)} className="w-full h-full object-cover" />;
+          })()}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[12px] font-semibold line-clamp-2 leading-snug" style={{ color: t.kanbanColTitle }}>{link.title}</p>
