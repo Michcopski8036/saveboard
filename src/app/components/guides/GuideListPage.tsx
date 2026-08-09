@@ -59,7 +59,7 @@ export function GuideListPage() {
                     to={href}
                     className="group flex flex-col rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden"
                   >
-                    <div className="h-2" style={{ background: CARD_STRIP_GRADIENT }} />
+                    <div className="h-1" style={{ background: CARD_STRIP_GRADIENT }} />
                     <div className="p-6 flex flex-col flex-1">
                       <p className="text-[12px] text-gray-400 mb-3">{formatDate(pair.date)}</p>
                       <h2 className="text-[19px] font-bold text-gray-900 leading-snug mb-3 group-hover:text-purple-700 transition-colors">
