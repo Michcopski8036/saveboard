@@ -111,10 +111,21 @@ function GalleryCard({ link, isActive, onClick }: { link: LinkData; isActive: bo
   const summary    = getAiSummary(link.description);
   const readTime   = getReadTime(link.description);
   const isArticle  = !vid && !isMemoCard && !isPdfCard && !isPlaceholder(link.image);
-  // Match LinkCard: generic placeholders get the thin accent strip, not a big
-  // gradient tile. Memo / PDF / file tiles carry meaning, so they stay.
-  const isContentIcon = isMemoCard || isPdfCard || link.image === 'placeholder:file';
+  // Match LinkCard: generic placeholders and memos get the thin accent strip,
+  // not a big gradient tile (memo text was getting cropped by the fixed-aspect
+  // tile in this narrow column). PDF / file tiles carry meaning, so they stay.
+  const isContentIcon = isPdfCard || link.image === 'placeholder:file';
   const noThumb    = !isContentIcon && isPlaceholder(link.image);
+  // Memo body preview, flattened to plain text; skip a first line that just
+  // repeats the title.
+  const memoBody = isMemoCard ? (() => {
+    const plain = (link.description ?? '').trimStart().startsWith('<')
+      ? link.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+      : link.description.replace(/^\[sz:(sm|md|lg)\]/, '').trim();
+    if (!plain) return '';
+    const lines = plain.split('\n');
+    return (lines[0].trim() === link.title.trim() ? lines.slice(1).join('\n') : plain).trim();
+  })() : '';
 
   return (
     <button
@@ -164,6 +175,12 @@ function GalleryCard({ link, isActive, onClick }: { link: LinkData; isActive: bo
 
       {/* ── Info ── */}
       <div className="px-3 pt-2 pb-2.5">
+        {isMemoCard && (
+          <div className="flex items-center gap-1 mb-1">
+            <FileText className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#7C3AED', opacity: 0.75 }} />
+            <span className="text-[8px] font-bold uppercase tracking-widest" style={{ color: '#7C3AED', opacity: 0.75 }}>Note</span>
+          </div>
+        )}
         {/* Domain row */}
         {!isMemoCard && (
           <div className="flex items-center gap-1 mb-1">
@@ -190,6 +207,13 @@ function GalleryCard({ link, isActive, onClick }: { link: LinkData; isActive: bo
           style={{ color: t.textPrimary }}>
           {link.title}
         </p>
+
+        {/* Memo body preview */}
+        {memoBody && (
+          <p className="text-[10px] leading-relaxed line-clamp-2 mb-1.5" style={{ color: t.textMuted }}>
+            {memoBody}
+          </p>
+        )}
 
         {/* Tags */}
         {(aiTags.length > 0 || (link.tags ?? []).length > 0) && (

@@ -390,10 +390,23 @@ export function LinkCard({
 
   // When we couldn't fetch a real thumbnail (platform/default placeholder, or the
   // image failed to load) render a text-only card — no big gradient block.
-  // Memo / PDF / file keep their meaningful placeholder tiles.
-  const isContentIcon = isMemo || isPdf || link.image === 'placeholder:file';
+  // Memos are text-only too: the body renders in the info panel under the title
+  // instead of inside a tile, so the title keeps the visual hierarchy.
+  // PDF / file keep their meaningful placeholder tiles.
+  const isContentIcon = isPdf || link.image === 'placeholder:file';
   const noThumb = (!isContentIcon && isPlaceholder(link.image)) || cardImgError;
   const stripBg = CARD_STRIP_GRADIENT;
+  // Memo body for the card preview: plain text loses the size marker, and a
+  // first line that just repeats the title is skipped (older memos stored the
+  // title as the body's first line too).
+  const memoBody = isMemo ? (() => {
+    const d = link.description ?? '';
+    if (isHtmlDesc(d)) return d;
+    const txt = getMemoText(d).trim();
+    if (!txt) return '';
+    const lines = txt.split('\n');
+    return (lines[0].trim() === link.title.trim() ? lines.slice(1).join('\n') : txt).trim();
+  })() : '';
 
   const sp = (fn: () => void) => (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); fn(); };
   const handleCopyLink  = async (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); try { await navigator.clipboard.writeText(link.url); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); } catch {} setShowMenu(false); };
@@ -828,6 +841,12 @@ export function LinkCard({
 
       {/* Info panel */}
       <div className={`px-3.5 pt-3 pb-3.5${compact ? ' flex-1 overflow-hidden' : ''}`}>
+        {isMemo && (
+          <div className="flex items-center gap-1.5 mb-2">
+            <FileText className="w-3 h-3 flex-shrink-0" style={{ color: '#7C3AED', opacity: 0.75 }} />
+            <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#7C3AED', opacity: 0.75 }}>Note</span>
+          </div>
+        )}
         {!isMemo && (
           <div className="flex items-center gap-1.5 mb-2">
             <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`} alt=""
@@ -878,6 +897,14 @@ export function LinkCard({
           <p className="text-[11px] leading-relaxed mb-3 line-clamp-2" style={{ color: t.textMuted }}>
             {descPreview}
           </p>
+        )}
+
+        {/* Memo body under the title — small and muted so the title stays the headline */}
+        {!compact && isMemo && memoBody && (
+          isHtmlDesc(memoBody)
+            ? <div className="text-[11px] leading-relaxed mb-2 line-clamp-6 rich-card-preview" style={{ color: t.textMuted }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(memoBody) }} />
+            : <MarkdownText text={memoBody} className="text-[11px] leading-relaxed mb-2" style={{ color: t.textMuted }} clamp={6} />
         )}
 
         {!compact && !isMemo && !isArticle && link.description && link.description.length > 0 && !link.description.startsWith('Link saved from') && (
