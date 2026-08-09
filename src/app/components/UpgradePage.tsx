@@ -16,6 +16,7 @@ interface UpgradePageProps {
   userId?: string;
   userEmail?: string;
   isPro?: boolean;
+  plan?: 'free' | 'pro' | 'team';
   onPurchaseSuccess?: () => void;
   onShowTerms?: () => void;
   onShowPrivacy?: () => void;
@@ -242,15 +243,19 @@ const FEATURE_KO: Record<string, string> = {
 const valueKo = (v: string) =>
   v === 'Unlimited' ? '무제한' : /^(\d+) max$/.test(v) ? `최대 ${v.match(/^(\d+)/)![1]}` : v;
 
-export function UpgradePage({ onClose, currentLinks, currentBoards, currentStorageMb = 0, userId, userEmail, isPro = false, onPurchaseSuccess, onShowTerms, onShowPrivacy }: UpgradePageProps) {
+export function UpgradePage({ onClose, currentLinks, currentBoards, currentStorageMb = 0, userId, userEmail, isPro = false, plan = 'free', onPurchaseSuccess, onShowTerms, onShowPrivacy }: UpgradePageProps) {
   const { tr, language } = useLanguage();
   const ko = language === 'ko';
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const isNative = Capacitor.isNativePlatform();
 
-  const linkPct    = Math.min((currentLinks    / FREE_LIMITS.links)    * 100, 100);
-  const boardPct   = Math.min((currentBoards   / FREE_LIMITS.boards)   * 100, 100);
-  const storagePct = Math.min((currentStorageMb / FREE_LIMITS.storageMb) * 100, 100);
+  // Usage bars must reflect the viewer's own plan, not the Free limits.
+  const limits = plan === 'team' ? { links: Infinity, boards: 50, storageMb: 10240 }
+    : plan === 'pro' ? { links: Infinity, boards: 15, storageMb: 2048 }
+    : { links: FREE_LIMITS.links, boards: FREE_LIMITS.boards, storageMb: FREE_LIMITS.storageMb };
+  const linkPct    = limits.links === Infinity ? 0 : Math.min((currentLinks / limits.links) * 100, 100);
+  const boardPct   = Math.min((currentBoards   / limits.boards)   * 100, 100);
+  const storagePct = Math.min((currentStorageMb / limits.storageMb) * 100, 100);
   const fmtStorage = (mb: number) => mb >= 1000 ? `${(mb / 1024).toFixed(1)}GB` : `${mb}MB`;
 
   const handleCheckout = async (plan: 'pro' | 'team', interval: 'monthly' | 'yearly' = 'monthly') => {
@@ -288,7 +293,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 <div className="text-left">
                   <div className="flex items-center justify-between mb-1 gap-1">
                     <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">{tr('savesWord')}</p>
-                    <p className="text-white text-[11px] sm:text-[12px] font-semibold">{currentLinks}/{FREE_LIMITS.links}</p>
+                    <p className="text-white text-[11px] sm:text-[12px] font-semibold">{limits.links === Infinity ? `${currentLinks}/∞` : `${currentLinks}/${limits.links}`}</p>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-white/20">
                     <div className="h-full rounded-full transition-all" style={{ width: `${linkPct}%`, background: linkPct >= 90 ? '#F87171' : '#A78BFA' }} />
@@ -296,8 +301,8 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 </div>
                 <div className="text-left">
                   <div className="flex items-center justify-between mb-1 gap-1">
-                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">{tr('boardsLabel')}</p>
-                    <p className="text-white text-[11px] sm:text-[12px] font-semibold">{currentBoards}/{FREE_LIMITS.boards}</p>
+                    <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0 capitalize">{tr('boardsLabel')}</p>
+                    <p className="text-white text-[11px] sm:text-[12px] font-semibold">{currentBoards}/{limits.boards}</p>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-white/20">
                     <div className="h-full rounded-full transition-all" style={{ width: `${boardPct}%`, background: boardPct >= 90 ? '#F87171' : '#A78BFA' }} />
@@ -306,7 +311,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 <div className="text-left">
                   <div className="flex items-center justify-between mb-1 gap-1">
                     <p className="text-white/60 text-[10px] sm:text-[11px] shrink-0">{tr('storage')}</p>
-                    <p className="text-white text-[11px] sm:text-[12px] font-semibold">{fmtStorage(currentStorageMb)}/{fmtStorage(FREE_LIMITS.storageMb)}</p>
+                    <p className="text-white text-[11px] sm:text-[12px] font-semibold">{fmtStorage(currentStorageMb)}/{fmtStorage(limits.storageMb)}</p>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-white/20">
                     <div className="h-full rounded-full transition-all" style={{ width: `${storagePct}%`, background: storagePct >= 90 ? '#F87171' : '#A78BFA' }} />

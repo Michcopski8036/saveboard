@@ -1756,6 +1756,7 @@ function AppContent() {
           userId={user?.id}
           userEmail={user?.email}
           isPro={isPro}
+          plan={subData?.status === 'active' && (subData.plan === 'pro' || subData.plan === 'team') ? subData.plan : 'free'}
           onPurchaseSuccess={refreshSubscription}
           onShowTerms={() => setShowTerms(true)}
           onShowPrivacy={() => setShowPrivacy(true)}
