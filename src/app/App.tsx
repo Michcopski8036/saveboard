@@ -659,7 +659,12 @@ function AppContent() {
       if (looksLikeUrl) { try { new URL(input.startsWith('www.') ? 'https://' + input : input); isValidUrl = true; } catch { /**/ } }
 
       if (!isValidUrl) {
-        const n = await insertInto({ user_id: user.id, url: '#', title: input.slice(0, 100), description: '', image: 'placeholder:memo' }, targetCats);
+        // Notes follow the first-line-is-the-title convention: everything after
+        // the first newline becomes the body instead of being crammed into title.
+        const nl = input.indexOf('\n');
+        const memoTitle = (nl === -1 ? input : input.slice(0, nl)).trim().slice(0, 100) || 'Note';
+        const memoBody  = nl === -1 ? '' : input.slice(nl + 1).trim();
+        const n = await insertInto({ user_id: user.id, url: '#', title: memoTitle, description: memoBody, image: 'placeholder:memo' }, targetCats);
         setUrlInput(''); setSuccessMessage(`Note saved${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.(); return;
       }
 

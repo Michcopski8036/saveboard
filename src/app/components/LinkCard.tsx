@@ -466,8 +466,9 @@ export function LinkCard({
             <Pencil className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
             <h3 className="text-[15px] font-bold" style={{ color: t.modalTitle }}>{tr('editContent')}</h3>
           </div>
-          <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.url}</p>
-          <div className="space-y-3">
+          {/* A memo's url is '#' — showing it just confuses the modal */}
+          {!isMemo && <p className="text-[12px] mb-4 truncate" style={{ color: t.modalSubtitle }}>{link.url}</p>}
+          <div className={`space-y-3${isMemo ? ' mt-3' : ''}`}>
             <div>
               <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>{tr('title')}</label>
               <input value={editTitle} onChange={e => setEditTitle(e.target.value)}
@@ -478,7 +479,7 @@ export function LinkCard({
                 onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
             </div>
             <div>
-              <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>{tr('description')}</label>
+              <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>{tr(isMemo ? 'contentLabel' : 'description')}</label>
               <RichTextEditor key={link.id} content={editDescHtml} onChange={setEditDescHtml} />
             </div>
             <div>

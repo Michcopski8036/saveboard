@@ -315,7 +315,7 @@ export function KanbanView({ links, categories, favorites, selected, onToggleFav
                     onBlur={e => { e.currentTarget.style.borderColor = t.modalInputBorder; e.currentTarget.style.boxShadow = 'none'; }} />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>{tr('description')}</label>
+                  <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>{tr(editing.url === '#' ? 'contentLabel' : 'description')}</label>
                   <RichTextEditor key={editing.id} content={editBody} onChange={setEditBody} />
                 </div>
               </div>
