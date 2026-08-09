@@ -384,17 +384,22 @@ export function GalleryView({ links, favorites, categories = [], onUpdateLink, o
             {/* Preview */}
             <div className="flex-1 overflow-y-auto flex flex-col" style={{ minHeight: 0 }}>
               {isMemo ? (
-                <div className="flex-1 p-6 overflow-y-auto">
-                  <div className="max-w-2xl mx-auto space-y-4">
-                    <RichTextEditor
-                      key={selected.id}
-                      content={(selected.description ?? '').replace(/^\[sz:(sm|md|lg)\]/, '')}
-                      onChange={desc => autoSave(editTitle, desc)}
-                      placeholder={tr('writeMoreDetails')}
-                    />
+                /* Document-style editing: the editor takes the whole panel so a
+                   long note has room to breathe; tags stay pinned underneath. */
+                <div className="flex-1 p-6 flex flex-col" style={{ minHeight: 0 }}>
+                  <div className="max-w-3xl mx-auto w-full flex-1 flex flex-col gap-4" style={{ minHeight: 0 }}>
+                    <div className="flex-1" style={{ minHeight: 0 }}>
+                      <RichTextEditor
+                        key={selected.id}
+                        content={(selected.description ?? '').replace(/^\[sz:(sm|md|lg)\]/, '')}
+                        onChange={desc => autoSave(editTitle, desc)}
+                        placeholder={tr('writeMoreDetails')}
+                        fill
+                      />
+                    </div>
 
                     {/* Tags editor */}
-                    <div>
+                    <div className="shrink-0">
                       <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>{tr('tagsLabel')}</label>
                       {(selected.tags ?? []).length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mb-2">

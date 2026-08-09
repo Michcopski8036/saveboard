@@ -309,8 +309,8 @@ export function KanbanView({ links, categories, favorites, selected, onToggleFav
       {editing && createPortal(
         <>
           <div className="fixed inset-0 backdrop-blur-sm" style={{ zIndex: 9998, background: t.modalBackdrop }} onClick={() => setEditing(null)} />
-          <div className="fixed w-[500px] max-w-[90vw] rounded-2xl flex flex-col"
-            style={{ zIndex: 9999, top: '60px', left: '50%', transform: 'translateX(-50%)', maxHeight: 'calc(100vh - 80px)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
+          <div className="fixed max-w-[90vw] rounded-2xl flex flex-col"
+            style={{ zIndex: 9999, top: '60px', left: '50%', transform: 'translateX(-50%)', width: editing.url === '#' ? 680 : 500, maxHeight: 'calc(100vh - 80px)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
             onClick={e => e.stopPropagation()}>
             <div className="overflow-y-auto p-6 flex-1">
               <div className="flex items-center gap-2 mb-1">
@@ -329,7 +329,7 @@ export function KanbanView({ links, categories, favorites, selected, onToggleFav
                 </div>
                 <div>
                   <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>{tr(editing.url === '#' ? 'contentLabel' : 'description')}</label>
-                  <RichTextEditor key={editing.id} content={editBody} onChange={setEditBody} />
+                  <RichTextEditor key={editing.id} content={editBody} onChange={setEditBody} minHeight={editing.url === '#' ? 320 : 120} />
                 </div>
               </div>
             </div>

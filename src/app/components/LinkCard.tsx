@@ -457,8 +457,8 @@ export function LinkCard({
   const editPortal = showEditModal ? createPortal(
     <>
       <div className="fixed inset-0 backdrop-blur-sm" style={{ zIndex: 9998, background: t.modalBackdrop }} onClick={() => setShowEditModal(false)} />
-      <div className="fixed w-[500px] max-w-[90vw] rounded-2xl flex flex-col"
-        style={{ zIndex: 9999, top: '60px', left: '50%', transform: 'translateX(-50%)', maxHeight: 'calc(100vh - 80px)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
+      <div className="fixed max-w-[90vw] rounded-2xl flex flex-col"
+        style={{ zIndex: 9999, top: '60px', left: '50%', transform: 'translateX(-50%)', width: isMemo ? 680 : 500, maxHeight: 'calc(100vh - 80px)', background: t.modalBg, border: `1px solid ${t.modalBorder}`, boxShadow: t.modalShadow }}
         onClick={e => e.stopPropagation()}>
         {/* Scrollable body */}
         <div className="overflow-y-auto p-6 flex-1">
@@ -480,7 +480,7 @@ export function LinkCard({
             </div>
             <div>
               <label className="text-[11px] font-semibold mb-1.5 block" style={{ color: t.textMuted }}>{tr(isMemo ? 'contentLabel' : 'description')}</label>
-              <RichTextEditor key={link.id} content={editDescHtml} onChange={setEditDescHtml} />
+              <RichTextEditor key={link.id} content={editDescHtml} onChange={setEditDescHtml} minHeight={isMemo ? 320 : 120} />
             </div>
             <div>
               <label className="text-[11px] font-semibold mb-1 block" style={{ color: t.textMuted }}>{tr('tagsLabel')}</label>

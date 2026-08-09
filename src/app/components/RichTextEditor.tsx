@@ -8,6 +8,10 @@ interface RichTextEditorProps {
   content: string;
   onChange: (html: string) => void;
   placeholder?: string;
+  /** Fill the parent's height and scroll internally — for document-style editing. */
+  fill?: boolean;
+  /** Minimum height of the writing area in px (default 120). */
+  minHeight?: number;
 }
 
 const SIZES = [
@@ -16,7 +20,7 @@ const SIZES = [
   { label: 'L', value: '20px', title: 'Large' },
 ];
 
-export function RichTextEditor({ content, onChange, placeholder = 'Write more details…' }: RichTextEditorProps) {
+export function RichTextEditor({ content, onChange, placeholder = 'Write more details…', fill = false, minHeight = 120 }: RichTextEditorProps) {
   const { t } = useTheme();
 
   const editor = useEditor({
@@ -31,7 +35,7 @@ export function RichTextEditor({ content, onChange, placeholder = 'Write more de
     editorProps: {
       attributes: {
         class: 'rich-editor-content',
-        style: `outline: none; min-height: 120px; font-size: 15px; line-height: 1.65; color: ${t.modalInputText}; font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;`,
+        style: `outline: none; min-height: ${minHeight}px; font-size: 15px; line-height: 1.65; color: ${t.modalInputText}; font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;`,
       },
     },
   });
@@ -47,11 +51,11 @@ export function RichTextEditor({ content, onChange, placeholder = 'Write more de
   ];
 
   return (
-    <div className="rounded-xl overflow-hidden transition-all"
+    <div className={`rounded-xl overflow-hidden transition-all${fill ? ' flex flex-col h-full' : ''}`}
       style={{ border: `1px solid ${t.modalInputBorder}`, background: t.modalInputBg }}>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-0.5 px-2 py-1.5" style={{ borderBottom: `1px solid ${t.cardBorder}` }}>
+      <div className="flex items-center gap-0.5 px-2 py-1.5 shrink-0" style={{ borderBottom: `1px solid ${t.cardBorder}` }}>
         {/* Size buttons */}
         <div className="flex items-center gap-0.5">
           {SIZES.map(sz => {
@@ -99,8 +103,10 @@ export function RichTextEditor({ content, onChange, placeholder = 'Write more de
         ))}
       </div>
 
-      {/* Editor area */}
-      <div className="px-4 py-3">
+      {/* Editor area — in fill mode it takes the remaining height and clicking
+          the empty space below the text drops the caret at the end */}
+      <div className={`px-4 py-3${fill ? ' flex-1 overflow-y-auto cursor-text' : ''}`}
+        onClick={fill ? e => { if (e.target === e.currentTarget) editor.commands.focus('end'); } : undefined}>
         <EditorContent editor={editor} />
       </div>
 
