@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ExternalLink, Link2, RefreshCw, Clock, FileText, Heart, Tag, Trash2, Check, X, Folder, Play } from 'lucide-react';
+import { CARD_STRIP_GRADIENT } from '../lib/brand';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { isPlaceholder, getPlatformFromPlaceholder, PlatformPlaceholder } from './PlatformPlaceholder';
@@ -110,6 +111,10 @@ function GalleryCard({ link, isActive, onClick }: { link: LinkData; isActive: bo
   const summary    = getAiSummary(link.description);
   const readTime   = getReadTime(link.description);
   const isArticle  = !vid && !isMemoCard && !isPdfCard && !isPlaceholder(link.image);
+  // Match LinkCard: generic placeholders get the thin accent strip, not a big
+  // gradient tile. Memo / PDF / file tiles carry meaning, so they stay.
+  const isContentIcon = isMemoCard || isPdfCard || link.image === 'placeholder:file';
+  const noThumb    = !isContentIcon && isPlaceholder(link.image);
 
   return (
     <button
@@ -125,7 +130,10 @@ function GalleryCard({ link, isActive, onClick }: { link: LinkData; isActive: bo
       onMouseEnter={e => { if (!isActive) { e.currentTarget.style.boxShadow = t.cardShadowHover; e.currentTarget.style.borderColor = t.cardBorderHover; } }}
       onMouseLeave={e => { if (!isActive) { e.currentTarget.style.boxShadow = t.cardShadow; e.currentTarget.style.borderColor = t.cardBorder; } }}
     >
-      {/* ── Thumbnail ── */}
+      {/* ── Thumbnail — text-only links get the thin accent strip instead ── */}
+      {noThumb ? (
+        <div className="w-full h-0.5" style={{ background: CARD_STRIP_GRADIENT }} />
+      ) : (
       <div className="relative overflow-hidden rounded-t-2xl"
         style={{ background: t.emptyIconContainerBg }}>
         {isPlaceholder(link.image) ? (
@@ -152,6 +160,7 @@ function GalleryCard({ link, isActive, onClick }: { link: LinkData; isActive: bo
           </div>
         )}
       </div>
+      )}
 
       {/* ── Info ── */}
       <div className="px-3 pt-2 pb-2.5">

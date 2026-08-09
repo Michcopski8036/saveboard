@@ -12,7 +12,7 @@ import { ProfileMenu } from './components/ProfileMenu';
 import { Auth } from './components/Auth';
 import { LandingPage } from './components/LandingPage';
 import { Onboarding } from './components/Onboarding';
-import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2, Check, AlertCircle, Clock } from 'lucide-react';
+import { Trash2, Paperclip, Search, Plus, LayoutGrid, List, Columns2, X, Menu, Bookmark, Kanban, Mic, MicOff, Link2, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, MoreVertical, Pencil, Share2, Check, AlertCircle, Clock, Home } from 'lucide-react';
 
 function GalleryIcon({ className }: { className?: string }) {
   return (
@@ -107,6 +107,8 @@ function AppContent() {
   const [infoMessage, setInfoMessage] = useState('');
   const [selected, setSelected]         = useState<Collection>('all');
   const [viewMode, setViewMode]         = useState<ViewMode>('masonry');
+  // Home can show either the dashboard (default) or all links in the picked view.
+  const [homeMode, setHomeMode]         = useState<'dashboard' | 'links'>('dashboard');
   // On phones we always show the simple horizontal list (no detail/gallery panel).
   const [isMobile, setIsMobile]         = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
   useEffect(() => {
@@ -1026,6 +1028,7 @@ function AppContent() {
     { mode: 'gallery' as ViewMode, Icon: GalleryIcon,     label: 'Gallery' },
     { mode: 'kanban'  as ViewMode, Icon: Kanban,          label: 'Kanban'  },
   ];
+  const showingDashboard = selected === 'all' && homeMode === 'dashboard';
 
   const sortLabels: Record<SortOption, string> = { newest: tr('newest'), oldest: tr('oldest'), 'a-z': tr('az'), 'z-a': tr('za'), custom: 'Custom' };
 
@@ -1099,7 +1102,7 @@ function AppContent() {
       )}
 
       {/* ── Main area ──────────────────────────────────────────────────── */}
-      <div className={`flex-1 min-w-0 ml-0 md:ml-16 xl:ml-[260px] flex flex-col ${!isMobile && viewMode === 'gallery' ? 'h-screen overflow-hidden' : 'min-h-screen'}`} style={{ background: t.pageBg }}>
+      <div className={`flex-1 min-w-0 ml-0 md:ml-16 xl:ml-[260px] flex flex-col ${!showingDashboard && !isMobile && viewMode === 'gallery' ? 'h-screen overflow-hidden' : 'min-h-screen'}`} style={{ background: t.pageBg }}>
 
         {/* Header */}
         <header className="sticky top-0 z-20" style={{ background: t.headerBg, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${t.headerBorder}`, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
@@ -1157,15 +1160,25 @@ function AppContent() {
               <Search className="w-4 h-4" />
             </button>
 
-            {/* View mode — hidden on home dashboard */}
-            <div className={`${selected === 'all' ? 'hidden' : 'hidden sm:flex'} items-center p-1 rounded-xl gap-0.5`} style={{ background: t.controlContainerBg, border: `1px solid ${t.controlContainerBorder}` }}>
-              {viewModes.map(({ mode, Icon, label }) => (
-                <button key={mode} onClick={() => setViewMode(mode)} title={label}
+            {/* View mode — on home, a leading dashboard button returns to the default home view */}
+            <div className="hidden sm:flex items-center p-1 rounded-xl gap-0.5" style={{ background: t.controlContainerBg, border: `1px solid ${t.controlContainerBorder}` }}>
+              {selected === 'all' && (
+                <button onClick={() => setHomeMode('dashboard')} title="Home"
                   className="p-1.5 rounded-lg transition-all"
-                  style={{ background: viewMode === mode ? t.controlActiveBg : 'transparent', color: viewMode === mode ? t.controlActiveColor : t.controlInactiveColor }}>
-                  <Icon className="w-4 h-4" />
+                  style={{ background: showingDashboard ? t.controlActiveBg : 'transparent', color: showingDashboard ? t.controlActiveColor : t.controlInactiveColor }}>
+                  <Home className="w-4 h-4" />
                 </button>
-              ))}
+              )}
+              {viewModes.map(({ mode, Icon, label }) => {
+                const active = !showingDashboard && viewMode === mode;
+                return (
+                  <button key={mode} onClick={() => { setViewMode(mode); setHomeMode('links'); }} title={label}
+                    className="p-1.5 rounded-lg transition-all"
+                    style={{ background: active ? t.controlActiveBg : 'transparent', color: active ? t.controlActiveColor : t.controlInactiveColor }}>
+                    <Icon className="w-4 h-4" />
+                  </button>
+                );
+              })}
             </div>
 
             {/* Select toggle — hidden on home dashboard */}
@@ -1300,7 +1313,7 @@ function AppContent() {
         </header>
 
         {/* ── Content ────────────────────────────────────────────────── */}
-        <main className={`flex-1 pb-28 md:pb-5 ${selected === 'all' ? 'px-4 sm:px-6 py-5' : !isMobile && viewMode === 'gallery' ? 'flex flex-col overflow-hidden px-4 sm:px-6 py-4' : 'px-4 sm:px-6 py-5'}`}>
+        <main className={`flex-1 pb-28 md:pb-5 ${showingDashboard ? 'px-4 sm:px-6 py-5' : !isMobile && viewMode === 'gallery' ? 'flex flex-col overflow-hidden px-4 sm:px-6 py-4' : 'px-4 sm:px-6 py-5'}`}>
           {dueReminders.length > 0 && (
             <div className="mb-4 p-3 rounded-2xl" style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.35)' }}>
               <p className="flex items-center gap-1.5 text-[12px] font-bold mb-1.5" style={{ color: '#D97706' }}>
@@ -1321,7 +1334,7 @@ function AppContent() {
               </div>
             </div>
           )}
-          {selected === 'all' ? (
+          {showingDashboard ? (
             <HomePage
               links={links}
               categories={categories}
