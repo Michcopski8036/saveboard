@@ -903,9 +903,9 @@ export function LinkCard({
         {/* Memo body under the title — small and muted so the title stays the headline */}
         {!compact && isMemo && memoBody && (
           isHtmlDesc(memoBody)
-            ? <div className="text-[11px] leading-relaxed mb-2 line-clamp-6 rich-card-preview" style={{ color: t.textMuted }}
+            ? <div className="text-[10px] leading-relaxed mb-2 line-clamp-6 rich-card-preview" style={{ color: t.textMuted }}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(memoBody) }} />
-            : <MarkdownText text={memoBody} className="text-[11px] leading-relaxed mb-2" style={{ color: t.textMuted }} clamp={6} />
+            : <MarkdownText text={memoBody} className="text-[10px] leading-relaxed mb-2" style={{ color: t.textMuted }} clamp={6} />
         )}
 
         {!compact && !isMemo && !isArticle && link.description && link.description.length > 0 && !link.description.startsWith('Link saved from') && (
