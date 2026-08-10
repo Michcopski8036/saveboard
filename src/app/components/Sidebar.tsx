@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Bookmark, Home, Clock, Heart, Inbox, Plus, Sparkles, Zap, PanelLeftOpen, PanelLeftClose, MoreHorizontal, Pencil, Trash2, Share2, Layers, Users } from 'lucide-react';
 import { useDrag, useDrop } from 'react-dnd';
 import { useTheme } from '../context/ThemeContext';
@@ -14,6 +15,11 @@ function dotColor(n: string): string { const i = [...n].reduce((a,c) => a+c.char
 
 export type Collection = string;
 
+/** Fixed sidebar width on md+. The user picks between these two; `App` feeds the
+ *  chosen value into the `--sb-w` CSS variable that sizes both column and content. */
+export type SidebarMode = 'expanded' | 'rail';
+export const SIDEBAR_WIDTH: Record<SidebarMode, string> = { expanded: '260px', rail: '64px' };
+
 interface SidebarProps {
   boards: Board[];
   selected: Collection;
@@ -27,7 +33,9 @@ interface SidebarProps {
   onUpdateCategory?: (linkId: string, cat: string) => void;
   onReorderCategory?: (dragCat: string, dropCat: string) => void;
   sidebarOpen: boolean;
+  sidebarMode: SidebarMode;
   onToggleSidebar?: () => void;
+  onToggleSidebarMode?: () => void;
 }
 
 const SMART_IDS = [
@@ -184,7 +192,75 @@ function BoardDropItem({ cat, active, count, color, shared, memberCount, isRenam
   );
 }
 
-export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, onUpdateCategory, onReorderCategory, sidebarOpen, onToggleSidebar }: SidebarProps) {
+interface RailBoardItemProps {
+  cat: string;
+  active: boolean;
+  color: string;
+  t: any;
+  onSelect: (id: string) => void;
+  onUpdateCategory?: (linkId: string, cat: string) => void;
+}
+
+/** A board in the collapsed rail. Collapsing must not cost the drag-to-file workflow,
+ *  so this accepts link drops exactly like the expanded `BoardDropItem` does.
+ *
+ *  The name flyout is portalled to `body`: the rail scrolls (`overflow-y-auto`), which
+ *  also clips horizontally, and the sidebar itself is transformed — so neither an
+ *  absolute nor a fixed child would escape reliably. A `title` is deliberately omitted
+ *  so the native tooltip doesn't double up on the flyout. */
+function RailBoardItem({ cat, active, color, t, onSelect, onUpdateCategory }: RailBoardItemProps) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [flyout, setFlyout] = useState<{ top: number; left: number } | null>(null);
+
+  const [{ isOver }, dropRef] = useDrop({
+    accept: LINK_DRAG_TYPE,
+    drop: (item: any) => { onUpdateCategory?.(item.id, cat); },
+    collect: monitor => ({ isOver: monitor.isOver() && monitor.canDrop() }),
+  });
+
+  const showFlyout = () => {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) setFlyout({ top: r.top + r.height / 2, left: r.right + 8 });
+  };
+  const hideFlyout = () => setFlyout(null);
+
+  // Dragging a link doesn't fire mouseenter, so mirror the hover flyout on drag-over.
+  useEffect(() => { if (isOver) showFlyout(); else hideFlyout(); }, [isOver]);
+
+  return (
+    <div ref={node => { dropRef(node); }} className="relative shrink-0"
+      onMouseEnter={showFlyout} onMouseLeave={hideFlyout}>
+      <button ref={btnRef} onClick={() => onSelect(`cat:${cat}`)}
+        className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
+        style={{
+          background: isOver ? `${color}22` : active ? t.boardActiveBg : 'transparent',
+          border: isOver ? `1.5px solid ${color}66` : active ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent',
+          transform: isOver ? 'scale(1.08)' : 'scale(1)',
+        }}>
+        <div className="rounded-full transition-all"
+          style={{
+            width: isOver ? '14px' : '10px',
+            height: isOver ? '14px' : '10px',
+            background: color,
+            boxShadow: (active || isOver) ? `0 0 8px ${color}90` : 'none',
+          }} />
+      </button>
+      {flyout && createPortal(
+        <div className="fixed z-[200] px-2.5 py-1 rounded-lg whitespace-nowrap pointer-events-none"
+          style={{
+            top: flyout.top, left: flyout.left, transform: 'translateY(-50%)',
+            background: t.dropdownBg, border: `1px solid ${t.dropdownBorder}`,
+            boxShadow: t.dropdownShadow, color: t.dropdownText,
+          }}>
+          <span className="text-[12px] font-medium">{cat}</span>
+        </div>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
+export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCategory, onRenameCategory, onDeleteCategory, onShareCategory, onUpdateCategory, onReorderCategory, sidebarOpen, sidebarMode, onToggleSidebar, onToggleSidebarMode }: SidebarProps) {
   const { t } = useTheme();
   const { tr } = useLanguage();
 
@@ -246,6 +322,8 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
   const weekLinks  = counts.recent;
   const totalLinks = links.length;
   const isActive   = (id: string) => selected === id;
+  // Rail vs full panel is an md+ concern only — the mobile drawer always shows the full panel.
+  const railed     = sidebarMode === 'rail';
   const submit     = () => { const n = boardName.trim(); if (n) { onAddCategory?.(n); setBoardName(''); setAddingBoard(false); } };
 
   // ── Full sidebar nav item ──────────────────────────────────────────────────
@@ -294,13 +372,12 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300 ease-in-out
-        ${sidebarOpen
-          ? 'w-[260px] translate-x-0'
-          : 'w-[260px] md:w-16 xl:w-[260px] -translate-x-full md:translate-x-0'}`}
+        w-[260px] md:w-[var(--sb-w)]
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       style={{ background: t.sidebarBg, borderRight: `1px solid ${t.sidebarBorder}`, boxShadow: t.sidebarShadow, paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
 
-      {/* ── Full sidebar: mobile drawer + tablet expanded + desktop ─────────── */}
-      <div className={`flex flex-col h-full ${sidebarOpen ? '' : 'md:hidden xl:flex'}`}>
+      {/* ── Full panel: always in the mobile drawer; on md+ only when expanded ── */}
+      <div className={`flex flex-col h-full ${railed ? 'md:hidden' : ''}`}>
 
         {/* Logo */}
         <div className="px-5 pt-5 pb-4 flex items-center gap-2.5 shrink-0" style={{ borderBottom: `1px solid ${t.logoDivider}` }}>
@@ -320,18 +397,18 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
               </div>
             </div>
           </button>
-          {/* Collapse button — shown when in drawer/expanded overlay mode (not permanent desktop) */}
-          {sidebarOpen && (
-            <button
-              onClick={() => onToggleSidebar?.()}
-              title={tr('collapseSidebar')}
-              className="p-1.5 rounded-xl transition-all shrink-0"
-              style={{ color: t.iconMuted }}
-              onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; e.currentTarget.style.color = t.textSecondary; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = t.iconMuted; }}>
-              <PanelLeftClose className="w-4 h-4" />
-            </button>
-          )}
+          {/* Collapse: closes the drawer on mobile, collapses to the rail on md+ */}
+          <button
+            onClick={() => { if (window.innerWidth < 768) onToggleSidebar?.(); else onToggleSidebarMode?.(); }}
+            title={tr('collapseSidebar')}
+            aria-label={tr('collapseSidebar')}
+            aria-expanded={true}
+            className="p-1.5 rounded-xl transition-all shrink-0"
+            style={{ color: t.iconMuted }}
+            onMouseEnter={e => { e.currentTarget.style.background = t.hoverBg; e.currentTarget.style.color = t.textSecondary; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = t.iconMuted; }}>
+            <PanelLeftClose className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Scrollable body */}
@@ -474,8 +551,8 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
         </div>
       </div>
 
-      {/* ── Rail: tablet only (md → xl), hidden when expanded ───────────────── */}
-      <div className={sidebarOpen ? 'hidden' : 'hidden md:flex xl:hidden flex-col items-center gap-1 py-4 h-full overflow-y-auto'}>
+      {/* ── Rail: md+ only, and only while the user keeps the sidebar collapsed ── */}
+      <div className={railed ? 'hidden md:flex flex-col items-center gap-1 py-4 h-full overflow-y-auto' : 'hidden'}>
 
         {/* Logo mark */}
         <button onClick={() => onSelect('all')} title={tr('home')}
@@ -486,8 +563,10 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
 
         {/* Expand button */}
         <button
-          onClick={() => onToggleSidebar?.()}
+          onClick={() => onToggleSidebarMode?.()}
           title={tr('expandSidebar')}
+          aria-label={tr('expandSidebar')}
+          aria-expanded={false}
           className="w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 mt-1"
           style={{ color: t.iconMuted }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.10)'; e.currentTarget.style.color = '#7C3AED'; }}
@@ -507,23 +586,11 @@ export function Sidebar({ boards, selected, onSelect, links, favorites, onAddCat
         {/* All boards shortcut */}
         <RailBtn id="browse" label="All boards" Icon={Layers} />
 
-        {/* Boards (colored dots) */}
-        {categories.map(cat => {
-          const active = isActive(`cat:${cat}`);
-          const color = dotColor(cat);
-          return (
-            <button key={cat} title={cat}
-              onClick={() => onSelect(`cat:${cat}`)}
-              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0"
-              style={{
-                background: active ? t.boardActiveBg : 'transparent',
-                border: active ? `1px solid ${t.boardActiveBorder}` : '1px solid transparent',
-              }}>
-              <div className="w-2.5 h-2.5 rounded-full"
-                style={{ background: color, boxShadow: active ? `0 0 8px ${color}90` : 'none' }} />
-            </button>
-          );
-        })}
+        {/* Boards (colored dots) — droppable, with the name in a hover flyout */}
+        {categories.map(cat => (
+          <RailBoardItem key={cat} cat={cat} active={isActive(`cat:${cat}`)} color={dotColor(cat)}
+            t={t} onSelect={onSelect} onUpdateCategory={onUpdateCategory} />
+        ))}
 
         {/* Add board */}
         <button title={tr('addBoard')}

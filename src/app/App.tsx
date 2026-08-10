@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { LinkCard, LinkData } from './components/LinkCard';
-import { Sidebar, type Collection } from './components/Sidebar';
+import { Sidebar, SIDEBAR_WIDTH, type Collection, type SidebarMode } from './components/Sidebar';
 import { KanbanView } from './components/KanbanView';
 import { GalleryView } from './components/GalleryView';
 import { Board, loadBoards, createBoard, joinBoard, removeMember } from './lib/boards';
@@ -125,6 +125,20 @@ function AppContent() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addBoards, setAddBoards] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen]   = useState(false);
+  // Fixed sidebar width on md+ — user's choice, persisted per device. `sidebarOpen`
+  // stays the mobile drawer only; selecting a board closes that but never changes this.
+  const [sidebarMode, setSidebarMode]   = useState<SidebarMode>(() => {
+    try {
+      const stored = localStorage.getItem('sb_sidebar_mode');
+      if (stored === 'expanded' || stored === 'rail') return stored;
+    } catch { /* private mode */ }
+    return window.innerWidth >= 1280 ? 'expanded' : 'rail';
+  });
+  const toggleSidebarMode = () => setSidebarMode(p => {
+    const next = p === 'expanded' ? 'rail' : 'expanded';
+    try { localStorage.setItem('sb_sidebar_mode', next); } catch { /* private mode */ }
+    return next;
+  });
   const [shareBoardTarget, setShareBoardTarget] = useState<Board | null>(null);
   const [showFabMenu, setShowFabMenu]   = useState(false);
   const [isRecording, setIsRecording]   = useState(false);
@@ -1079,7 +1093,10 @@ function AppContent() {
 
   // ── Main render ────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex" style={{ background: t.pageBg, color: t.pageText }}>
+    // --sb-w drives both the sidebar width and the main-area offset on md+. It has to be a
+    // CSS variable: Tailwind can't see runtime-built arbitrary classes, and a plain inline
+    // marginLeft can't be scoped to a breakpoint.
+    <div className="min-h-screen flex" style={{ background: t.pageBg, color: t.pageText, ['--sb-w' as any]: SIDEBAR_WIDTH[sidebarMode] }}>
 
       {/* Native update prompt (soft banner / forced screen) — renders nothing on web */}
       <UpdateGate />
@@ -1098,16 +1115,18 @@ function AppContent() {
         onShareCategory={cat => setShareBoardTarget(boardByName.get(cat) ?? null)}
         onUpdateCategory={handleUpdateCategory}
         sidebarOpen={sidebarOpen}
+        sidebarMode={sidebarMode}
         onToggleSidebar={() => setSidebarOpen(p => !p)}
+        onToggleSidebarMode={toggleSidebarMode}
       />
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 xl:hidden" style={{ background: t.mobileOverlay }} onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-30 md:hidden" style={{ background: t.mobileOverlay }} onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* ── Main area ──────────────────────────────────────────────────── */}
-      <div className={`flex-1 min-w-0 ml-0 md:ml-16 xl:ml-[260px] flex flex-col ${!showingDashboard && !isMobile && viewMode === 'gallery' ? 'h-screen overflow-hidden' : 'min-h-screen'}`} style={{ background: t.pageBg }}>
+      <div className={`flex-1 min-w-0 ml-0 md:ml-[var(--sb-w)] transition-[margin] duration-300 ease-in-out flex flex-col ${!showingDashboard && !isMobile && viewMode === 'gallery' ? 'h-screen overflow-hidden' : 'min-h-screen'}`} style={{ background: t.pageBg }}>
 
         {/* Header */}
         <header className="sticky top-0 z-20" style={{ background: t.headerBg, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${t.headerBorder}`, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
