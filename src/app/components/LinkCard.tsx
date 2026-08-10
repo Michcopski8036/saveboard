@@ -841,7 +841,7 @@ export function LinkCard({
       )}
 
       {/* Info panel */}
-      <div className={`px-3.5 pt-3 pb-3.5${compact ? ' flex-1 overflow-hidden' : ''}`}>
+      <div className={`px-3.5 pt-3 pb-2.5${compact ? ' flex-1 overflow-hidden' : ''}`}>
         {isMemo && (
           <div className="flex items-center gap-1.5 mb-2">
             <FileText className="w-3 h-3 flex-shrink-0" style={{ color: '#7C3AED', opacity: 0.75 }} />
@@ -922,7 +922,13 @@ export function LinkCard({
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-2 mt-1.5">
+        {/* When the card has no tags/reminder, the desktop action row would sit
+            as an empty band (buttons are hover-only on xl) — float it over the
+            bottom-right corner there instead. Below xl the actions are always
+            visible, so they keep their in-flow row. */}
+        <div className={(link.remindAt || aiTags.length > 0 || (link.tags ?? []).length > 0)
+          ? 'flex items-center justify-between gap-2 mt-1'
+          : 'flex items-center justify-end mt-1 xl:mt-0 xl:absolute xl:bottom-1.5 xl:right-1.5'}>
           <div className="flex items-center gap-1 flex-wrap min-w-0">
             {link.remindAt && (
               <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
@@ -937,7 +943,8 @@ export function LinkCard({
           {readOnly ? (isPinned &&
             <Pin className="w-3.5 h-3.5 fill-amber-400 text-amber-500 shrink-0 m-1.5" />
           ) : (
-          <div className="flex items-center gap-0.5 shrink-0 opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity duration-150">
+          <div className="flex items-center gap-0.5 shrink-0 opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity duration-150 rounded-lg"
+            style={{ background: t.cardBg }}>
             {(canPin || isPinned) && (
               <button onClick={canPin ? handlePin : undefined} title={isPinned ? 'Unpin' : 'Pin to top'} className="p-1.5 rounded-lg transition-colors"
                 onMouseEnter={e => (e.currentTarget.style.background = t.hoverBg)}
