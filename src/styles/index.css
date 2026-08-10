@@ -7,8 +7,10 @@
 .rich-card-preview ul, .memo-card-html ul { margin: 2px 0; padding-left: 14px; list-style: disc; }
 .rich-card-preview li, .memo-card-html li { margin-bottom: 1px; }
 /* Card previews ignore in-editor font sizes — an L-sized body would out-shout
-   the 13px card title. Sizes still apply inside the editor itself. */
-.rich-card-preview, .rich-card-preview * , .memo-card-html, .memo-card-html * { font-size: inherit !important; }
+   the 13px card title. Sizes still apply inside the editor itself.
+   Descendants only: the container itself must keep its own utility font-size,
+   otherwise it inherits the card's base size and grows instead. */
+.rich-card-preview *, .memo-card-html * { font-size: inherit !important; }
 
 /* Show drag handle on touch devices */
 @media (hover: none) {
