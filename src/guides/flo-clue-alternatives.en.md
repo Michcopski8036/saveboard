@@ -14,11 +14,11 @@ status: "승인 대기"
 
 ## Looking for something other than Flo or Clue?
 
-People leave for four reasons: **privacy**, **subscription fatigue**, **feature bloat**, or **no measurement**. The first three are answered by the list below; the fourth has its own section at the end, off the ranking. And a fair word on the two you're leaving: far more people are testing them than anything below, and Clue's 8/10 is the highest Mozilla privacy score of any mainstream app in the review. If you want prediction tuned on an enormous number of cycles, or pregnancy coverage in the same app, staying put is a defensible answer.
+People leave for four reasons: **privacy**, **subscription fatigue**, **feature bloat**, or **no measurement** — the first three have plenty of answers, the fourth barely any. A fair word on the two you're leaving: far more people are testing them than anything below, and Clue's 8/10 is the highest Mozilla privacy score of any mainstream app in the review. If you want prediction tuned on an enormous number of cycles, or pregnancy coverage in the same app, staying put is a defensible answer.
 
 ## Worried your period data isn't safe?
 
-That worry has a specific case behind it, and it is worth knowing exactly what it did and didn't decide. In *Frasco v. Flo Health, Inc.*, No. 21-cv-00757-JD (N.D. Cal.), the [verdict form](https://storage.courtlistener.com/recap/gov.uscourts.cand.372884/gov.uscourts.cand.372884.756.0_2.pdf) signed on 1 August 2025 found that Meta intentionally recorded plaintiffs' communications, that they had a reasonable expectation of privacy, and that Meta did not have the consent of all parties. Two things get lost in the retelling: the questions the jury answered were about **Meta**, not Flo, and the conduct at issue runs **from 2016 to 2019**, so it is not a description of the app you would install today. It is also a **jury verdict, not a final judgment** — Meta moved to decertify the class on 11 August 2025, and the separate class settlement with Flo Health has a fairness hearing set for **29 October 2026**.
+That worry has a specific case behind it, and it is worth knowing exactly what it did and didn't decide. In *Frasco v. Flo Health, Inc.*, No. 21-cv-00757-JD (N.D. Cal.), the [verdict form](https://storage.courtlistener.com/recap/gov.uscourts.cand.372884/gov.uscourts.cand.372884.756.0_2.pdf) signed on 1 August 2025 found that Meta intentionally recorded plaintiffs' communications, that they had a reasonable expectation of privacy, and that Meta did not have the consent of all parties. Two things matter here: the questions the jury answered were about **Meta**, not Flo, and the conduct at issue runs **from 2016 to 2019**, so it is not a description of the app you would install today. It is also a **jury verdict, not a final judgment** — Meta moved to decertify the class on 11 August 2025, and the separate class settlement with Flo Health has a fairness hearing set for **29 October 2026**.
 
 ## How they compare
 
@@ -33,7 +33,7 @@ That worry has a specific case behind it, and it is worth knowing exactly what i
 | **Spot On** | 15,405 · 4.25 | 2 Feb 2026 | 5/10 | Closed source | iOS, Android |
 | **Stardust** | 113,664 · 4.76 | 10 Aug 2026 | 2/10 | Closed source | iOS, Android |
 
-Ratings and update dates read off the US App Store on 11 August 2026 (Mensinator isn't on the App Store — version and date from its [F-Droid page](https://f-droid.org/en/packages/com.mensinator.app/), same day); privacy scores from the Mozilla Foundation's [review of period and ovulation trackers](https://www.mozillafoundation.org/en/nothing-personal/period-ovulation-trackers/), published 16 July 2026; licences from F-Droid and the projects' own sites. Read the columns against each other: the best privacy score belongs to the app that has gone longest without an update, and the most recently updated app has the worst one.
+Ratings and update dates read off the US App Store on 11 August 2026 (Mensinator isn't on the App Store — version and date from its [F-Droid page](https://f-droid.org/en/packages/com.mensinator.app/), same day); privacy scores from the Mozilla Foundation's [review of period and ovulation trackers](https://www.mozillafoundation.org/en/nothing-personal/period-ovulation-trackers/), published 16 July 2026; licences from F-Droid and the projects' own sites. The best privacy score belongs to the app that has gone longest without an update, and the app updated most recently has the worst one.
 
 ## Each one, in detail
 
@@ -44,7 +44,7 @@ Ratings and update dates read off the US App Store on 11 August 2026 (Mensinator
 5. **[Spot On](https://apps.apple.com/us/app/spot-on-period-tracker/id1039914781)** (Planned Parenthood Direct, free) — **Birth control** first: method-specific reminders and guidance, with period and fertile-window prediction alongside. Worth a look if your app buried contraception under everything else — and its star average is the lowest of the mainstream apps in the table.
 6. **[Stardust](https://apps.apple.com/us/app/stardust-period-tracker/id1495829322)** (free download, closed source) — Where a lot of people actually go, and the most recent update of anything here. Its listing describes blending science, "ancient wisdom", astronomy and AI. But 2/10 with Mozilla, the lowest in that review: if privacy is your reason for leaving Flo, this moves you in the wrong direction.
 
-Privacy points you at the first three, each asking you to accept a smaller, slower app. Fatigue or clutter points you at the last three.
+If privacy is the reason, drip, Euki and Mensinator are the answer — each asking you to accept a smaller, slower app. If it's cost or clutter, Period Calendar, Spot On and Stardust are the softer landing.
 
 ## Have you ever thought about how much you actually bleed?
 
