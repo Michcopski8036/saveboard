@@ -53,8 +53,8 @@ would have made everything else in the email suspect. Do not put it back.
 ## 1. Cloudwards — ⭐ priority send, and the only one that is not a pitch
 
 **To:** `hello@cloudwards.net`
-Source: `cloudwards.net/contact/`, published as a mailto. `info@cloudwards.net` is the second
-address on the same page and is the fallback after two weeks.
+Source: `cloudwards.net/contact/`, published as a mailto. `info@cloudwards.net` also appears on
+the same page, in the company/returns block, and is the fallback after two weeks.
 ⛔ **Not `office@`** (the page labels it new business) and **not `application@`** (that is
 "Write for us!"). Both are the wrong door for a correction.
 **Named author (no address):** **Beatrice Manuel**, credited as Writer on the piece. No personal
@@ -408,6 +408,9 @@ skimmed):**
 > A suggestion for "15 Best Bookmark Managers in 2026", with my interest declared first: I build
 > one of these apps, so read this in that light.
 >
+> One small thing while I was reading: the intro still says "we'll look at the best bookmark
+> managers available in 2024", though the title and the March update say 2026.
+>
 > Your entries 14 and 15 are the ones written up as phone-and-tablet apps rather than browser
 > tools — GoodLinks, which you describe as being for iOS and macOS, and Anybox, made for Mac,
 > iPhone and iPad. Your own con line for GoodLinks makes the point better than I could: "It's only
@@ -477,8 +480,8 @@ the mailto is written by JavaScript, so it must be read from the live DOM, not f
 > A story idea, and my interest in it up front: I build a bookmark app, so discount this
 > accordingly.
 >
-> Maxwell Holland's "The 6 Best Bookmark Manager Apps for Android" still ranks well for the
-> obvious searches, and it's from December 2021. Its number four is Pocket, written in the present
+> Maxwell Holland's "The 6 Best Bookmark Manager Apps for Android" is still what I land on for
+> the obvious searches, and it's from December 2021. Its number four is Pocket, written in the present
 > tense — "Pocket is an application created by Mozilla" — and Mozilla shut Pocket down on 8 July
 > 2025. Yash Wate's "Pocket Is Gone" piece from June 2025 has the mirror-image problem: it's the
 > right list, but it still says Pocket "will cease operations on July 8, 2025", in the future
@@ -583,9 +586,13 @@ mailto를 **JS로 렌더**한다 — curl로 확인하면 "주소 없음"으로 
 
 **조사 파일에 반영할 수정 3건** (`listicle-targets-2026-08-11.md`를 다시 쓸 일이 생기면):
 
-1. **HashDork의 "2024" 언급은 없다.** 자동 수집 요약이 "best bookmark managers available in
-   2024"라는 본문 문장을 보고했으나, 실제 HTML에서 "2024"는 **이미지 업로드 경로뿐**이다.
-   정정 소재로 쓰면 틀린 지적이 된다.
+1. ~~HashDork의 "2024" 언급은 없다~~ — **이 "정정"이 틀렸다(2026-08-11 검수에서 역전).**
+   실제 페이지 본문 `<p>`에 그대로 있다: `In this article, we'll look at the best bookmark
+   managers available in 2024.` (제목은 "…in 2026", `dateModified`는 2026-03-02.)
+   **원 조사가 맞았다.** 잘못된 "정정"이 가장 강한 훅을 버릴 뻔했고, 다음 사람에게 검증된 사실인
+   양 거짓을 남길 뻔했다. → 아래 HashDork 폼 본문에 그 지적을 한 줄로 되살렸다.
+   ⚠️ 교훈: **자동 요약을 의심해서 원문을 다시 여는 것은 옳지만, 그 재확인 자체도 틀릴 수 있다.**
+   "없음"을 주장할 때는 렌더된 본문까지 보고 말할 것.
 2. **MakeUseOf "Pocket Is Gone"은 역순(5→1) 목록이다.** Instapaper가 5번으로 시작하고 Recall이
    1번이다 — 조사 파일의 나열 순서를 순위로 읽으면 뒤집힌다. 그래서 초안은 순위를 주장하지 않고
    "counted down"이라고만 썼다.
