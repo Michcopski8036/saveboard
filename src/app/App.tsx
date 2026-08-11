@@ -192,10 +192,17 @@ function AppContent() {
   }, [user]);
 
   useEffect(() => {
+    // The spinner is gated on this one call, which had neither a catch nor a
+    // timeout — so a slow or failed getSession() left the app spinning forever
+    // with nothing on screen and no way to tell "loading" from "broken". The
+    // timer only opens the gate; a session that arrives late still signs the
+    // user in, here or via onAuthStateChange below.
+    const authTimeout = setTimeout(() => setAuthLoading(false), 8000);
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(authTimeout);
       setUser(session?.user ?? null); setAuthLoading(false);
       recordProfileMeta(session?.user ?? null);
-    });
+    }).catch(() => { clearTimeout(authTimeout); setAuthLoading(false); });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => { setUser(s?.user ?? null); recordProfileMeta(s?.user ?? null); });
 
     // Handle OAuth deep link callback (native only)
@@ -249,6 +256,7 @@ function AppContent() {
     }
 
     return () => {
+      clearTimeout(authTimeout);
       subscription.unsubscribe();
       appUrlListener?.remove();
       sendIntentCleanup?.();
