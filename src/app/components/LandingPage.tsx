@@ -34,7 +34,13 @@ const COPY = {
     chatLaterQ: '"Where was that registration link again??"',
     chatLaterTag: '3 weeks later',
     cardBoard: 'Basketball',
-    cardTitle: 'Tournament Registration 2026',
+    cardCount: '4 links',
+    cardItems: [
+      { emoji: '🏀', title: 'Tournament Registration 2026', host: 'sports.com' },
+      { emoji: '📅', title: 'Season Schedule', host: 'PDF · 2.4 MB' },
+      { emoji: '👕', title: 'Uniform Order Form', host: 'forms.gle' },
+      { emoji: '📍', title: 'Venue & Parking', host: 'maps.google.com' },
+    ],
     problemTitlePre: 'Important links get ',
     problemTitleEm: 'lost',
     problemTitlePost: ' in the scroll',
@@ -115,7 +121,13 @@ const COPY = {
     chatLaterQ: '"그 신청 링크 어디 있었지??"',
     chatLaterTag: '3주 뒤',
     cardBoard: '농구',
-    cardTitle: '2026 토너먼트 신청',
+    cardCount: '링크 4개',
+    cardItems: [
+      { emoji: '🏀', title: '2026 토너먼트 신청', host: 'sports.com' },
+      { emoji: '📅', title: '시즌 일정표', host: 'PDF · 2.4 MB' },
+      { emoji: '👕', title: '유니폼 주문서', host: 'forms.gle' },
+      { emoji: '📍', title: '경기장·주차 안내', host: 'maps.google.com' },
+    ],
     problemTitlePre: '중요한 링크는 스크롤 속에서 ',
     problemTitleEm: '사라져요',
     problemTitlePost: '',
@@ -355,12 +367,24 @@ export function LandingPage({ onGetStarted }: Props) {
                 <div className="w-11 h-11 rounded-full bg-[#A259FF] flex items-center justify-center text-white text-[20px]">→</div>
                 <span className="text-[11px] text-gray-400">SaveBoard</span>
               </div>
+              {/* A board, not a card. This used to be a single link tile, which read as
+                  "someone re-sent you the registration link" — the opposite of the point.
+                  The chat above shares two links; the board has to hold both of them and
+                  then some, or the arrow isn't showing a transformation at all. */}
               <div className="flex-1 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-md">
-                <div className="h-[68px] bg-gradient-to-br from-[#A259FF] to-[#F24E1E] flex items-center justify-center text-[26px]">🏀</div>
-                <div className="p-3">
-                  <span className="text-[10px] font-medium text-[#7C3AED] bg-purple-50 px-2 py-0.5 rounded-full">{c.cardBoard}</span>
-                  <p className="text-[13px] font-semibold text-gray-900 mt-1.5">{c.cardTitle}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">sports.com/tournament/registration...</p>
+                <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[#A259FF] to-[#F24E1E]">
+                  <span className="text-[13px]">🏀</span>
+                  <span className="text-[12px] font-semibold text-white">{c.cardBoard}</span>
+                  <span className="ml-auto text-[10px] text-white/80">{c.cardCount}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 p-1.5">
+                  {c.cardItems.map((it) => (
+                    <div key={it.title} className="rounded-lg border border-gray-100 bg-gray-50/60 p-1.5">
+                      <div className="h-[26px] rounded bg-white border border-gray-100 flex items-center justify-center text-[13px]">{it.emoji}</div>
+                      <p className="text-[10px] font-semibold text-gray-900 mt-1 leading-tight line-clamp-2">{it.title}</p>
+                      <p className="text-[9px] text-gray-400 mt-0.5 truncate">{it.host}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
