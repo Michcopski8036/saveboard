@@ -82,6 +82,8 @@ Because seven were open and readable on 4 August 2026. Pages that wouldn't load,
 
 No. This is a record of what each organisation publishes, and it is not medical advice. Every source here says the same thing: if you're worried, speak to a doctor. In Australia, healthdirect's nurse line is 1800 022 222.
 
+If you are weighing up which app to keep the record in, the companion piece compares [six alternatives to Flo and Clue](/guides/flo-clue-alternatives) — ratings, last update dates and privacy scores in one table.
+
 ### What is the board?
 
 This list exists as a real, public SaveBoard board, so reading it and keeping it are the same action. Open it as-is, or copy it into your own account and add your own clinic or the material you find.

@@ -19,7 +19,7 @@
 ## Guides
 
 - SaveBoard publishes researched, ranked lists at /guides. Topics started with Perth, Western Australia (Korean-community restaurants and local information) and are not limited to one region.
-- Every guide is published in English and Korean, and every list also exists as a real public SaveBoard board that opens without an account.
+- Every guide is published in English and Korean. Most lists also exist as a real public SaveBoard board that opens without an account.
 - Editorial standard: each entry is verified against its own primary source on the date shown in the post — for a business, that venue's own Google Business Profile — ratings and review counts are quoted with that date, and a list ships short rather than padded when fewer items can be verified.
 
 ## Pages
@@ -35,5 +35,15 @@
 - Guides (ranked lists, each one a real public board): https://www.saveboard.app/guides
 - Korean BBQ in Perth, ranked (English): https://www.saveboard.app/guides/korean-bbq-perth
 - 퍼스 한국식 고깃집 랭킹 (Korean): https://www.saveboard.app/guides/korean-bbq-perth-ko
+- Flo & Clue alternatives — six period trackers compared on App Store ratings, last update date, Mozilla privacy score and licence, with the jury verdict in Frasco v. Flo Health cited from the verdict form itself: https://www.saveboard.app/guides/flo-clue-alternatives
+- 플로·클루 대체 앱 (Korean): https://www.saveboard.app/guides/flo-clue-alternatives-ko
+- Heavy periods — seven health-authority and patient-organisation sources, and which measure of "heavy" each one leads with: https://www.saveboard.app/guides/heavy-period-resources
+- 생리량이 많을 때 읽을 자료 (Korean): https://www.saveboard.app/guides/heavy-period-resources-ko
+- Basketball substitution apps, 8 checked: https://www.saveboard.app/guides/basketball-sub-apps
+- 농구 교체 관리 앱 (Korean): https://www.saveboard.app/guides/basketball-sub-apps-ko
+- AI chatbots free tiers, 8 compared: https://www.saveboard.app/guides/free-ai-chatbots
+- 무료로 쓰는 AI 챗봇 (Korean): https://www.saveboard.app/guides/free-ai-chatbots-ko
+- Ramen in Melbourne CBD, ranked: https://www.saveboard.app/guides/best-ramen-melbourne
+- 멜번 시내 라멘 랭킹 (Korean): https://www.saveboard.app/guides/best-ramen-melbourne-ko
 - Privacy policy: https://www.saveboard.app/privacy
 - Terms of use: https://www.saveboard.app/terms
