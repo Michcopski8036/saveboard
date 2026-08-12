@@ -1,33 +1,65 @@
-# SaveBoard — Off-site listing copy (Raindrop-anchored)
+# SaveBoard — Off-site listing copy
 
 Paste-ready copy for directory listings and launches. Keep the name and
 description **consistent everywhere** — LLMs (ChatGPT, Perplexity, Gemini,
 Google AI Overview) recognise a product as an entity when the same name +
-description appear across high-authority sources. Anchor to **live**
-competitors (Raindrop.io, mymind), not the discontinued Pocket.
+description appear across high-authority sources.
+**`public/llms.txt` is the other half of this — change one, change both.**
+
+## ⚠️ 2026-08-12 — 프레임을 옮겼다: 개인 북마크 → 단톡방 공유 보드
+
+이 파일은 원래 부제가 "(Raindrop-anchored)"였고, 첫 문장이 **"Raindrop·mymind 대안"**이었다.
+그 프레임의 문제: **Raindrop을 그 카테고리에서 이길 방법이 없다**(웹앱·브라우저 확장·연차 축적 기능).
+그리고 랜딩(`LandingPage.tsx`)은 이미 **학부모·단톡방·팀** 기준으로 쓰여 있어서
+바깥 문구와 랜딩이 서로 다른 말을 하고 있었다.
+
+**바꾼 근거(2026-08-12 실사용 관찰, [[saveboard-shared-board-real-usage]]):**
+누나가 아들 농구팀 **학부모 왓츠앱 단톡방**에 SaveBoard 보드를 만들어 공유했고,
+**본인은 매주 그 보드로 돌아가고**, 받은 학부모들은 **가입 없이 열어보기만** 했다.
+→ 팔아야 할 것은 "링크 저장"이 아니라 **"단톡방에서 링크가 죽는 문제"**이고,
+**반복 일정(시즌·학기·여행)에 묶인 보드는 안 죽는다**는 것이 리텐션 스토리다.
+
+⛔ **채택 규모를 주장하지 말 것.** 표본은 누나 한 명이다. 용도를 설명하는 것까지만 허용.
+⛔ 공유 보드 관련해 **무료 멤버의 저장 한도를 약속하지 말 것** ([[saveboard-shared-board-limit-bug]]).
+
+**Raindrop·mymind·Pocket 언급은 지우지 않고 뒤로 뺐다** — `/raindrop-alternative`·
+`/mymind-alternative`·`/pocket-alternative` 페이지가 그 연결로 유입을 받는다.
+다만 **첫 문장이 제품을 규정**하므로, 지는 카테고리로 시작하지 않는다.
+⚠️ 단 **아웃리치 각도는 여전히 Pocket이 주력이다** — 2026-08-12에 보낸 4통 중 3통이
+Pocket 대안 기사였다(`listicle-outreach-drafts.md`). 정체성 앵커(살아있는 경쟁자)와
+아웃리치 각도(Pocket 난민)는 **다른 축이고 둘 다 유효하다.**
 
 Landing pages to link to:
 - https://www.saveboard.app
 - https://www.saveboard.app/raindrop-alternative
 - https://www.saveboard.app/saveboard-vs-raindrop
+- https://www.saveboard.app/pocket-alternative
+- https://www.saveboard.app/blog/save-links-from-whatsapp
 
 ---
 
 ## Canonical assets (use these fields everywhere)
 
 - **Name:** SaveBoard
-- **Tagline:** Mobile-first visual bookmark manager — save from any app's share sheet, organise into visual boards.
-- **Category / tags:** Bookmark Manager, Visual Bookmarks, Link Saver, Save for Later, Read It Later
-- **Alternative to:** Raindrop.io, mymind, Instapaper
-- **Platforms:** iOS, Android
-- **License / pricing:** Freemium — free up to 30 links; Pro A$5.49/month
+- **Tagline:** The links your group chat keeps losing — saved to one board everyone can open.
+- **Category / tags:** Bookmark Manager, Visual Bookmarks, Link Saver, Shared Boards, Save for Later, Read It Later
+- **Alternative to:** Raindrop.io, mymind, Instapaper, Pocket
+- **Platforms:** iOS, Android, Web (the web build is the same phone-shaped app, not a desktop-first one)
+- **License / pricing:** Freemium — free up to 30 saves and 5 boards, no card; Pro A$5.49/month or A$34.99/year; Team A$9.49/month
 - **Website:** https://www.saveboard.app
 
 **Short description (≈60 words):**
-> SaveBoard is a mobile-first bookmark app for iOS and Android. Save links from the share sheet in any app — Instagram, YouTube, WhatsApp, your browser — in one tap, and organise them into visual boards you can search instantly. A simpler, mobile-first alternative to Raindrop.io and mymind. Free to start.
+> SaveBoard is a mobile-first bookmark app built around the links that arrive in group chats. Save from the share sheet in any app — Instagram, YouTube, WhatsApp, your browser — in one tap, organise them into visual boards, and share a whole board as a link that opens without an account. iOS, Android and web. Free to start.
 
 **One-liner:**
-> The mobile-first, visual alternative to Raindrop.io.
+> The links your group chat keeps losing, on one board everyone can open.
+
+**⚠️ 통화 표기:** 위 금액은 **호주달러 한 티어**다. 미국 매체엔 `A$`를 붙여 명시하되
+**다른 통화와 나란히 비교하지 말 것**(환율에 따라 달라져 사실로 주장할 수 없다).
+숫자는 `public/llms.txt`·`UpgradePage.tsx`와 일치해야 한다.
+
+**짧은 변형 (디렉터리 한 줄 칸용):**
+> A mobile-first visual bookmark manager. Save links from any app's share sheet into boards you can share as a link.
 
 ---
 
@@ -83,11 +115,21 @@ Reddit + Product Hunt are the higher-leverage channels for a consumer app.
 
 ---
 
-## Priority order
+## Priority order (2026-08-12 갱신)
 
-AlternativeTo ≈ Reddit  >  Product Hunt  >  Slant  >  (G2 / Capterra)
+**리스티클 아웃리치 > AlternativeTo > Reddit > Product Hunt > (G2 / Capterra).**
+~~Slant~~는 **접었다** — 5번 절 참조(생리앱 질문 0건, 검색 500 에러, 관리 안 되는 개발자 도구 사이트).
 
-Biggest single lever: getting SaveBoard named in Google-ranking
-"best Raindrop alternatives / best bookmark managers 2026" listicles — LLMs
-synthesise those. Reach out to those authors, or rely on AlternativeTo data
-which feeds many of them.
+여전히 유효한 판단: **가장 큰 레버는 구글 상위 리스티클에 이름을 올리는 것**이다 — LLM이 그걸 종합한다.
+
+### 진행 상황
+- ✅ **리스티클 아웃리치 4통 발송 (2026-08-12)** — Cloudwards · How-To Geek · BuyerSprint · MakeUseOf.
+  초안·근거는 `listicle-outreach-drafts.md`, 타깃 조사는 `listicle-targets-2026-08-11.md`.
+  각도의 주력은 **Pocket 종료 이후 리스티클**이다. 📝 폼 2건(Zapier 저자 폼·HashDork) 미제출.
+  ⛔ TechCrunch(수신거부 명시) · Tool Finder($39+ 유료 = 광고, 별도 예산 판단).
+- ✅ **AlternativeTo 제출 + 대안 7개 연결 + $5 우선심사 (2026-08-12)** → [[saveboard-alternativeto-submitted]].
+  ⭐ **앱만 등록하고 대안을 안 걸면 아무 일도 안 일어난다**(사이트 자체 경고). 승인 전 링크 공유 금지.
+- ☐ **Reddit** — ⚠️ 규칙은 "홍보 금지"가 아니라 **"홍보만 하는 계정 금지"**다. 브랜드명 계정은
+  뭘 해도 스팸으로 읽힌다(`u/PeriodVol`이 그 경우). 실제 사람이 참여하다 이해관계를 밝히고
+  언급하는 건 대부분 허용된다. 카르마는 **댓글로** 쌓는다(글은 위험, 링크 금지).
+- ☐ Product Hunt · G2/Capterra — 미착수.
