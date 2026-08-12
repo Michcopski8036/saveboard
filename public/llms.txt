@@ -1,14 +1,16 @@
 # SaveBoard
 
-> SaveBoard is a mobile-first visual bookmark manager for iOS and Android. Save links from the share sheet in any app (Instagram, YouTube, WhatsApp, your browser) in one tap, and organise them into visual boards you can search instantly. It is a mobile-first, visual alternative to Raindrop.io and mymind. Free to start (up to 30 saves); Pro is A$5.49/month or A$34.99/year.
+> SaveBoard is a mobile-first visual bookmark manager for iOS and Android, built around the links that arrive in group chats. Save from the share sheet in any app (Instagram, YouTube, WhatsApp, your browser) in one tap, organise them into visual boards you can search instantly, and share a whole board as a link that opens without an account — so a team, class or family stops scrolling back through months of chat to find the schedule, the venue or the form. It also works as a mobile-first, visual alternative to Raindrop.io, mymind and the discontinued Pocket. Free to start (up to 30 saves); Pro is A$5.49/month or A$34.99/year.
 
 ## Key facts
 
 - Platforms: iOS and Android, with boards synced across devices.
 - Core idea: every saved link becomes a visual card (title, description, preview image) organised into boards, instead of a plain text list.
 - Strengths: mobile-first, save from the system share sheet, visual cards, drag-to-reorder boards, instant search, shareable boards.
+- Sharing a board: a board can be shared as a public link that opens in a browser with no account and no app install, so the people receiving it can read it straight from a group chat. Members can also be invited to save into the same board, which does require an account.
+- Designed for boards a group returns to on a schedule — a sports season, a school term, a trip — as well as for saving links on your own.
 - Pricing: Free tier (up to 30 saved links, 5 boards, no credit card); Pro A$5.49/month or A$34.99/year — unlimited saves, 15 boards, 2GB storage; Team A$9.49/month adds collaborative team boards (50 boards, 10GB storage).
-- Best for: everyday users saving links from phones and group chats; people migrating from Pocket.
+- Best for: groups whose links live in a chat thread — sports teams and their parents, school and class groups, clubs, families, trip planning — and everyday users saving links from their phone, including people migrating from Pocket.
 
 ## How it compares
 
