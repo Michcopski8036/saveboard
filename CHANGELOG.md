@@ -21,11 +21,42 @@ notes live in `store/release-notes.md`.
 
 | iOS | build | Android | vc | Status | Date |
 |---|---|---|---|---|---|
-| 1.0.8 | 20 | — | — | **iOS submitted for review** — YouTube in-app playback fix (WKWebView UA + IFrame Player API), billing-failure recovery, iPhone layout (safe-area top, bottom-nav spacing). Android unaffected by the video bug → deferred, bundle with next Android change | 2026-07-27 |
+| 1.0.9 | 21 | 1.0.14 | 18 | **iOS uploaded to ASC (web submission pending) · Android AAB built (Play upload pending)** — Android payment-screen fix (Apple IAP view shown since 05-27 → paying impossible) + all Aug feature work, cumulative | 2026-08-13 |
+| 1.0.8 | 20 | — | — | **iOS LIVE 2026-07-28** (store-verified 2026-08-13) — YouTube in-app playback fix (WKWebView UA + IFrame Player API), billing-failure recovery, iPhone layout (safe-area top, bottom-nav spacing). Android 1.0.13/vc17 was built 07-23 but **never uploaded** → superseded by 1.0.14/vc18 | 2026-07-27 |
 | 1.0.7 | 19 | 1.0.12 | 16 | **Both submitted for review** | 2026-07-19 |
 | 1.0.6 | 18 | 1.0.11 | 15 | **LIVE** both stores | iOS 2026-07-17 |
 
 ---
+
+## iOS 1.0.9 (build 21) / Android 1.0.14 (versionCode 18) — built 2026-08-13
+
+Cumulative catch-up release. Baselines differ per platform: iOS ships everything
+since 1.0.8/build 20 (archived 2026-07-27); Android's last live build is
+1.0.12/vc16 (2026-07-19) — the prepared 1.0.13/vc17 AAB was never uploaded, so
+its changes ship here and vc17 is skipped (codes need not be contiguous).
+
+**Headline fix — Android payments were impossible since 2026-05-27** (`e960433b`):
+since `9706de4c` the UpgradePage gated the Apple IAP view on
+`isNativePlatform()`, so Android also got the iOS StoreKit screen — the plugin
+has no Android side, prices never load, no purchase button. Now branched on
+`getPlatform()`: iOS keeps IAP; Android shows a web-payment notice (Play billing
+policy bars in-app Stripe checkout → plain-text pointer to www.saveboard.app);
+web keeps the Stripe cards. BillingPage: Android reaches the Stripe portal via
+`PROD_URL` in the system browser; `create-portal` CORS now allows the Android
+native origin.
+
+**Also new in these builds** (everything landed on `main` since late July):
+
+- Startup performance: 25–73 s spinner → 1.5–4.7 s (`getSession()` no longer
+  blocks forever; effect deps on `[userId]` not `[user]`)
+- Sidebar pin/collapse
+- Card design language: memo text cards, 2 px tone-on-tone accent strip, favicon
+  tiles in kanban, home view toggle, memo-aware edit modals, long-form memo editor
+- Reminders (Pro) — resurface a saved link at a chosen time
+- Clean up links (Pro) — duplicate + broken-link finder
+- Pinned announcement cards; Team viewer (view-only) roles
+- Unlimited saves on Pro/Team; plan-aware usage bars and plan badges
+- Native first-run intro instead of the web landing page
 
 ## iOS 1.0.8 (build 20) / Android 1.0.13 (versionCode 17) — prepared 2026-07-22
 

@@ -5,6 +5,27 @@ Console release notes. Play's limit is 500 characters per language.
 
 ---
 
+## iOS 1.0.9 / Android 1.0.14
+
+Leads with startup speed — the change every user feels on every launch. The
+Android payment-screen repair is stated from the user's side ("clearer payment
+guidance"), not as the bug it was. Wording is platform-neutral so the same text
+works on both stores.
+
+### English
+
+```
+SaveBoard now opens in seconds — no more long wait at launch. New: pin the sidebar open, set reminders on saved links (Pro), and clean up duplicate or broken links in one tap (Pro). Memo cards have a cleaner text-first look, and board owners can pin announcements to the top. Payment and plan guidance in the app is clearer too.
+```
+
+### 한국어
+
+```
+SaveBoard가 이제 몇 초 만에 열려요 — 시작할 때 오래 기다리지 않아도 됩니다. 새 기능: 사이드바 고정, 저장한 링크 리마인더(Pro), 중복·깨진 링크 한 번에 정리(Pro). 메모 카드는 텍스트 중심으로 더 깔끔해졌고, 보드 주인은 공지 카드를 맨 위에 고정할 수 있어요. 앱 안의 결제·플랜 안내도 더 명확해졌습니다.
+```
+
+---
+
 ## iOS 1.0.8 / Android 1.0.13
 
 Leads with the billing recovery path, because that is the change users can
