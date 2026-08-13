@@ -5,6 +5,7 @@ import { X, Zap, Users, ExternalLink, CreditCard, Calendar, CheckCircle, AlertCi
 import { useLanguage } from '../context/LanguageContext';
 import { FREE_LIMITS } from './UpgradePage';
 import { authedPost } from '../lib/authedFetch';
+import { isNativeApp, PROD_URL } from '../lib/urls';
 
 interface SubData {
   plan: string;
@@ -28,14 +29,16 @@ interface BillingPageProps {
 }
 
 async function openPortal(userId: string | undefined, ko: boolean) {
-  if (Capacitor.isNativePlatform()) {
-    // iOS users manage their subscription through Apple
+  if (Capacitor.getPlatform() === 'ios') {
+    // iOS subs are Apple IAP — managed through Apple, never Stripe.
     await Browser.open({ url: 'https://apps.apple.com/account/subscriptions' });
     return;
   }
-  // Web / Android → Stripe portal
+  // Web / Android → Stripe portal. The native app runs from a local origin, so
+  // relative /api paths would hit the app shell instead of prod.
   if (!userId) return;
-  const r = await authedPost<{ url?: string }>('/api/create-portal', { userId });
+  const native = isNativeApp();
+  const r = await authedPost<{ url?: string }>(native ? `${PROD_URL}/api/create-portal` : '/api/create-portal', { userId });
   if (!r.ok) {
     if (r.reason === 'reauth') {
       alert(ko ? '세션이 만료됐어요. 페이지를 새로고침한 뒤 다시 로그인해 주세요.' : 'Your session expired. Please refresh the page and sign in again.');
@@ -45,7 +48,10 @@ async function openPortal(userId: string | undefined, ko: boolean) {
     alert((ko ? '결제 오류: ' : 'Billing error: ') + r.message);
     return;
   }
-  if (r.data?.url) window.location.href = r.data.url;
+  if (r.data?.url) {
+    if (native) await Browser.open({ url: r.data.url });
+    else window.location.href = r.data.url;
+  }
 }
 
 // Brand palette — keep these in step with UpgradePage.

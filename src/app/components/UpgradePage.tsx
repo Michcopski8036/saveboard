@@ -229,6 +229,65 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
   );
 }
 
+// ── Android: subscriptions are purchased on the web ──────────────────────────
+// Play's billing policy bars taking card payments for digital subscriptions
+// inside the app, and the app has no Play Billing integration — so this view
+// only informs. Plain-text URL on purpose: no tappable checkout link.
+
+function AndroidWebPaymentView({ isPro, onShowTerms, onShowPrivacy }: {
+  isPro?: boolean;
+  onShowTerms?: () => void;
+  onShowPrivacy?: () => void;
+}) {
+  const { tr, language } = useLanguage();
+  const ko = language === 'ko';
+
+  return (
+    <div className="p-6 space-y-5">
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Sparkles className="w-5 h-5 text-yellow-400" />
+          <span className="text-[11px] font-bold uppercase tracking-widest text-purple-600">{tr('upgradeToPro')}</span>
+        </div>
+        <h2 className="text-[22px] font-bold text-gray-900 mb-1">{tr('saveMoreOrganize')}</h2>
+      </div>
+
+      <ul className="space-y-2.5 px-1">
+        {(ko ? ['무제한 저장','보드 15개','팀 보드 5개 (각 10명)','중복·깨진 링크 정리','2GB 저장공간','우선 지원'] : ['Unlimited saves', '15 boards', '5 team boards (10 members each)', 'Duplicate & broken link finder', '2GB storage', 'Priority support']).map(f => (
+          <li key={f} className="flex items-center gap-2.5 text-[14px] text-gray-700">
+            <Check className="w-4 h-4 text-purple-500 shrink-0" />{f}
+          </li>
+        ))}
+      </ul>
+
+      {isPro ? (
+        <p className="text-center text-[13px] font-semibold text-purple-600">✓ {ko ? '이미 Pro를 이용 중이에요' : 'You are already on Pro'}</p>
+      ) : (
+        <div className="rounded-2xl p-4 text-center" style={{ background: '#F5F3FF', border: '1px solid #DDD6FE' }}>
+          <p className="text-[14px] font-semibold text-gray-900 mb-1">
+            {ko ? 'Pro 구독은 웹에서 결제할 수 있어요' : 'Pro subscriptions are purchased on the web'}
+          </p>
+          <p className="text-[13px] text-gray-500 leading-relaxed">
+            {ko
+              ? <>브라우저에서 <span className="font-semibold text-purple-600">www.saveboard.app</span> 에 같은 계정으로 로그인한 뒤 업그레이드해 주세요. 결제하면 이 앱에도 바로 적용돼요.</>
+              : <>Sign in with this account at <span className="font-semibold text-purple-600">www.saveboard.app</span> in your browser and upgrade there. Pro applies to this app right away.</>}
+          </p>
+        </div>
+      )}
+
+      <div className="flex items-center justify-center gap-3 text-[11px]">
+        <button type="button" onClick={onShowTerms} className="text-purple-600 underline underline-offset-2">
+          {ko ? '이용약관' : 'Terms of Use'}
+        </button>
+        <span className="text-gray-300">·</span>
+        <button type="button" onClick={onShowPrivacy} className="text-purple-600 underline underline-offset-2">
+          {ko ? '개인정보 처리방침' : 'Privacy Policy'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 // Korean labels for the feature-comparison table (feature names + special values).
@@ -247,7 +306,7 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
   const { tr, language } = useLanguage();
   const ko = language === 'ko';
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const isNative = Capacitor.isNativePlatform();
+  const platform = Capacitor.getPlatform(); // 'ios' | 'android' | 'web'
 
   // Usage bars must reflect the viewer's own plan, not the Free limits.
   const limits = plan === 'team' ? { links: Infinity, boards: 50, storageMb: 10240 }
@@ -320,8 +379,9 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
               </div>
             </div>
 
-            {/* iOS: Apple IAP view */}
-            {isNative ? (
+            {/* iOS: Apple IAP view. Android: web-payment notice (Play billing policy —
+                no Stripe checkout inside the app). Web: Stripe pricing cards. */}
+            {platform === 'ios' ? (
               <IAPUpgradeView
                 userId={userId}
                 isPro={isPro}
@@ -330,6 +390,8 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 onShowTerms={onShowTerms}
                 onShowPrivacy={onShowPrivacy}
               />
+            ) : platform === 'android' ? (
+              <AndroidWebPaymentView isPro={isPro} onShowTerms={onShowTerms} onShowPrivacy={onShowPrivacy} />
             ) : (
               <>
                 {/* Web/Android: Stripe pricing cards */}
