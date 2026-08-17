@@ -53,6 +53,7 @@ interface AdminStats {
     visits7d: number; visits7dPrev: number; boardClicks7d: number;
     byPath: Array<{ path: string; views: number; boardClicks: number }>;
     topReferrers: Array<{ referrer: string; n: number }>;
+    topSources: Array<{ source: string; n: number }>;
   };
   automations?: Array<{
     routine: string; status: string; summary: string | null;
@@ -1088,16 +1089,30 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                   </Section>
 
                   <Section title="유입 경로" icon={Globe}>
-                    {(stats.traffic?.topReferrers.length ?? 0) === 0 ? (
+                    {(stats.traffic?.topSources.length ?? 0) === 0 && (stats.traffic?.topReferrers.length ?? 0) === 0 ? (
                       <p className="text-[12px]" style={{ color: t.textMuted }}>아직 외부 유입 기록 없음</p>
                     ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {stats.traffic!.topReferrers.map(r => (
-                          <span key={r.referrer} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold"
-                            style={{ background: t.hoverBg, color: t.textMuted, border: `1px solid ${t.cardBorder}` }}>
-                            {r.referrer} · {r.n}
-                          </span>
-                        ))}
+                      <div className="flex flex-col gap-2">
+                        {stats.traffic!.topSources.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {stats.traffic!.topSources.map(s => (
+                              <span key={s.source} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold"
+                                style={{ background: t.hoverBg, color: t.textPrimary, border: `1px solid ${t.cardBorder}` }}>
+                                {s.source} · {s.n}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {stats.traffic!.topReferrers.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {stats.traffic!.topReferrers.map(r => (
+                              <span key={r.referrer} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold"
+                                style={{ background: t.hoverBg, color: t.textMuted, border: `1px solid ${t.cardBorder}` }}>
+                                {r.referrer} · {r.n}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </Section>
