@@ -143,25 +143,28 @@ export function GuidePostPage() {
           )}
 
           {guide.boardUrl && (
-            <div className="mt-10 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-8">
+            /* Brand-purple gradient with a white CTA — the inverse of the promo
+               card's light-background/gradient-button scheme, so the two ads can
+               share the basketball page without blurring together. */
+            <div className="mt-10 rounded-2xl overflow-hidden bg-gradient-to-br from-[#A259FF] to-[#6B2FD6] p-7 sm:p-8 shadow-lg shadow-purple-200">
               <div className="flex flex-col sm:flex-row items-center gap-7">
                 <img
                   src={guide.boardImage || '/guides/shared-board-app.jpg'}
                   alt={ko ? '이 리스트의 보드를 휴대폰에서 연 화면' : 'This guide’s board open on a phone'}
                   loading="lazy"
-                  className="w-44 sm:w-48 shrink-0 rounded-xl shadow-md border border-purple-100"
+                  className="w-44 sm:w-48 shrink-0 rounded-xl shadow-lg border border-white/20"
                 />
                 <div className="text-center sm:text-left">
-                  <p className="text-[13px] font-semibold text-purple-600 mb-2">
-                    {ko ? '이 리스트, 보드로 가져가기' : 'Take this list with you'}
+                  <p className="text-[12px] font-bold uppercase tracking-wider text-white/70 mb-2">
+                    {ko ? '이 리스트를 SaveBoard 보드로' : 'This list as a SaveBoard board'}
                   </p>
-                  <h2 className="text-[23px] font-extrabold text-gray-900 mb-3">
-                    {ko ? '한 번에 저장하고, 필요할 때 꺼내보기' : 'Save it once, open it whenever'}
+                  <h2 className="text-[23px] sm:text-[26px] font-extrabold text-white leading-tight mb-3">
+                    {ko ? '링크 하나하나 확인하기 번거로우시죠?' : 'Tired of checking links one by one?'}
                   </h2>
-                  <p className="text-[15px] text-gray-500 mb-6">
+                  <p className="text-[15px] text-white/85 leading-relaxed mb-6">
                     {ko
-                      ? '로그인 없이 열려요. 내 보드로 가져가면 다음에 약속 잡을 때 다시 검색하지 않아도 되고, 직접 찾은 곳도 더할 수 있어요.'
-                      : 'Opens without a login. Copy it to your own board and you won’t be searching for these again next time — and you can add your own finds.'}
+                      ? '이 페이지의 모든 링크를 한번에 한곳에 모아 보세요. 전부 SaveBoard 보드 하나에 비주얼 카드로 정리돼 있어요 — 로그인 없이 열리고, 내 보드로 가져가면 다음에 다시 검색하지 않아도 돼요.'
+                      : 'See every link on this page in one go — they’re all on a single SaveBoard board, laid out as visual cards. It opens without a login, and if you copy it to your own board you won’t be searching for these again.'}
                   </p>
                   {/* Plain <a>: /share/<token> is a different react-router route that
                       reads the board fresh; a client-side Link is fine, but an <a>
@@ -169,9 +172,9 @@ export function GuidePostPage() {
                   <a
                     href={guide.boardUrl}
                     onClick={() => track('board_click', { slug: guide.slug, lang: guide.lang })}
-                    className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
+                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-[#6B2FD6] rounded-2xl font-bold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg"
                   >
-                    {ko ? '보드 열기' : 'Open the board'}
+                    {ko ? '모든 링크 한곳에서 열기' : 'Open all the links in one place'}
                     <ArrowRight className="w-4 h-4" />
                   </a>
                 </div>
