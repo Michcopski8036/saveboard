@@ -88,20 +88,42 @@ export function GuidePostPage() {
           </article>
 
           {hasPromo && (
-            <aside className="my-9 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 p-6 sm:p-7">
-              <p className="text-[13px] font-semibold text-purple-600 mb-2">
-                {guide.promoNote}
-              </p>
-              <p className="text-[15px] text-gray-700 leading-relaxed mb-5">
-                {guide.promoText}
-              </p>
-              <a
-                href={guide.promoUrl}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[14px] hover:opacity-90 active:scale-95 transition-all shadow-md shadow-purple-200"
-              >
-                {guide.promoCta}
-                <ArrowRight className="w-4 h-4" />
-              </a>
+            <aside className="my-9 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 shadow-lg shadow-purple-100">
+              {guide.promoImage && (
+                <a href={guide.promoUrl} aria-label={guide.promoCta}>
+                  <img
+                    src={guide.promoImage}
+                    alt={guide.promoImageAlt}
+                    width={Number(guide.promoImageW) || undefined}
+                    height={Number(guide.promoImageH) || undefined}
+                    loading="lazy"
+                    className="block w-full h-auto"
+                  />
+                </a>
+              )}
+              <div className="p-6 sm:p-8">
+                <p className="text-[12px] font-bold uppercase tracking-wider text-purple-600 mb-2">
+                  {guide.promoNote}
+                </p>
+                {guide.promoTitle && (
+                  <h2 className="text-[23px] sm:text-[27px] font-extrabold text-gray-900 leading-tight mb-3">
+                    {guide.promoTitle}
+                  </h2>
+                )}
+                <p className="text-[15px] text-gray-600 leading-relaxed mb-6">
+                  {guide.promoText}
+                </p>
+                <a
+                  href={guide.promoUrl}
+                  className="flex sm:inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-bold text-[16px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
+                >
+                  {guide.promoCta}
+                  <ArrowRight className="w-5 h-5" />
+                </a>
+                {guide.promoFine && (
+                  <p className="text-[12px] text-gray-400 mt-4">{guide.promoFine}</p>
+                )}
+              </div>
             </aside>
           )}
 

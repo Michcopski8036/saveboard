@@ -90,7 +90,7 @@ function parseGuide(raw, lang) {
   // Restaurant + PostalAddress; everything else is a Thing with a name and a
   // link, because marking software up as a restaurant with a street address is
   // simply false.
-  return { ...post, lang, boardUrl: '', boardImage: '', listType: 'place', promoNote: '', promoText: '', promoCta: '', promoUrl: '', ...extractGuideFrontmatter(raw) };
+  return { ...post, lang, boardUrl: '', boardImage: '', listType: 'place', promoNote: '', promoTitle: '', promoText: '', promoCta: '', promoUrl: '', promoImage: '', promoImageAlt: '', promoImageW: '', promoImageH: '', promoFine: '', ...extractGuideFrontmatter(raw) };
 }
 
 function extractGuideFrontmatter(raw) {
@@ -106,10 +106,16 @@ function extractGuideFrontmatter(raw) {
     if (key === 'board_url') data.boardUrl = val;
     if (key === 'board_image') data.boardImage = val;
     if (key === 'list_type')   data.listType   = val;
-    if (key === 'promo_note')  data.promoNote  = val;
-    if (key === 'promo_text')  data.promoText  = val;
-    if (key === 'promo_cta')   data.promoCta   = val;
-    if (key === 'promo_url')   data.promoUrl   = val;
+    if (key === 'promo_note')      data.promoNote     = val;
+    if (key === 'promo_title')     data.promoTitle    = val;
+    if (key === 'promo_text')      data.promoText     = val;
+    if (key === 'promo_cta')       data.promoCta      = val;
+    if (key === 'promo_url')       data.promoUrl      = val;
+    if (key === 'promo_image')     data.promoImage    = val;
+    if (key === 'promo_image_alt') data.promoImageAlt = val;
+    if (key === 'promo_image_w')   data.promoImageW   = val;
+    if (key === 'promo_image_h')   data.promoImageH   = val;
+    if (key === 'promo_fine')      data.promoFine     = val;
   }
   return data;
 }
@@ -459,10 +465,20 @@ function guideHtml(guide, otherLang) {
 // inline styles — it only shows to crawlers and in the pre-hydration flash;
 // human readers get the Tailwind version in GuidePostPage.tsx.
 function promoHtml(guide) {
-  return `<aside style="margin:20px 0;padding:16px 20px;border:1px solid #e9d5ff;border-radius:12px;background:#faf5ff">
-        <p><strong>${esc(guide.promoNote)}</strong></p>
-        <p>${esc(guide.promoText)}</p>
-        <p><a href="${escAttr(guide.promoUrl)}">${esc(guide.promoCta)} →</a></p>
+  const img = guide.promoImage
+    ? `<a href="${escAttr(guide.promoUrl)}"><img src="${escAttr(guide.promoImage)}"
+          alt="${escAttr(guide.promoImageAlt)}" width="${escAttr(guide.promoImageW)}" height="${escAttr(guide.promoImageH)}"
+          loading="lazy" style="display:block;width:100%;height:auto" /></a>`
+    : '';
+  return `<aside style="margin:24px 0;border:1px solid #e9d5ff;border-radius:16px;overflow:hidden;background:#faf5ff">
+        ${img}
+        <div style="padding:20px">
+          <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9333ea;margin:0 0 8px"><strong>${esc(guide.promoNote)}</strong></p>
+          ${guide.promoTitle ? `<p style="font-size:22px;font-weight:800;margin:0 0 10px">${esc(guide.promoTitle)}</p>` : ''}
+          <p style="margin:0 0 16px">${esc(guide.promoText)}</p>
+          <p style="margin:0"><a href="${escAttr(guide.promoUrl)}" style="display:inline-block;padding:12px 24px;background:#A259FF;color:#fff;border-radius:12px;font-weight:700;text-decoration:none">${esc(guide.promoCta)} →</a></p>
+          ${guide.promoFine ? `<p style="font-size:12px;color:#9ca3af;margin:12px 0 0">${esc(guide.promoFine)}</p>` : ''}
+        </div>
       </aside>`;
 }
 
