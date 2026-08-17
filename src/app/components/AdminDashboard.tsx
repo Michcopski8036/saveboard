@@ -631,7 +631,7 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                         const max = Math.max(...stats.linksOverTime.map(x => x.count), 1);
                         const pct = Math.max(2, (d.count / max) * 100);
                         return (
-                          <div key={i} className="flex-1 flex flex-col items-center group relative">
+                          <div key={i} className="flex-1 flex h-full flex-col items-center justify-end group relative">
                             <div className="absolute -top-6 left-1/2 -translate-x-1/2 hidden group-hover:block z-10 whitespace-nowrap px-1.5 py-0.5 rounded text-[9px] font-semibold"
                               style={{ background: '#7C3AED', color: '#fff' }}>
                               {d.date.slice(5)} · {d.count}
