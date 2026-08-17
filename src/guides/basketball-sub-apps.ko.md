@@ -8,6 +8,10 @@ lang: "ko"
 list_type: "software"
 board_image: "/guides/basketball-sub-apps-board.jpg"
 board_url: "https://www.saveboard.app/share/583b4080-255a-4d24-8748-1607a2f3caaf"
+promo_note: "먼저 밝혀요: 저희가 직접 만든 앱이에요"
+promo_text: "이 글 아래에 나오는 CourtClock은 이 가이드를 쓴 저희 팀이 만들었어요. 무료고, 설치 없이 브라우저에서 바로 열리고, 쿼터별로 선수마다 교체 시간을 재 줘요. 코치만이 아니라 매주 돌아가며 서브 당번을 맡는 학부모에 맞춰 설계했어요. 아래 순위는 이 배너와 무관하게 중립입니다."
+promo_cta: "CourtClock 열어보기 — 무료"
+promo_url: "https://courtclock-iota.vercel.app/"
 ---
 
 # 농구 교체 관리 앱 8곳 — 무료가 어디까지인지 직접 확인했습니다

@@ -8,6 +8,10 @@ lang: "en"
 list_type: "software"
 board_image: "/guides/basketball-sub-apps-board.jpg"
 board_url: "https://www.saveboard.app/share/583b4080-255a-4d24-8748-1607a2f3caaf"
+promo_note: "Full disclosure: we built this one"
+promo_text: "CourtClock — the courtside tracker further down this page — is our own app, made by the team behind this guide. It's free, opens in the browser with nothing to install, times each player's shifts quarter by quarter, and was designed for the parent taking a turn on sub duty, not just the coach. The ranking above it stays neutral; this banner is the ad."
+promo_cta: "Open CourtClock — it's free"
+promo_url: "https://courtclock-iota.vercel.app/"
 ---
 
 # Best Basketball Sub Apps — 8 Checked, and Where Each Free Tier Stops

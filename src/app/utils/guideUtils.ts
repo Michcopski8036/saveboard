@@ -12,6 +12,15 @@ export interface GuideMeta {
   boardUrl: string;
   /** Optional screenshot of this guide's own board; falls back to a generic app shot. */
   boardImage: string;
+  /**
+   * Optional own-app disclosure banner, rendered right after the intro (before
+   * the first H2). All four fields are frontmatter (`promo_note`, `promo_text`,
+   * `promo_cta`, `promo_url`); guides without them render exactly as before.
+   */
+  promoNote: string;
+  promoText: string;
+  promoCta: string;
+  promoUrl: string;
   content: string;
 }
 
@@ -24,7 +33,7 @@ export interface GuidePair {
 
 function parseGuide(raw: string): GuideMeta {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  const empty: GuideMeta = { title: '', date: '', description: '', slug: '', keywords: '', lang: 'en', boardUrl: '', boardImage: '', content: raw };
+  const empty: GuideMeta = { title: '', date: '', description: '', slug: '', keywords: '', lang: 'en', boardUrl: '', boardImage: '', promoNote: '', promoText: '', promoCta: '', promoUrl: '', content: raw };
   if (!match) return empty;
   const data: Record<string, string> = {};
   match[1].split('\n').forEach(line => {
@@ -41,6 +50,10 @@ function parseGuide(raw: string): GuideMeta {
     lang: data.lang === 'ko' ? 'ko' : 'en',
     boardUrl: data.board_url ?? '',
     boardImage: data.board_image ?? '',
+    promoNote: data.promo_note ?? '',
+    promoText: data.promo_text ?? '',
+    promoCta: data.promo_cta ?? '',
+    promoUrl: data.promo_url ?? '',
     content: match[2].trim(),
   };
 }

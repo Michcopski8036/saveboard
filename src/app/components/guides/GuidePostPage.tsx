@@ -37,6 +37,11 @@ export function GuidePostPage() {
   // The board CTA belongs with the list, above the FAQ — the FAQ is reference
   // material people scroll past, not the note to end the piece on.
   const [beforeFaq, faqSection] = splitAtFaq(body);
+  // Own-app disclosure banner (promo_* frontmatter): sits right after the intro,
+  // before the first H2, so it's seen without scrolling. Guides without the
+  // frontmatter take the single-article path exactly as before.
+  const hasPromo = Boolean(guide.promoUrl && guide.promoText);
+  const [intro, afterIntro] = hasPromo ? splitAtFirstSection(beforeFaq) : [beforeFaq, ''];
   const otherHref = `/guides/${guide.slug}${ko ? '' : '-ko'}`;
 
   return (
@@ -79,8 +84,32 @@ export function GuidePostPage() {
           <div className="h-px bg-gray-100 mb-10" />
 
           <article className="prose-style">
-            {renderMarkdown(beforeFaq)}
+            {renderMarkdown(intro)}
           </article>
+
+          {hasPromo && (
+            <aside className="my-9 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 p-6 sm:p-7">
+              <p className="text-[13px] font-semibold text-purple-600 mb-2">
+                {guide.promoNote}
+              </p>
+              <p className="text-[15px] text-gray-700 leading-relaxed mb-5">
+                {guide.promoText}
+              </p>
+              <a
+                href={guide.promoUrl}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[14px] hover:opacity-90 active:scale-95 transition-all shadow-md shadow-purple-200"
+              >
+                {guide.promoCta}
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </aside>
+          )}
+
+          {afterIntro && (
+            <article className="prose-style">
+              {renderMarkdown(afterIntro)}
+            </article>
+          )}
 
           {guide.boardUrl && (
             <div className="mt-10 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-8">
@@ -130,6 +159,13 @@ export function GuidePostPage() {
       <BlogFooter />
     </div>
   );
+}
+
+/** Splits at the first H2 so the promo banner can sit right after the intro. */
+function splitAtFirstSection(md: string): [string, string] {
+  const match = md.match(/\n(?=##\s)/);
+  if (!match || match.index === undefined) return [md, ''];
+  return [md.slice(0, match.index).trim(), md.slice(match.index).trim()];
 }
 
 /** Splits a guide's body at its FAQ heading so the board CTA can sit between. */

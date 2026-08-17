@@ -90,7 +90,7 @@ function parseGuide(raw, lang) {
   // Restaurant + PostalAddress; everything else is a Thing with a name and a
   // link, because marking software up as a restaurant with a street address is
   // simply false.
-  return { ...post, lang, boardUrl: '', boardImage: '', listType: 'place', ...extractGuideFrontmatter(raw) };
+  return { ...post, lang, boardUrl: '', boardImage: '', listType: 'place', promoNote: '', promoText: '', promoCta: '', promoUrl: '', ...extractGuideFrontmatter(raw) };
 }
 
 function extractGuideFrontmatter(raw) {
@@ -106,6 +106,10 @@ function extractGuideFrontmatter(raw) {
     if (key === 'board_url') data.boardUrl = val;
     if (key === 'board_image') data.boardImage = val;
     if (key === 'list_type')   data.listType   = val;
+    if (key === 'promo_note')  data.promoNote  = val;
+    if (key === 'promo_text')  data.promoText  = val;
+    if (key === 'promo_cta')   data.promoCta   = val;
+    if (key === 'promo_url')   data.promoUrl   = val;
   }
   return data;
 }
@@ -319,7 +323,14 @@ function guideHtml(guide, otherLang) {
   const content = guide.content.replace(new RegExp(`^#\\s+${escapeRegExp(guide.title)}\\s*\\n+`), '');
   // Same order as the app page: list, then the board link, then the FAQ.
   const faqSplit = content.match(/\n(?=##\s+(?:FAQ|Frequently Asked Questions|자주 묻는 질문))/i);
-  const article = markdownToHtml(faqSplit ? content.slice(0, faqSplit.index).trim() : content);
+  const preFaq = faqSplit ? content.slice(0, faqSplit.index).trim() : content;
+  // Own-app disclosure banner (promo_* frontmatter) goes right after the intro,
+  // before the first H2 — same placement as GuidePostPage.tsx. Guides without
+  // the frontmatter render exactly as before.
+  const introSplit = guide.promoUrl && guide.promoText ? preFaq.match(/\n(?=##\s)/) : null;
+  const article = introSplit
+    ? markdownToHtml(preFaq.slice(0, introSplit.index).trim()) + promoHtml(guide) + markdownToHtml(preFaq.slice(introSplit.index).trim())
+    : markdownToHtml(preFaq);
   const faqArticle = faqSplit ? markdownToHtml(content.slice(faqSplit.index).trim()) : '';
   const faqs = extractFaq(content);
   const items = extractListItems(content);
@@ -442,6 +453,17 @@ function guideHtml(guide, otherLang) {
     published: guide.date,
     modified: guide.date,
   }, body);
+}
+
+// Prerendered pages carry no stylesheet for #root content, so the banner uses
+// inline styles — it only shows to crawlers and in the pre-hydration flash;
+// human readers get the Tailwind version in GuidePostPage.tsx.
+function promoHtml(guide) {
+  return `<aside style="margin:20px 0;padding:16px 20px;border:1px solid #e9d5ff;border-radius:12px;background:#faf5ff">
+        <p><strong>${esc(guide.promoNote)}</strong></p>
+        <p>${esc(guide.promoText)}</p>
+        <p><a href="${escAttr(guide.promoUrl)}">${esc(guide.promoCta)} →</a></p>
+      </aside>`;
 }
 
 function guideIndexHtml() {
