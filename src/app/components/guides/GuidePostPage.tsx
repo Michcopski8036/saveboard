@@ -89,40 +89,49 @@ export function GuidePostPage() {
 
           {hasPromo && (
             <aside className="my-9 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 shadow-lg shadow-purple-100">
-              {guide.promoImage && (
-                <a href={guide.promoUrl} aria-label={guide.promoCta}>
-                  <img
-                    src={guide.promoImage}
-                    alt={guide.promoImageAlt}
-                    width={Number(guide.promoImageW) || undefined}
-                    height={Number(guide.promoImageH) || undefined}
-                    loading="lazy"
-                    className="block w-full h-auto"
-                  />
-                </a>
-              )}
-              <div className="p-6 sm:p-8">
-                <p className="text-[12px] font-bold uppercase tracking-wider text-purple-600 mb-2">
-                  {guide.promoNote}
-                </p>
-                {guide.promoTitle && (
-                  <h2 className="text-[23px] sm:text-[27px] font-extrabold text-gray-900 leading-tight mb-3">
-                    {guide.promoTitle}
-                  </h2>
+              {/* Portrait screenshot: side-by-side from 821px, stacked below —
+                  the image is never cropped (no object-cover) because the
+                  sub-out-alert-to-bench sequence is the story. */}
+              <div className="flex flex-col min-[821px]:flex-row">
+                {guide.promoImage && (
+                  <a
+                    href={guide.promoUrl}
+                    aria-label={guide.promoCta}
+                    className="block shrink-0 bg-[#171310] min-[821px]:w-[44%] min-[821px]:flex min-[821px]:items-center"
+                  >
+                    <img
+                      src={guide.promoImage}
+                      alt={guide.promoImageAlt}
+                      width={Number(guide.promoImageW) || undefined}
+                      height={Number(guide.promoImageH) || undefined}
+                      loading="lazy"
+                      className="block w-full h-auto"
+                    />
+                  </a>
                 )}
-                <p className="text-[15px] text-gray-600 leading-relaxed mb-6">
-                  {guide.promoText}
-                </p>
-                <a
-                  href={guide.promoUrl}
-                  className="flex sm:inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-bold text-[16px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
-                >
-                  {guide.promoCta}
-                  <ArrowRight className="w-5 h-5" />
-                </a>
-                {guide.promoFine && (
-                  <p className="text-[12px] text-gray-400 mt-4">{guide.promoFine}</p>
-                )}
+                <div className="p-6 sm:p-8 flex flex-col justify-center">
+                  <p className="text-[12px] font-bold uppercase tracking-wider text-purple-600 mb-2">
+                    {guide.promoNote}
+                  </p>
+                  {guide.promoTitle && (
+                    <h2 className="text-[23px] sm:text-[27px] font-extrabold text-gray-900 leading-tight mb-3">
+                      {guide.promoTitle}
+                    </h2>
+                  )}
+                  <p className="text-[15px] text-gray-600 leading-relaxed mb-6">
+                    {guide.promoText}
+                  </p>
+                  <a
+                    href={guide.promoUrl}
+                    className="flex min-[821px]:inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-bold text-[16px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200 self-start w-full min-[821px]:w-auto"
+                  >
+                    {guide.promoCta}
+                    <ArrowRight className="w-5 h-5" />
+                  </a>
+                  {guide.promoFine && (
+                    <p className="text-[12px] text-gray-400 mt-4">{guide.promoFine}</p>
+                  )}
+                </div>
               </div>
             </aside>
           )}

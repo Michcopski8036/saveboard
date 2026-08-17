@@ -468,7 +468,7 @@ function promoHtml(guide) {
   const img = guide.promoImage
     ? `<a href="${escAttr(guide.promoUrl)}"><img src="${escAttr(guide.promoImage)}"
           alt="${escAttr(guide.promoImageAlt)}" width="${escAttr(guide.promoImageW)}" height="${escAttr(guide.promoImageH)}"
-          loading="lazy" style="display:block;width:100%;height:auto" /></a>`
+          loading="lazy" style="display:block;width:100%;max-width:420px;height:auto" /></a>`
     : '';
   return `<aside style="margin:24px 0;border:1px solid #e9d5ff;border-radius:16px;overflow:hidden;background:#faf5ff">
         ${img}
