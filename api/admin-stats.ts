@@ -12,6 +12,16 @@ const ADMIN_EMAILS = new Set([
   'artking81@hotmail.com',
 ]);
 
+// AI Office의 일일 크론이 사람 로그인 세션 없이 호출하기 위한 경로. 관리자 이메일
+// allowlist와는 별개로, 이 값을 아는 서버만 통과한다 — 쓰기는 없고 읽기 전용
+// 집계라 노출 범위가 작다.
+function verifyCronSecret(req: import('@vercel/node').VercelRequest): boolean {
+  const expected = process.env.SAVEBOARD_ANALYTICS_SECRET;
+  const provided = req.headers['x-analytics-secret'];
+  if (!expected || typeof provided !== 'string') return false;
+  return provided === expected;
+}
+
 /** Verifies the bearer token WITH Supabase auth (validates the JWT signature —
  *  a bare payload decode is forgeable) and returns the caller's email if they
  *  are an admin, else null. */
@@ -84,8 +94,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Verify caller is an admin — validates the JWT signature via Supabase auth.
-  const actor = await verifyAdmin(req.headers.authorization);
+  // Verify caller is an admin — validates the JWT signature via Supabase auth —
+  // or a server-to-server caller presenting the shared cron secret.
+  const cronOk = verifyCronSecret(req);
+  const actor = cronOk ? 'ai-office-cron' : await verifyAdmin(req.headers.authorization);
   if (!actor) return res.status(403).json({ error: 'Forbidden' });
 
   if (req.query.resource === 'app-config') return handleAppConfig(req, res, actor);
@@ -141,7 +153,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     supabase.from('boards').select('id, owner_id, name'),
 
     // Anonymous traffic, last 14 days (7d window + the previous 7d to compare against)
-    supabase.from('page_events').select('event, path, referrer, created_at')
+    supabase.from('page_events').select('event, path, referrer, source, created_at')
       .gte('created_at', new Date(Date.now() - 14 * 86400000).toISOString()),
 
     // Routine self-reports
@@ -364,7 +376,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // page_events is insert-only for everyone but the service role, so this is
   // the only place the rows are ever read. `.data ?? []` also means a missing
   // table degrades to "no data yet" instead of failing the whole dashboard.
-  type PageEvent = { event: string; path: string; referrer: string | null; created_at: string };
+  type PageEvent = { event: string; path: string; referrer: string | null; source: string | null; created_at: string };
   const events = (pageEventsRes.data ?? []) as PageEvent[];
   const trafficNow = Date.now();
   const ago = (days: number) => trafficNow - days * 86400000;
@@ -386,8 +398,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const refCount: Record<string, number> = {};
+  const sourceCount: Record<string, number> = {};
   for (const e of views) {
-    if (!e.referrer || !within(e, ago(7), trafficNow)) continue;
+    if (!within(e, ago(7), trafficNow)) continue;
+    if (e.source) {
+      sourceCount[e.source] = (sourceCount[e.source] ?? 0) + 1;
+      continue; // utm_source/src가 있으면 그걸 채널로 쓰고 referrer는 보조지표로 안 겹친다
+    }
+    if (!e.referrer) continue;
     try {
       const host = new URL(e.referrer).host;
       refCount[host] = (refCount[host] ?? 0) + 1;
@@ -403,6 +421,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .map(([referrer, n]) => ({ referrer, n }))
       .sort((a, b) => b.n - a.n)
       .slice(0, 6),
+    topSources: Object.entries(sourceCount)
+      .map(([source, n]) => ({ source, n }))
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 10),
   };
 
   return res.status(200).json({
