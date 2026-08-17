@@ -408,9 +408,6 @@ skimmed):**
 > A suggestion for "15 Best Bookmark Managers in 2026", with my interest declared first: I build
 > one of these apps, so read this in that light.
 >
-> One small thing while I was reading: the intro still says "we'll look at the best bookmark
-> managers available in 2024", though the title and the March update say 2026.
->
 > Your entries 14 and 15 are the ones written up as phone-and-tablet apps rather than browser
 > tools — GoodLinks, which you describe as being for iOS and macOS, and Anybox, made for Mac,
 > iPhone and iPad. Your own con line for GoodLinks makes the point better than I could: "It's only
