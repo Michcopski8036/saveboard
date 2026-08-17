@@ -4,6 +4,7 @@ import {
   Users, Link2, TrendingUp, Share2, Eye, Crown, Apple, CreditCard,
   RefreshCw, BarChart2, Tag, Folder, Calendar, ArrowUp, ArrowDown,
   Minus, Globe, Smartphone, AlertCircle, CheckCircle, XCircle, ChevronDown, Loader2, Search,
+  BookOpen, LogIn,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
@@ -179,6 +180,18 @@ function Section({ title, icon: Icon, children }: { title: string; icon: React.E
         <h2 className="text-[13px] font-bold uppercase tracking-widest" style={{ color: t.textMuted }}>{title}</h2>
       </div>
       {children}
+    </div>
+  );
+}
+
+/** icon + big number + label, used for the marketing-inflow tile row. */
+function InflowTile({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: number }) {
+  const { t } = useTheme();
+  return (
+    <div>
+      <Icon className="w-3.5 h-3.5 mb-1.5" style={{ color: t.textFaint }} />
+      <p className="text-[20px] font-bold leading-none" style={{ color: t.textPrimary }}>{value.toLocaleString()}</p>
+      <p className="text-[10px] mt-1" style={{ color: t.textFaint }}>{label}</p>
     </div>
   );
 }
@@ -1020,7 +1033,7 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
               )}
 
               {/* SEO */}
-              {activeTab === 'seo' && <SeoPanel accessToken={accessToken} stats={stats} />}
+              {activeTab === 'seo' && <SeoPanel accessToken={accessToken} />}
 
               {/* SYSTEM */}
               {activeTab === 'system' && (
@@ -1066,6 +1079,23 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
               {/* MARKETING */}
               {activeTab === 'marketing' && (
                 <>
+                  <Section title="마케팅 유입 (최근 7일)" icon={BarChart2}>
+                    {stats.traffic ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                        <InflowTile icon={Globe} label="웹사이트 방문" value={stats.traffic.visits7d} />
+                        <InflowTile icon={BookOpen} label="가이드 블로그 조회" value={stats.traffic.guideViews7d} />
+                        <InflowTile icon={Smartphone} label="App Store 클릭" value={stats.traffic.storeClicksIos7d} />
+                        <InflowTile icon={Smartphone} label="Google Play 클릭" value={stats.traffic.storeClicksAndroid7d} />
+                        <InflowTile icon={LogIn} label="로그인" value={stats.presence?.loginsWeek ?? 0} />
+                      </div>
+                    ) : (
+                      <div className="h-16 animate-pulse rounded-xl" style={{ background: t.pageBg }} />
+                    )}
+                    <p className="text-[10px] mt-4" style={{ color: t.textFaint }}>
+                      스토어 클릭은 랜딩페이지 버튼 클릭 시 기록 · 가이드 조회는 /guides 하위 경로 방문 수
+                    </p>
+                  </Section>
+
                   <Section title="페이지별 유입 (7일)" icon={TrendingUp}>
                     {(stats.traffic?.byPath.length ?? 0) === 0 ? (
                       <p className="text-[12px]" style={{ color: t.textMuted }}>

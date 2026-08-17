@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { CheckCircle, XCircle, RefreshCw, Bot, Clock, Globe, AlertCircle, BookOpen, Smartphone, LogIn } from 'lucide-react';
+import { CheckCircle, XCircle, RefreshCw, Bot, Clock, Globe, AlertCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
-import type { AdminStats } from './AdminDashboard';
 
 interface SeoCheck { id: string; label: string; pass: boolean; detail: string; }
 interface SeoResult {
@@ -41,9 +40,9 @@ function ScoreRing({ score }: { score: number }) {
   );
 }
 
-interface Props { accessToken: string | null; stats: AdminStats | null; }
+interface Props { accessToken: string | null; }
 
-export function SeoPanel({ accessToken, stats }: Props) {
+export function SeoPanel({ accessToken }: Props) {
   const { t } = useTheme();
   const [seo, setSeo]       = useState<SeoResult | null>(null);
   const [bots, setBots]     = useState<BotInfo[]>([]);
@@ -165,37 +164,6 @@ export function SeoPanel({ accessToken, stats }: Props) {
           </p>
         </div>
       </div>
-
-      {/* ── Marketing inflow (reuses admin-stats already fetched by the
-          parent — no second network call) ────────────────────────────── */}
-      <div className="rounded-2xl p-5" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
-        <p className="text-[12px] font-bold mb-4" style={{ color: t.textMuted }}>마케팅 유입 (최근 7일)</p>
-        {stats?.traffic ? (
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-            <InflowTile icon={Globe} label="웹사이트 방문" value={stats.traffic.visits7d} />
-            <InflowTile icon={BookOpen} label="가이드 블로그 조회" value={stats.traffic.guideViews7d} />
-            <InflowTile icon={Smartphone} label="App Store 클릭" value={stats.traffic.storeClicksIos7d} />
-            <InflowTile icon={Smartphone} label="Google Play 클릭" value={stats.traffic.storeClicksAndroid7d} />
-            <InflowTile icon={LogIn} label="로그인" value={stats.presence?.loginsWeek ?? 0} />
-          </div>
-        ) : (
-          <div className="h-16 animate-pulse rounded-xl" style={{ background: t.pageBg }} />
-        )}
-        <p className="text-[10px] mt-4 pt-3" style={{ color: t.textFaint, borderTop: `1px solid ${t.cardBorder}` }}>
-          스토어 클릭은 랜딩페이지 버튼 클릭 시 기록 · 가이드 조회는 /guides 하위 경로 방문 수
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function InflowTile({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: number }) {
-  const { t } = useTheme();
-  return (
-    <div>
-      <Icon className="w-3.5 h-3.5 mb-1.5" style={{ color: t.textFaint }} />
-      <p className="text-[20px] font-bold leading-none" style={{ color: t.textPrimary }}>{value.toLocaleString()}</p>
-      <p className="text-[10px] mt-1" style={{ color: t.textFaint }}>{label}</p>
     </div>
   );
 }
