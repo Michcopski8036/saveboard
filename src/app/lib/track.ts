@@ -7,6 +7,12 @@ export type TrackEvent = 'pageview' | 'board_click' | 'signup_click';
 const recent = new Map<string, number>();
 const DEDUPE_MS = 30_000;
 
+function currentSource(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  const param = params.get('utm_source') ?? params.get('src');
+  return param ? param.toLowerCase().slice(0, 60) : null;
+}
+
 /**
  * Fire-and-forget, anonymous. A row records that a path was seen and where it
  * came from — never who. Failures are swallowed on purpose: analytics must not
@@ -27,8 +33,9 @@ export function track(event: TrackEvent, meta: Record<string, unknown> = {}) {
     const referrer = document.referrer && !document.referrer.startsWith(window.location.origin)
       ? document.referrer.slice(0, 300)
       : null;
+    const source = currentSource();
 
-    void supabase.from('page_events').insert({ event, path, referrer, meta }).then(
+    void supabase.from('page_events').insert({ event, path, referrer, source, meta }).then(
       () => {}, () => {},
     );
   } catch {
