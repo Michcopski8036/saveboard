@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
 
 // ── Admin allowlist ────────────────────────────────────────────────────────
 // Inlined on purpose. Vercel transpiles each api/*.ts file individually rather
@@ -13,13 +14,24 @@ const ADMIN_EMAILS = new Set([
 ]);
 
 // AI Office의 일일 크론이 사람 로그인 세션 없이 호출하기 위한 경로. 관리자 이메일
-// allowlist와는 별개로, 이 값을 아는 서버만 통과한다 — 쓰기는 없고 읽기 전용
-// 집계라 노출 범위가 작다.
+// allowlist와는 별개로, 이 값을 아는 서버만 통과한다. 이 경로로 통과한 호출자는
+// handler()에서 traffic 집계 한 가지로만 응답 범위가 제한된다 — app_config
+// (네이티브 강제 업데이트 게이트) 읽기/쓰기와 recentUsers 등 PII 필드는 반드시
+// verifyAdmin()의 사람 관리자 JWT 경로로만 도달 가능하다.
+//
+// timingSafeEqual 패턴은 AI Office의 api/analytics.ts safeEqual()과 동일 —
+// 길이가 다르면 timingSafeEqual 자체가 throw하므로 길이부터 맞춰 비교한다.
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 function verifyCronSecret(req: import('@vercel/node').VercelRequest): boolean {
   const expected = process.env.SAVEBOARD_ANALYTICS_SECRET;
   const provided = req.headers['x-analytics-secret'];
   if (!expected || typeof provided !== 'string') return false;
-  return provided === expected;
+  return safeEqual(provided, expected);
 }
 
 /** Verifies the bearer token WITH Supabase auth (validates the JWT signature —
@@ -90,6 +102,64 @@ async function handleAppConfig(req: VercelRequest, res: VercelResponse, actor: s
   return res.status(200).json({ ok: true });
 }
 
+// ── Traffic ───────────────────────────────────────────────────────────────
+// Factored out so the cron-secret path (below, in handler()) can compute
+// exactly this and nothing else — it's the only thing AI Office's
+// pullSaveBoard() (api/cron-analytics.ts) reads: traffic.{visits7d,
+// boardClicks7d, topSources, topReferrers}.
+type PageEvent = { event: string; path: string; referrer: string | null; source: string | null; created_at: string };
+
+function computeTraffic(events: PageEvent[], now: Date) {
+  const trafficNow = now.getTime();
+  const ago = (days: number) => trafficNow - days * 86400000;
+  const within = (e: PageEvent, from: number, to: number) => {
+    const t = Date.parse(e.created_at);
+    return t >= from && t < to;
+  };
+
+  const views  = events.filter(e => e.event === 'pageview');
+  const clicks = events.filter(e => e.event === 'board_click');
+
+  const byPathMap: Record<string, { path: string; views: number; boardClicks: number }> = {};
+  for (const e of events) {
+    if (!within(e, ago(7), trafficNow)) continue;
+    const row = byPathMap[e.path] ?? { path: e.path, views: 0, boardClicks: 0 };
+    if (e.event === 'pageview')    row.views += 1;
+    if (e.event === 'board_click') row.boardClicks += 1;
+    byPathMap[e.path] = row;
+  }
+
+  const refCount: Record<string, number> = {};
+  const sourceCount: Record<string, number> = {};
+  for (const e of views) {
+    if (!within(e, ago(7), trafficNow)) continue;
+    if (e.source) {
+      sourceCount[e.source] = (sourceCount[e.source] ?? 0) + 1;
+      continue; // utm_source/src가 있으면 그걸 채널로 쓰고 referrer는 보조지표로 안 겹친다
+    }
+    if (!e.referrer) continue;
+    try {
+      const host = new URL(e.referrer).host;
+      refCount[host] = (refCount[host] ?? 0) + 1;
+    } catch { /* unparseable referrer */ }
+  }
+
+  return {
+    visits7d:      views.filter(e => within(e, ago(7), trafficNow)).length,
+    visits7dPrev:  views.filter(e => within(e, ago(14), ago(7))).length,
+    boardClicks7d: clicks.filter(e => within(e, ago(7), trafficNow)).length,
+    byPath: Object.values(byPathMap).sort((a, b) => b.views - a.views).slice(0, 12),
+    topReferrers: Object.entries(refCount)
+      .map(([referrer, n]) => ({ referrer, n }))
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 6),
+    topSources: Object.entries(sourceCount)
+      .map(([source, n]) => ({ source, n }))
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 10),
+  };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -100,10 +170,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const actor = cronOk ? 'ai-office-cron' : await verifyAdmin(req.headers.authorization);
   if (!actor) return res.status(403).json({ error: 'Forbidden' });
 
+  // app_config drives the native force-update gate (UpdateGate.tsx) — a cron
+  // secret holder must never be able to read or (especially) write it. Only
+  // a real human admin JWT, verified above via verifyAdmin(), may reach it.
+  if (cronOk && req.query.resource === 'app-config') {
+    return res.status(403).json({ error: 'Forbidden: cron secret cannot access app-config' });
+  }
   if (req.query.resource === 'app-config') return handleAppConfig(req, res, actor);
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const now      = new Date();
+
+  // Cron-secret callers get traffic-only, computed from a single narrow query
+  // — none of the user/subscription/activation queries below ever run for
+  // them, so the shared secret (about to live in two separate Vercel
+  // projects' env vars) never has a path to recentUsers, activation.neverSaved
+  // /.dormant, or subscription details, and the cron isn't paying for data it
+  // doesn't consume.
+  if (cronOk) {
+    const { data: cronPageEvents } = await supabase.from('page_events')
+      .select('event, path, referrer, source, created_at')
+      .gte('created_at', new Date(now.getTime() - 14 * 86400000).toISOString());
+    const traffic = computeTraffic((cronPageEvents ?? []) as PageEvent[], now);
+    return res.status(200).json({ traffic, generatedAt: now.toISOString() });
+  }
+
   const weekAgo  = new Date(now.getTime() - 7  * 86400000).toISOString();
   const monthAgo = new Date(now.getTime() - 30 * 86400000).toISOString();
 
@@ -376,56 +467,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // page_events is insert-only for everyone but the service role, so this is
   // the only place the rows are ever read. `.data ?? []` also means a missing
   // table degrades to "no data yet" instead of failing the whole dashboard.
-  type PageEvent = { event: string; path: string; referrer: string | null; source: string | null; created_at: string };
-  const events = (pageEventsRes.data ?? []) as PageEvent[];
-  const trafficNow = Date.now();
-  const ago = (days: number) => trafficNow - days * 86400000;
-  const within = (e: PageEvent, from: number, to: number) => {
-    const t = Date.parse(e.created_at);
-    return t >= from && t < to;
-  };
-
-  const views  = events.filter(e => e.event === 'pageview');
-  const clicks = events.filter(e => e.event === 'board_click');
-
-  const byPathMap: Record<string, { path: string; views: number; boardClicks: number }> = {};
-  for (const e of events) {
-    if (!within(e, ago(7), trafficNow)) continue;
-    const row = byPathMap[e.path] ?? { path: e.path, views: 0, boardClicks: 0 };
-    if (e.event === 'pageview')    row.views += 1;
-    if (e.event === 'board_click') row.boardClicks += 1;
-    byPathMap[e.path] = row;
-  }
-
-  const refCount: Record<string, number> = {};
-  const sourceCount: Record<string, number> = {};
-  for (const e of views) {
-    if (!within(e, ago(7), trafficNow)) continue;
-    if (e.source) {
-      sourceCount[e.source] = (sourceCount[e.source] ?? 0) + 1;
-      continue; // utm_source/src가 있으면 그걸 채널로 쓰고 referrer는 보조지표로 안 겹친다
-    }
-    if (!e.referrer) continue;
-    try {
-      const host = new URL(e.referrer).host;
-      refCount[host] = (refCount[host] ?? 0) + 1;
-    } catch { /* unparseable referrer */ }
-  }
-
-  const traffic = {
-    visits7d:      views.filter(e => within(e, ago(7), trafficNow)).length,
-    visits7dPrev:  views.filter(e => within(e, ago(14), ago(7))).length,
-    boardClicks7d: clicks.filter(e => within(e, ago(7), trafficNow)).length,
-    byPath: Object.values(byPathMap).sort((a, b) => b.views - a.views).slice(0, 12),
-    topReferrers: Object.entries(refCount)
-      .map(([referrer, n]) => ({ referrer, n }))
-      .sort((a, b) => b.n - a.n)
-      .slice(0, 6),
-    topSources: Object.entries(sourceCount)
-      .map(([source, n]) => ({ source, n }))
-      .sort((a, b) => b.n - a.n)
-      .slice(0, 10),
-  };
+  // (computeTraffic() is the same function the cron-secret short-circuit above
+  // uses — kept as one implementation so the two paths can't drift apart.)
+  const traffic = computeTraffic((pageEventsRes.data ?? []) as PageEvent[], now);
 
   return res.status(200).json({
     overview: { totalUsers, newThisWeek, newThisMonth, totalLinks, linksThisWeek, totalSharedBoards, totalShareViews },
