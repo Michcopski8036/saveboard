@@ -9,6 +9,27 @@ import { track } from '../../lib/track';
 
 const BASE_URL = 'https://www.saveboard.app';
 
+/**
+ * Promo card palettes, keyed by `promo_theme` frontmatter. `default` is the
+ * SaveBoard purple used by the CourtClock banner; `rose` is PeriodVol's
+ * rose/mauve tokens (bg #FBF7F4 / rose #F6E2DD / mauve #8A5A6B / blood #D23B26)
+ * so the two brands don't wear the same jacket.
+ */
+const PROMO_THEMES: Record<string, { card: string; imgCol: string; eyebrow: string; cta: string }> = {
+  default: {
+    card: 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 shadow-purple-100',
+    imgCol: 'bg-[#171310]',
+    eyebrow: 'text-purple-600',
+    cta: 'bg-gradient-to-r from-[#A259FF] to-[#FF7262] shadow-purple-200',
+  },
+  rose: {
+    card: 'bg-gradient-to-br from-[#FBF7F4] to-[#F6E2DD] border-[#EBDED7] shadow-rose-100',
+    imgCol: 'bg-[#FBF7F4]',
+    eyebrow: 'text-[#8A5A6B]',
+    cta: 'bg-gradient-to-r from-[#D23B26] to-[#8A5A6B] shadow-rose-200',
+  },
+};
+
 export function GuidePostPage() {
   const { slug } = useParams<{ slug: string }>();
   const found = getGuideByRouteSlug(slug ?? '');
@@ -42,6 +63,7 @@ export function GuidePostPage() {
   // frontmatter take the single-article path exactly as before.
   const hasPromo = Boolean(guide.promoUrl && guide.promoText);
   const [intro, afterIntro] = hasPromo ? splitAtFirstSection(beforeFaq) : [beforeFaq, ''];
+  const promoTheme = PROMO_THEMES[guide.promoTheme] ?? PROMO_THEMES.default;
   const otherHref = `/guides/${guide.slug}${ko ? '' : '-ko'}`;
 
   return (
@@ -88,16 +110,16 @@ export function GuidePostPage() {
           </article>
 
           {hasPromo && (
-            <aside className="my-9 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 shadow-lg shadow-purple-100">
+            <aside className={`my-9 rounded-2xl overflow-hidden border shadow-lg ${promoTheme.card}`}>
               {/* Portrait screenshot: side-by-side from 821px, stacked below —
                   the image is never cropped (no object-cover) because the
-                  sub-out-alert-to-bench sequence is the story. */}
+                  screenshot's top-to-bottom sequence is the story. */}
               <div className="flex flex-col min-[821px]:flex-row">
                 {guide.promoImage && (
                   <a
                     href={guide.promoUrl}
                     aria-label={guide.promoCta}
-                    className="block shrink-0 bg-[#171310] min-[821px]:w-[44%] min-[821px]:flex min-[821px]:items-center"
+                    className={`block shrink-0 min-[821px]:w-[44%] min-[821px]:flex min-[821px]:items-center ${promoTheme.imgCol}`}
                   >
                     <img
                       src={guide.promoImage}
@@ -110,7 +132,7 @@ export function GuidePostPage() {
                   </a>
                 )}
                 <div className="p-6 sm:p-8 flex flex-col justify-center">
-                  <p className="text-[12px] font-bold uppercase tracking-wider text-purple-600 mb-2">
+                  <p className={`text-[12px] font-bold uppercase tracking-wider mb-2 ${promoTheme.eyebrow}`}>
                     {guide.promoNote}
                   </p>
                   {guide.promoTitle && (
@@ -123,7 +145,7 @@ export function GuidePostPage() {
                   </p>
                   <a
                     href={guide.promoUrl}
-                    className="flex min-[821px]:inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-bold text-[16px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200 self-start w-full min-[821px]:w-auto"
+                    className={`flex min-[821px]:inline-flex items-center justify-center gap-2 px-8 py-4 text-white rounded-2xl font-bold text-[16px] hover:opacity-90 active:scale-95 transition-all shadow-lg self-start w-full min-[821px]:w-auto ${promoTheme.cta}`}
                   >
                     {guide.promoCta}
                     <ArrowRight className="w-5 h-5" />

@@ -8,6 +8,12 @@ lang: "ko"
 list_type: "place"
 board_image: "/guides/best-ramen-melbourne-board.jpg"
 board_url: "https://www.saveboard.app/share/60ef8221-a3ec-4a18-8f47-e7ed57ef86fb"
+promo_note: "먼저 밝혀요: 이 사이트가 저희 앱이에요"
+promo_title: "가보고 싶은 집, 스크롤에 묻히기 전에 저장하세요."
+promo_text: "이 가이드가 올라와 있는 SaveBoard가 바로 그 앱이에요. 공유시트에서 한 탭이면 식당 링크가 비주얼 카드로 보드에 저장돼요. 친구들이랑 보드 하나 만들어서 다음에 갈 집을 같이 모아 보세요. 무료로 시작할 수 있어요."
+promo_cta: "SaveBoard 무료로 시작하기"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "아래 목록은 이 배너와 무관하게 중립이에요."
 ---
 
 # 멜버른 CBD 라멘 랭킹 8곳 — 지금 진짜 영업 중인 곳만

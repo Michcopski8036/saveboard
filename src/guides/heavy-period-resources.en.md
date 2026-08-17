@@ -7,6 +7,17 @@ keywords: "heavy periods, heavy menstrual bleeding, menorrhagia, how much bleedi
 lang: "en"
 list_type: "thing"
 board_url: "https://www.saveboard.app/share/39627f62-7785-49ba-ba0d-06f8d097c204"
+promo_note: "Full disclosure: we built this one"
+promo_title: "'How heavy is heavy?' — put a number on it."
+promo_text: "PeriodVol estimates your flow in ml from what you log — pads, tampons or cups — and shows the 80 ml per-cycle line the sources on this page talk about. It doesn't diagnose anything; it gives you numbers instead of adjectives to bring to an appointment. Free, no account, and your data stays on your phone."
+promo_cta: "Try PeriodVol — free"
+promo_url: "https://periodvol.app/"
+promo_image: "/guides/periodvol-hero.jpg"
+promo_image_alt: "PeriodVol showing a cycle estimated at 87 ml, flagged above the 80 ml heavy threshold, with a calendar of logged days"
+promo_image_w: "600"
+promo_image_h: "1225"
+promo_fine: "Made by the team behind this guide. The list below stays neutral — PeriodVol isn't one of the sources."
+promo_theme: "rose"
 ---
 
 # Heavy Periods: 7 Sources Worth Reading — And What Each One Actually Counts

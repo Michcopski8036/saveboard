@@ -7,6 +7,12 @@ keywords: "퍼스 한식당, 퍼스 고기집, 퍼스 한국식 바베큐, 퍼�
 lang: "ko"
 board_url: "https://www.saveboard.app/share/20b57a01-2ced-43d7-a61f-73ae2e7f66a5"
 board_image: "/guides/korean-bbq-perth-board.jpg"
+promo_note: "먼저 밝혀요: 이 사이트가 저희 앱이에요"
+promo_title: "가보고 싶은 집, 스크롤에 묻히기 전에 저장하세요."
+promo_text: "이 가이드가 올라와 있는 SaveBoard가 바로 그 앱이에요. 공유시트에서 한 탭이면 식당 링크가 비주얼 카드로 보드에 저장돼요. 친구들이랑 보드 하나 만들어서 다음에 갈 집을 같이 모아 보세요. 무료로 시작할 수 있어요."
+promo_cta: "SaveBoard 무료로 시작하기"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "아래 목록은 이 배너와 무관하게 중립이에요."
 ---
 
 # 퍼스 한국식 고깃집 랭킹 9곳 — 어디로 갈지 정해드립니다
