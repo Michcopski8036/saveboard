@@ -36,7 +36,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }).then(() => {}, () => {});
   }
 
+  // No caching: the bot-detection insert above needs to run on every request,
+  // not just once per cache window. robots.txt is a fixed ~60-byte string —
+  // there's no real cost to skipping the CDN cache here.
   res.setHeader('Content-Type', 'text/plain');
-  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.setHeader('Cache-Control', 'no-store');
   return res.status(200).send(ROBOTS_CONTENT);
 }
