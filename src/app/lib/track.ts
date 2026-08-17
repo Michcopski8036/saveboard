@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { supabase } from './supabase';
 
-export type TrackEvent = 'pageview' | 'board_click' | 'signup_click';
+export type TrackEvent = 'pageview' | 'board_click' | 'signup_click' | 'store_click_ios' | 'store_click_android';
 
 const recent = new Map<string, number>();
 const DEDUPE_MS = 30_000;

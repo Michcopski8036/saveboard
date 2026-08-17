@@ -148,6 +148,9 @@ function computeTraffic(events: PageEvent[], now: Date) {
     visits7d:      views.filter(e => within(e, ago(7), trafficNow)).length,
     visits7dPrev:  views.filter(e => within(e, ago(14), ago(7))).length,
     boardClicks7d: clicks.filter(e => within(e, ago(7), trafficNow)).length,
+    guideViews7d: views.filter(e => e.path.startsWith('/guides') && within(e, ago(7), trafficNow)).length,
+    storeClicksIos7d: events.filter(e => e.event === 'store_click_ios' && within(e, ago(7), trafficNow)).length,
+    storeClicksAndroid7d: events.filter(e => e.event === 'store_click_android' && within(e, ago(7), trafficNow)).length,
     byPath: Object.values(byPathMap).sort((a, b) => b.views - a.views).slice(0, 12),
     topReferrers: Object.entries(refCount)
       .map(([referrer, n]) => ({ referrer, n }))
@@ -304,6 +307,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const activeNow   = withSeen.filter(u => nowMs - seenMs(u) <= ACTIVE_WINDOW_MS).length;
   const activeToday = withSeen.filter(u => nowMs - seenMs(u) <= 24 * 3600_000).length;
   const activeWeek  = withSeen.filter(u => nowMs - seenMs(u) <= 7 * 24 * 3600_000).length;
+
+  // 실제 로그인(인증) 기준 — 위 activeWeek는 앱이 켜져있을 때 찍히는 하트비트라
+  // "로그인"과는 다른 지표. last_sign_in_at은 Supabase auth가 세션 발급 시마다 갱신.
+  const loginsWeek = allUsers.filter(u => {
+    const t = Date.parse(u.last_sign_in_at ?? '');
+    return Number.isFinite(t) && nowMs - t <= 7 * 24 * 3600_000;
+  }).length;
 
   const activeUsers = [...withSeen]
     .sort((a, b) => seenMs(b) - seenMs(a))
@@ -478,7 +488,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     usersByCountry,
     unknownLocationCount: unknownCount,
     usersByPlatform: platformCount,
-    presence: { activeNow, activeToday, activeWeek, neverSeen: totalUsers - withSeen.length },
+    presence: { activeNow, activeToday, activeWeek, loginsWeek, neverSeen: totalUsers - withSeen.length },
     activeUsers,
     topCategories,
     topTags,

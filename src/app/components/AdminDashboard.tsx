@@ -11,7 +11,7 @@ import { WorldMap } from './WorldMap';
 import { SeoPanel } from './SeoPanel';
 import { ReleasePanel } from './ReleasePanel';
 
-interface AdminStats {
+export interface AdminStats {
   overview: {
     totalUsers: number; newThisWeek: number; newThisMonth: number;
     totalLinks: number; linksThisWeek: number;
@@ -28,7 +28,7 @@ interface AdminStats {
     locale: string; platform: string; lastSeen: string; provider: string; country: string;
   }>;
   usersByPlatform: Record<string, number>;
-  presence: { activeNow: number; activeToday: number; activeWeek: number; neverSeen: number };
+  presence: { activeNow: number; activeToday: number; activeWeek: number; loginsWeek: number; neverSeen: number };
   activeUsers: Array<{
     id: string; email: string; lastSeen: string;
     platform: string; country: string; online: boolean;
@@ -51,6 +51,7 @@ interface AdminStats {
   };
   traffic?: {
     visits7d: number; visits7dPrev: number; boardClicks7d: number;
+    guideViews7d: number; storeClicksIos7d: number; storeClicksAndroid7d: number;
     byPath: Array<{ path: string; views: number; boardClicks: number }>;
     topReferrers: Array<{ referrer: string; n: number }>;
     topSources: Array<{ source: string; n: number }>;
@@ -1019,7 +1020,7 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
               )}
 
               {/* SEO */}
-              {activeTab === 'seo' && <SeoPanel accessToken={accessToken} />}
+              {activeTab === 'seo' && <SeoPanel accessToken={accessToken} stats={stats} />}
 
               {/* SYSTEM */}
               {activeTab === 'system' && (
