@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
+import { Analytics } from "@vercel/analytics/react";
 import App from "./app/App.tsx";
 import { SharedBoardPage } from "./app/components/SharedBoardPage.tsx";
 import { JoinTeamBoard } from "./app/components/JoinTeamBoard.tsx";
@@ -42,6 +43,7 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <LanguageProvider>
         <TrackedRoutes />
+        <Analytics />
       </LanguageProvider>
     </BrowserRouter>
   </ErrorBoundary>
