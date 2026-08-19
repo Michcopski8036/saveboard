@@ -513,9 +513,16 @@ function AppContent() {
       setBoards(bs);
       const nameById = new Map(bs.map(b => [b.id, b.name] as const));
       const { data: ownLd } = ownRes;
-      const memberIds = bs.filter(b => b.role === 'member').map(b => b.id);
-      const { data: sharedLd } = memberIds.length
-        ? await supabase.from('links').select('*').in('board_id', memberIds).order('created_at', { ascending: false })
+      // Shared-board rows to merge in: boards I JOINED (as member OR viewer —
+      // viewers still read links, RLS only blocks their writes) plus boards I
+      // OWN that have other members (their rows have user_id ≠ me, so the own-
+      // links query above misses them). The old `role === 'member'` filter
+      // predates the viewer role (Phase 2b, when joined == member) and silently
+      // dropped a demoted viewer's board links entirely. Owned single-member
+      // boards are skipped — nothing extra can exist there.
+      const sharedBoardIds = bs.filter(b => b.role !== 'owner' || b.memberCount > 1).map(b => b.id);
+      const { data: sharedLd } = sharedBoardIds.length
+        ? await supabase.from('links').select('*').in('board_id', sharedBoardIds).order('created_at', { ascending: false })
         : { data: [] as any[] };
 
       // A member's own row could also be their board's link; dedup by id.

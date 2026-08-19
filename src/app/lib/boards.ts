@@ -92,6 +92,29 @@ export async function getBoardByToken(token: string): Promise<{ id: string; name
   return row ?? null;
 }
 
+export interface InvitePreviewLink {
+  id: string; url: string; title: string; description?: string; image?: string;
+  created_at: number;  // ms epoch (links.created_at is Date.now())
+}
+
+/** Read-only link preview for the /team/<token> join page (anon-callable).
+ *  Returns null when the RPC is unavailable (migration not applied yet) or
+ *  errors — the caller then falls back to the meta-only join card. An empty
+ *  array means the board is genuinely empty. */
+export async function getBoardInvitePreview(token: string): Promise<InvitePreviewLink[] | null> {
+  const { data, error } = await supabase.rpc('get_board_invite_preview', { p_token: token });
+  if (error) return null;
+  return (data ?? []) as InvitePreviewLink[];
+}
+
+/** Whether the signed-in user already belongs to this board. board_members RLS
+ *  makes your own row (or, as owner, all rows) visible, so any hit means
+ *  owner/member/viewer — the join CTA becomes "Open board" instead. */
+export async function isBoardMemberSelf(boardId: string): Promise<boolean> {
+  const { data } = await supabase.from('board_members').select('board_id').eq('board_id', boardId).limit(1);
+  return !!data?.length;
+}
+
 export async function loadBoardMembers(boardId: string): Promise<BoardMember[]> {
   const { data } = await supabase.from('board_members').select('user_id, role').eq('board_id', boardId);
   return (data ?? []) as BoardMember[];
