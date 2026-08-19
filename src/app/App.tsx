@@ -180,6 +180,14 @@ function AppContent() {
   // View-only membership (Team owners can demote members): no adds/edits there.
   const isViewerBoard = (name: string) => boardByName.get(name)?.role === 'viewer';
 
+  // Saves-quota count = ONLY links this user owns. The `links` state also holds
+  // OTHER people's links (loadData merges in the rows of shared boards I joined
+  // so they can be displayed), and those must never eat my Free-plan limit —
+  // they count against their owners. Keep in sync with the server-truth count
+  // the import paths use: links WHERE user_id = auth.uid() (SharedBoardPage /
+  // handlePendingImport). Rows missing user_id (shouldn't happen) fail closed.
+  const myLinkCount = links.filter(l => !l.user_id || l.user_id === user?.id).length;
+
   // Heartbeat so the admin dashboard can tell who is signed in right now. Only
   // ticks while the app is actually in the foreground, so a backgrounded tab
   // stops counting as active.
@@ -649,7 +657,7 @@ function AppContent() {
   const handleAddUrl = async (urlOverride?: string, onSuccess?: () => void) => {
     const input = (urlOverride ?? urlInput).trim();
     if (!input || !user) return;
-    if (!isPro && links.length >= FREE_LIMITS.links) { setShowUpgrade(true); return; }
+    if (!isPro && myLinkCount >= FREE_LIMITS.links) { setShowUpgrade(true); return; }
     setErrorMessage(''); setSuccessMessage(''); setInfoMessage(''); setIsAdding(true);
     // Target boards: the multi-select from the Add modal if any, else the
     // currently-viewed board. The same item is copied into each.
@@ -731,7 +739,7 @@ function AppContent() {
     // Free plan: don't blow past the saves quota. Each file becomes one row per
     // target board, so a file costs `targetCats.length` saves.
     if (!isPro) {
-      const remaining = FREE_LIMITS.links - links.length;
+      const remaining = FREE_LIMITS.links - myLinkCount;
       const maxFiles = Math.floor(remaining / targetCats.length);
       if (maxFiles <= 0) { setShowUpgrade(true); clearInput(); return; }
       if (files.length > maxFiles) {
@@ -1221,7 +1229,7 @@ function AppContent() {
             </button>
 
             {/* Avatar */}
-            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => { if (userId) clearSnapshot(userId); await supabase.auth.signOut(); }} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowCleanup={() => (isPro ? setShowCleanup(true) : setShowUpgrade(true))} onShowAdmin={isAdmin(user?.email) ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} plan={activePlan} currentLinks={links.length} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
+            <ProfileMenu onExport={handleExport} onImport={handleImport} onSignOut={async () => { if (userId) clearSnapshot(userId); await supabase.auth.signOut(); }} onShowUpgrade={() => setShowUpgrade(true)} onShowBilling={() => setShowBilling(true)} onShowSettings={() => setShowSettings(true)} onShowLanguage={() => setShowLanguage(true)} onShowHelp={() => setShowHelp(true)} onShowCleanup={() => (isPro ? setShowCleanup(true) : setShowUpgrade(true))} onShowAdmin={isAdmin(user?.email) ? () => setShowAdmin(true) : undefined} user={user} isPro={isPro} plan={activePlan} currentLinks={myLinkCount} currentBoards={categories.length} currentStorageMb={currentStorageMb} />
           </div>
 
           {/* Payment-failure banner — Pro stays gated on `active`, so tell the user why it lapsed */}
@@ -1797,7 +1805,7 @@ function AppContent() {
       {showUpgrade && (
         <UpgradePage
           onClose={() => setShowUpgrade(false)}
-          currentLinks={links.length}
+          currentLinks={myLinkCount}
           currentBoards={categories.length}
           currentStorageMb={currentStorageMb}
           userId={user?.id}
@@ -1816,7 +1824,7 @@ function AppContent() {
           onShowUpgrade={() => { setShowBilling(false); setShowUpgrade(true); }}
           onRestorePurchases={handleRestorePurchases}
           userId={user?.id}
-          currentLinks={links.length}
+          currentLinks={myLinkCount}
           currentBoards={categories.length}
           currentStorageMb={currentStorageMb}
           subData={subData}
@@ -1862,7 +1870,7 @@ function AppContent() {
           onRate={handleRate}
           onShowPrivacy={() => setShowPrivacy(true)}
           onShowTerms={() => setShowTerms(true)}
-          linkCount={links.length}
+          linkCount={myLinkCount}
           boardCount={categories.length}
           isPro={isPro}
           plan={activePlan}
