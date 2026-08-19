@@ -16,7 +16,7 @@
 --    missing, so the ordering is fail-safe either way.)
 
 create or replace function public.get_board_invite_preview(p_token uuid)
-returns table (id uuid, url text, title text, description text, image text, created_at bigint)
+returns table (id text, url text, title text, description text, image text, created_at bigint)
 language sql security definer set search_path = public as $$
   select l.id, l.url, l.title, l.description, l.image, l.created_at::bigint
   from public.links l
