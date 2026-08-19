@@ -1,0 +1,70 @@
+{
+  "boardName": "Is that charity legit? 8 official sources",
+  "boardNameKo": "이 단체, 진짜 맞나요? 공식 확인처 8곳",
+  "items": [
+    {
+      "title": "Charity Navigator",
+      "titleKo": "Charity Navigator",
+      "url": "https://www.charitynavigator.org/",
+      "description": "US 501(c)(3) only. Encompass Rating covers finance and accountability — but a charity needs a specific IRS filing history to be eligible at all.",
+      "descriptionKo": "미국 501(c)(3) 단체만 대상. 재무·운영을 함께 보는 Encompass Rating이지만, 특정 국세청 신고 이력이 있어야 평가 대상이 됩니다.",
+      "image": ""
+    },
+    {
+      "title": "Give.org (BBB Wise Giving Alliance)",
+      "titleKo": "Give.org (BBB Wise Giving Alliance)",
+      "url": "https://give.org/",
+      "description": "US only. Evaluates against 20 Standards for Charity Accountability — free reports, but evaluation happens on request or by complaint, not automatically for every charity.",
+      "descriptionKo": "미국만 해당. 20개 책임 기준으로 평가하며 보고서는 무료지만, 심사 대상이 되거나 민원이 있을 때 평가가 이루어집니다.",
+      "image": ""
+    },
+    {
+      "title": "CharityWatch",
+      "titleKo": "CharityWatch",
+      "url": "https://www.charitywatch.org/",
+      "description": "A+ to F letter grades for roughly 600 major American charities, built from audited financials its analysts review directly. Grade is free; full report needs membership.",
+      "descriptionKo": "미국 대형 단체 약 600곳에 A+~F 등급을 매깁니다. 감사된 재무제표를 분석가가 직접 검토. 등급은 무료, 상세 보고서는 유료 회원제.",
+      "image": ""
+    },
+    {
+      "title": "GuideStar (Candid)",
+      "titleKo": "GuideStar (Candid)",
+      "url": "https://www.guidestar.org/",
+      "description": "Not a rating — a self-reported Seal of Transparency (Bronze to Platinum) based on what the charity itself discloses about its work and finances.",
+      "descriptionKo": "평가가 아닌 자진 공개 등급(Bronze~Platinum). 단체가 스스로 공개한 활동·재무 정보를 기준으로 부여됩니다.",
+      "image": ""
+    },
+    {
+      "title": "ACNC Charity Register",
+      "titleKo": "ACNC 자선단체 등록부",
+      "url": "https://www.acnc.gov.au/charity/about-charity-register",
+      "description": "Australia's government regulator. Free public register — confirms legal registration and shows financial and annual reporting, not a performance grade.",
+      "descriptionKo": "호주 정부 규제 기관의 무료 공개 등록부. 법적 등록 상태와 재무·연간 보고를 보여줄 뿐 성적표는 아닙니다.",
+      "image": ""
+    },
+    {
+      "title": "Search the charity register (Charity Commission)",
+      "titleKo": "Charity Commission 등록부 검색",
+      "url": "https://www.gov.uk/find-charity-information",
+      "description": "England and Wales' statutory charity regulator. Free search by name, number, or area of operation. Scotland and Northern Ireland run separate registers.",
+      "descriptionKo": "잉글랜드·웨일스의 법정 자선단체 규제 기관. 이름·번호·활동 지역으로 무료 검색. 스코틀랜드·북아일랜드는 별도 등록부.",
+      "image": ""
+    },
+    {
+      "title": "CRA List of Charities",
+      "titleKo": "CRA 기부단체 명부",
+      "url": "https://www.canada.ca/en/revenue-agency/services/charities-giving/list-charities.html",
+      "description": "Canada's federal tax registry. Confirms a charity is registered under the Income Tax Act and eligible to issue official donation receipts.",
+      "descriptionKo": "캐나다 연방 세무 등록부. 소득세법에 따라 등록되어 공식 기부금 영수증을 발급할 자격이 있는지 확인해 줍니다.",
+      "image": ""
+    },
+    {
+      "title": "1365기부포털",
+      "titleKo": "1365기부포털",
+      "url": "https://www.nanumkorea.go.kr/",
+      "description": "Aggregates Korea's National Tax Service disclosure filings for public-interest corporations plus locally registered fundraising groups — a disclosure lookup, not a rating.",
+      "descriptionKo": "국세청에 공시된 공익법인 결산·감사 자료와 지자체 등록 모금단체 정보를 한데 모은 공시 통합 조회 시스템. 평가가 아닌 공시 자료입니다.",
+      "image": ""
+    }
+  ]
+}
