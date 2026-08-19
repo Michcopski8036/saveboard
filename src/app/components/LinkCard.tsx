@@ -67,6 +67,8 @@ export interface LinkData {
   image: string; category: string; savedAt: Date; comments?: string[]; notes?: string; tags?: string[];
   boardId?: string | null;   // unified boards: which board this link belongs to (null = unsorted)
   remindAt?: Date | null;    // Pro reminders: when to resurface this link
+  user_id?: string;          // row owner — the links state also holds OTHER users' links
+                             // (shared boards I joined), and quota counting needs to tell them apart
 }
 
 interface LinkCardProps {
