@@ -7,6 +7,12 @@ keywords: "perth korean bbq, korean bbq perth, best korean bbq perth, korean res
 lang: "en"
 board_url: "https://www.saveboard.app/share/20b57a01-2ced-43d7-a61f-73ae2e7f66a5"
 board_image: "/guides/korean-bbq-perth-board.jpg"
+promo_note: "Full disclosure: this is our app"
+promo_title: "Found a place you want to try? Save it before it scrolls away."
+promo_text: "This guide lives on SaveBoard, our bookmarking app. Share any restaurant link to it from your share sheet — one tap — and it lands as a visual card on a board. Start a board with friends and collect where you're eating next together. Free to start."
+promo_cta: "Get SaveBoard — it's free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "The list below stays neutral — this banner doesn't change the ranking."
 ---
 
 # Korean BBQ in Perth, Ranked: Which of the 9 Suits Your Table

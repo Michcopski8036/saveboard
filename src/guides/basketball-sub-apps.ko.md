@@ -9,9 +9,15 @@ list_type: "software"
 board_image: "/guides/basketball-sub-apps-board.jpg"
 board_url: "https://www.saveboard.app/share/583b4080-255a-4d24-8748-1607a2f3caaf"
 promo_note: "먼저 밝혀요: 저희가 직접 만든 앱이에요"
-promo_text: "이 글 아래에 나오는 CourtClock은 이 가이드를 쓴 저희 팀이 만들었어요. 무료고, 설치 없이 브라우저에서 바로 열리고, 쿼터별로 선수마다 교체 시간을 재 줘요. 코치만이 아니라 매주 돌아가며 서브 당번을 맡는 학부모에 맞춰 설계했어요. 아래 순위는 이 배너와 무관하게 중립입니다."
-promo_cta: "CourtClock 열어보기 — 무료"
+promo_title: "누가 오래 뛰었는지, 보면 알아요."
+promo_text: "선수 아이콘이 뛴 시간만큼 차올라요. 너무 오래 뛰면 빨개지고 땀까지 흘리고요 — 그때 CourtClock이 'Sub out: Noah, Ruby'처럼 누굴 빼야 할지 먼저 알려줘요. 벤치는 적게 뛴 순서로 저절로 정렬돼서 다음에 넣을 선수가 항상 맨 위에 있어요. 무료고, 설치 없이 브라우저에서 바로 열려요."
+promo_cta: "CourtClock 무료로 열기"
 promo_url: "https://courtclock-iota.vercel.app/"
+promo_image: "/guides/courtclock-gauges.jpg"
+promo_image_alt: "경기 중 CourtClock 화면: 뛴 시간만큼 차오른 선수 아이콘, 빨개져서 땀 흘리는 두 선수, 코트 위 'Sub out: Noah, Ruby' 알림, 적게 뛴 순서로 정렬된 벤치"
+promo_image_w: "720"
+promo_image_h: "775"
+promo_fine: "이 가이드를 쓴 저희 팀이 만들었어요. 아래 순위는 이 배너와 무관하게 중립이고, CourtClock은 순위 밖 항목이에요."
 ---
 
 # 농구 교체 관리 앱 8곳 — 무료가 어디까지인지 직접 확인했습니다

@@ -90,7 +90,7 @@ function parseGuide(raw, lang) {
   // Restaurant + PostalAddress; everything else is a Thing with a name and a
   // link, because marking software up as a restaurant with a street address is
   // simply false.
-  return { ...post, lang, boardUrl: '', boardImage: '', listType: 'place', promoNote: '', promoText: '', promoCta: '', promoUrl: '', ...extractGuideFrontmatter(raw) };
+  return { ...post, lang, boardUrl: '', boardImage: '', listType: 'place', promoNote: '', promoTitle: '', promoText: '', promoCta: '', promoUrl: '', promoImage: '', promoImageAlt: '', promoImageW: '', promoImageH: '', promoFine: '', promoTheme: '', ...extractGuideFrontmatter(raw) };
 }
 
 function extractGuideFrontmatter(raw) {
@@ -106,10 +106,17 @@ function extractGuideFrontmatter(raw) {
     if (key === 'board_url') data.boardUrl = val;
     if (key === 'board_image') data.boardImage = val;
     if (key === 'list_type')   data.listType   = val;
-    if (key === 'promo_note')  data.promoNote  = val;
-    if (key === 'promo_text')  data.promoText  = val;
-    if (key === 'promo_cta')   data.promoCta   = val;
-    if (key === 'promo_url')   data.promoUrl   = val;
+    if (key === 'promo_note')      data.promoNote     = val;
+    if (key === 'promo_title')     data.promoTitle    = val;
+    if (key === 'promo_text')      data.promoText     = val;
+    if (key === 'promo_cta')       data.promoCta      = val;
+    if (key === 'promo_url')       data.promoUrl      = val;
+    if (key === 'promo_image')     data.promoImage    = val;
+    if (key === 'promo_image_alt') data.promoImageAlt = val;
+    if (key === 'promo_image_w')   data.promoImageW   = val;
+    if (key === 'promo_image_h')   data.promoImageH   = val;
+    if (key === 'promo_fine')      data.promoFine     = val;
+    if (key === 'promo_theme')     data.promoTheme    = val;
   }
   return data;
 }
@@ -341,12 +348,21 @@ function guideHtml(guide, otherLang) {
   const otherHref = guide.lang === 'ko' ? `/guides/${koSlug}` : `/guides/${koSlug}-ko`;
   const otherLabel = guide.lang === 'ko' ? 'English' : '한국어';
 
+  // Same ad copy as the app page's board card (GuidePostPage.tsx) — keep the
+  // two in step when either changes.
+  const boardKo = guide.lang === 'ko';
   const boardCta = guide.boardUrl
-    ? `<figure>
+    ? `<aside style="margin:24px 0;padding:20px;border:1px solid #e9d5ff;border-radius:16px;background:#faf5ff;max-width:680px">
         <img src="${escAttr(guide.boardImage || '/guides/shared-board-app.jpg')}" loading="lazy"
-          alt="${guide.lang === 'ko' ? '공유된 보드를 휴대폰에서 연 화면' : 'A shared SaveBoard board open on a phone'}" />
-        <figcaption><a href="${escAttr(guide.boardUrl)}">${guide.lang === 'ko' ? 'SaveBoard에서 전체 리스트 열기 →' : 'Open the full list as a SaveBoard →'}</a></figcaption>
-      </figure>`
+          alt="${boardKo ? '이 리스트의 보드를 휴대폰에서 연 화면' : 'This guide&#39;s board open on a phone'}"
+          style="display:block;width:176px;border-radius:12px;margin:0 0 16px" />
+        <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9333ea;margin:0 0 8px"><strong>${boardKo ? '이 리스트를 SaveBoard 보드로' : 'This list as a SaveBoard board'}</strong></p>
+        <p style="font-size:22px;font-weight:800;margin:0 0 10px">${boardKo ? '링크 하나하나 확인하기 번거로우시죠?' : 'Tired of checking links one by one?'}</p>
+        <p style="margin:0 0 16px">${boardKo
+          ? '이 페이지의 모든 링크를 한번에 한곳에 모아 보세요. 전부 SaveBoard 보드 하나에 비주얼 카드로 정리돼 있어요 — 로그인 없이 열리고, 내 보드로 가져가면 다음에 다시 검색하지 않아도 돼요.'
+          : 'See every link on this page in one go — they&#39;re all on a single SaveBoard board, laid out as visual cards. It opens without a login, and if you copy it to your own board you won&#39;t be searching for these again.'}</p>
+        <p style="margin:0"><a href="${escAttr(guide.boardUrl)}" style="display:inline-block;padding:12px 24px;background:linear-gradient(90deg,#A259FF,#FF7262);color:#fff;border-radius:12px;font-weight:700;text-decoration:none">${boardKo ? '모든 링크 한곳에서 열기' : 'Open all the links in one place'} →</a></p>
+      </aside>`
     : '';
 
   const body = `
@@ -459,10 +475,25 @@ function guideHtml(guide, otherLang) {
 // inline styles — it only shows to crawlers and in the pre-hydration flash;
 // human readers get the Tailwind version in GuidePostPage.tsx.
 function promoHtml(guide) {
-  return `<aside style="margin:20px 0;padding:16px 20px;border:1px solid #e9d5ff;border-radius:12px;background:#faf5ff">
-        <p><strong>${esc(guide.promoNote)}</strong></p>
-        <p>${esc(guide.promoText)}</p>
-        <p><a href="${escAttr(guide.promoUrl)}">${esc(guide.promoCta)} →</a></p>
+  // Mirrors PROMO_THEMES in GuidePostPage.tsx: default = SaveBoard purple,
+  // rose = PeriodVol's palette.
+  const theme = guide.promoTheme === 'rose'
+    ? { border: '#EBDED7', bg: '#FBF7F4', eyebrow: '#8A5A6B', cta: '#8A5A6B' }
+    : { border: '#e9d5ff', bg: '#faf5ff', eyebrow: '#9333ea', cta: '#A259FF' };
+  const img = guide.promoImage
+    ? `<a href="${escAttr(guide.promoUrl)}"><img src="${escAttr(guide.promoImage)}"
+          alt="${escAttr(guide.promoImageAlt)}" width="${escAttr(guide.promoImageW)}" height="${escAttr(guide.promoImageH)}"
+          loading="lazy" style="display:block;width:100%;max-width:420px;height:auto" /></a>`
+    : '';
+  return `<aside style="margin:24px 0;border:1px solid ${theme.border};border-radius:16px;overflow:hidden;background:${theme.bg};max-width:680px">
+        ${img}
+        <div style="padding:20px">
+          <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${theme.eyebrow};margin:0 0 8px"><strong>${esc(guide.promoNote)}</strong></p>
+          ${guide.promoTitle ? `<p style="font-size:22px;font-weight:800;margin:0 0 10px">${esc(guide.promoTitle)}</p>` : ''}
+          <p style="margin:0 0 16px">${esc(guide.promoText)}</p>
+          <p style="margin:0"><a href="${escAttr(guide.promoUrl)}" style="display:inline-block;padding:12px 24px;background:${theme.cta};color:#fff;border-radius:12px;font-weight:700;text-decoration:none">${esc(guide.promoCta)} →</a></p>
+          ${guide.promoFine ? `<p style="font-size:12px;color:#9ca3af;margin:12px 0 0">${esc(guide.promoFine)}</p>` : ''}
+        </div>
       </aside>`;
 }
 

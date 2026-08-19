@@ -7,6 +7,12 @@ keywords: "무료 AI 챗봇, ChatGPT 무료, Claude 무료, 제미나이 무료,
 lang: "ko"
 list_type: "software"
 board_url: "https://www.saveboard.app/share/6a276d3c-adf4-4d98-8bde-f338e7d1a96c"
+promo_note: "먼저 밝혀요: 이 사이트가 저희 앱이에요"
+promo_title: "찾은 도구, 열어둔 탭 열네 개 말고 보드 한곳에."
+promo_text: "이 가이드가 올라와 있는 SaveBoard는 저희가 만든 비주얼 북마크 앱이에요. 링크를 붙여넣거나 공유하면 바로 보드의 카드가 돼요 — 비교 중인 챗봇·문서·글을 다시 찾을 수 있는 한곳에 모아 두세요. 무료로 시작할 수 있어요."
+promo_cta: "SaveBoard 무료로 시작하기"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "아래 순위는 이 배너와 무관하게 중립이에요."
 ---
 
 # 무료로 쓰는 AI 챗봇 8곳 — '무료'가 실제로 어디까지인지 확인했습니다

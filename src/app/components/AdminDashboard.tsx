@@ -4,6 +4,7 @@ import {
   Users, Link2, TrendingUp, Share2, Eye, Crown, Apple, CreditCard,
   RefreshCw, BarChart2, Tag, Folder, Calendar, ArrowUp, ArrowDown,
   Minus, Globe, Smartphone, AlertCircle, CheckCircle, XCircle, ChevronDown, Loader2, Search,
+  BookOpen, LogIn,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
@@ -11,7 +12,7 @@ import { WorldMap } from './WorldMap';
 import { SeoPanel } from './SeoPanel';
 import { ReleasePanel } from './ReleasePanel';
 
-interface AdminStats {
+export interface AdminStats {
   overview: {
     totalUsers: number; newThisWeek: number; newThisMonth: number;
     totalLinks: number; linksThisWeek: number;
@@ -28,7 +29,7 @@ interface AdminStats {
     locale: string; platform: string; lastSeen: string; provider: string; country: string;
   }>;
   usersByPlatform: Record<string, number>;
-  presence: { activeNow: number; activeToday: number; activeWeek: number; neverSeen: number };
+  presence: { activeNow: number; activeToday: number; activeWeek: number; loginsWeek: number; neverSeen: number };
   activeUsers: Array<{
     id: string; email: string; lastSeen: string;
     platform: string; country: string; online: boolean;
@@ -51,8 +52,10 @@ interface AdminStats {
   };
   traffic?: {
     visits7d: number; visits7dPrev: number; boardClicks7d: number;
+    guideViews7d: number; storeClicksIos7d: number; storeClicksAndroid7d: number;
     byPath: Array<{ path: string; views: number; boardClicks: number }>;
     topReferrers: Array<{ referrer: string; n: number }>;
+    topSources: Array<{ source: string; n: number }>;
   };
   automations?: Array<{
     routine: string; status: string; summary: string | null;
@@ -177,6 +180,18 @@ function Section({ title, icon: Icon, children }: { title: string; icon: React.E
         <h2 className="text-[13px] font-bold uppercase tracking-widest" style={{ color: t.textMuted }}>{title}</h2>
       </div>
       {children}
+    </div>
+  );
+}
+
+/** icon + big number + label, used for the marketing-inflow tile row. */
+function InflowTile({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: number }) {
+  const { t } = useTheme();
+  return (
+    <div>
+      <Icon className="w-3.5 h-3.5 mb-1.5" style={{ color: t.textFaint }} />
+      <p className="text-[20px] font-bold leading-none" style={{ color: t.textPrimary }}>{value.toLocaleString()}</p>
+      <p className="text-[10px] mt-1" style={{ color: t.textFaint }}>{label}</p>
     </div>
   );
 }
@@ -630,7 +645,7 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                         const max = Math.max(...stats.linksOverTime.map(x => x.count), 1);
                         const pct = Math.max(2, (d.count / max) * 100);
                         return (
-                          <div key={i} className="flex-1 flex flex-col items-center group relative">
+                          <div key={i} className="flex-1 flex h-full flex-col items-center justify-end group relative">
                             <div className="absolute -top-6 left-1/2 -translate-x-1/2 hidden group-hover:block z-10 whitespace-nowrap px-1.5 py-0.5 rounded text-[9px] font-semibold"
                               style={{ background: '#7C3AED', color: '#fff' }}>
                               {d.date.slice(5)} · {d.count}
@@ -1064,6 +1079,23 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
               {/* MARKETING */}
               {activeTab === 'marketing' && (
                 <>
+                  <Section title="마케팅 유입 (최근 7일)" icon={BarChart2}>
+                    {stats.traffic ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                        <InflowTile icon={Globe} label="웹사이트 방문" value={stats.traffic.visits7d} />
+                        <InflowTile icon={BookOpen} label="가이드 블로그 조회" value={stats.traffic.guideViews7d} />
+                        <InflowTile icon={Smartphone} label="App Store 클릭" value={stats.traffic.storeClicksIos7d} />
+                        <InflowTile icon={Smartphone} label="Google Play 클릭" value={stats.traffic.storeClicksAndroid7d} />
+                        <InflowTile icon={LogIn} label="로그인" value={stats.presence?.loginsWeek ?? 0} />
+                      </div>
+                    ) : (
+                      <div className="h-16 animate-pulse rounded-xl" style={{ background: t.pageBg }} />
+                    )}
+                    <p className="text-[10px] mt-4" style={{ color: t.textFaint }}>
+                      스토어 클릭은 랜딩페이지 버튼 클릭 시 기록 · 가이드 조회는 /guides 하위 경로 방문 수
+                    </p>
+                  </Section>
+
                   <Section title="페이지별 유입 (7일)" icon={TrendingUp}>
                     {(stats.traffic?.byPath.length ?? 0) === 0 ? (
                       <p className="text-[12px]" style={{ color: t.textMuted }}>
@@ -1088,16 +1120,30 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                   </Section>
 
                   <Section title="유입 경로" icon={Globe}>
-                    {(stats.traffic?.topReferrers.length ?? 0) === 0 ? (
+                    {(stats.traffic?.topSources.length ?? 0) === 0 && (stats.traffic?.topReferrers.length ?? 0) === 0 ? (
                       <p className="text-[12px]" style={{ color: t.textMuted }}>아직 외부 유입 기록 없음</p>
                     ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {stats.traffic!.topReferrers.map(r => (
-                          <span key={r.referrer} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold"
-                            style={{ background: t.hoverBg, color: t.textMuted, border: `1px solid ${t.cardBorder}` }}>
-                            {r.referrer} · {r.n}
-                          </span>
-                        ))}
+                      <div className="flex flex-col gap-2">
+                        {stats.traffic!.topSources.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {stats.traffic!.topSources.map(s => (
+                              <span key={s.source} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold"
+                                style={{ background: t.hoverBg, color: t.textPrimary, border: `1px solid ${t.cardBorder}` }}>
+                                {s.source} · {s.n}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {stats.traffic!.topReferrers.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {stats.traffic!.topReferrers.map(r => (
+                              <span key={r.referrer} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold"
+                                style={{ background: t.hoverBg, color: t.textMuted, border: `1px solid ${t.cardBorder}` }}>
+                                {r.referrer} · {r.n}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </Section>

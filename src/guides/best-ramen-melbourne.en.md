@@ -8,6 +8,12 @@ lang: "en"
 list_type: "place"
 board_image: "/guides/best-ramen-melbourne-board.jpg"
 board_url: "https://www.saveboard.app/share/60ef8221-a3ec-4a18-8f47-e7ed57ef86fb"
+promo_note: "Full disclosure: this is our app"
+promo_title: "Found a place you want to try? Save it before it scrolls away."
+promo_text: "This guide lives on SaveBoard, our bookmarking app. Share any restaurant link to it from your share sheet — one tap — and it lands as a visual card on a board. Start a board with friends and collect where you're eating next together. Free to start."
+promo_cta: "Get SaveBoard — it's free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "The list below stays neutral — this banner doesn't change the ranking."
 ---
 
 # Ramen in Melbourne CBD, Ranked: 8 Spots Open Right Now — And 3 Other Lists Get Wrong

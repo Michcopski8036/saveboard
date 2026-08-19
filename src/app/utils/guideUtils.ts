@@ -14,13 +14,23 @@ export interface GuideMeta {
   boardImage: string;
   /**
    * Optional own-app disclosure banner, rendered right after the intro (before
-   * the first H2). All four fields are frontmatter (`promo_note`, `promo_text`,
-   * `promo_cta`, `promo_url`); guides without them render exactly as before.
+   * the first H2). All fields are frontmatter (`promo_note` disclosure eyebrow,
+   * `promo_title` headline, `promo_text` body, `promo_cta`/`promo_url` button,
+   * `promo_image`/`promo_image_alt`/`promo_image_w`/`promo_image_h` hero shot,
+   * `promo_fine` small print); guides without them render exactly as before.
    */
   promoNote: string;
+  promoTitle: string;
   promoText: string;
   promoCta: string;
   promoUrl: string;
+  promoImage: string;
+  promoImageAlt: string;
+  promoImageW: string;
+  promoImageH: string;
+  promoFine: string;
+  /** Optional `promo_theme` — "rose" restyles the card in PeriodVol's palette; absent = SaveBoard purple. */
+  promoTheme: string;
   content: string;
 }
 
@@ -33,7 +43,7 @@ export interface GuidePair {
 
 function parseGuide(raw: string): GuideMeta {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  const empty: GuideMeta = { title: '', date: '', description: '', slug: '', keywords: '', lang: 'en', boardUrl: '', boardImage: '', promoNote: '', promoText: '', promoCta: '', promoUrl: '', content: raw };
+  const empty: GuideMeta = { title: '', date: '', description: '', slug: '', keywords: '', lang: 'en', boardUrl: '', boardImage: '', promoNote: '', promoTitle: '', promoText: '', promoCta: '', promoUrl: '', promoImage: '', promoImageAlt: '', promoImageW: '', promoImageH: '', promoFine: '', promoTheme: '', content: raw };
   if (!match) return empty;
   const data: Record<string, string> = {};
   match[1].split('\n').forEach(line => {
@@ -51,9 +61,16 @@ function parseGuide(raw: string): GuideMeta {
     boardUrl: data.board_url ?? '',
     boardImage: data.board_image ?? '',
     promoNote: data.promo_note ?? '',
+    promoTitle: data.promo_title ?? '',
     promoText: data.promo_text ?? '',
     promoCta: data.promo_cta ?? '',
     promoUrl: data.promo_url ?? '',
+    promoImage: data.promo_image ?? '',
+    promoImageAlt: data.promo_image_alt ?? '',
+    promoImageW: data.promo_image_w ?? '',
+    promoImageH: data.promo_image_h ?? '',
+    promoFine: data.promo_fine ?? '',
+    promoTheme: data.promo_theme ?? '',
     content: match[2].trim(),
   };
 }

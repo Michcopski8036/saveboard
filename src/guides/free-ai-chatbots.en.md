@@ -7,6 +7,12 @@ keywords: "free ai chatbot, chatgpt free plan, claude free, gemini free, perplex
 lang: "en"
 list_type: "software"
 board_url: "https://www.saveboard.app/share/6a276d3c-adf4-4d98-8bde-f338e7d1a96c"
+promo_note: "Full disclosure: this is our app"
+promo_title: "Keep the tools you find — not fourteen open tabs."
+promo_text: "This guide lives on SaveBoard, our bookmarking app. Paste or share a link and it becomes a visual card on a board — so the chatbots, docs and articles you're comparing sit in one place you can actually find again. Free to start."
+promo_cta: "Get SaveBoard — it's free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "The ranking below stays neutral — this banner doesn't change it."
 ---
 
 # 8 AI Chatbots You Can Use Free — And Exactly Where 'Free' Stops

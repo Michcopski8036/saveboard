@@ -9,6 +9,27 @@ import { track } from '../../lib/track';
 
 const BASE_URL = 'https://www.saveboard.app';
 
+/**
+ * Promo card palettes, keyed by `promo_theme` frontmatter. `default` is the
+ * SaveBoard purple used by the CourtClock banner; `rose` is PeriodVol's
+ * rose/mauve tokens (bg #FBF7F4 / rose #F6E2DD / mauve #8A5A6B / blood #D23B26)
+ * so the two brands don't wear the same jacket.
+ */
+const PROMO_THEMES: Record<string, { card: string; imgCol: string; eyebrow: string; cta: string }> = {
+  default: {
+    card: 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 shadow-purple-100',
+    imgCol: 'bg-[#171310]',
+    eyebrow: 'text-purple-600',
+    cta: 'bg-gradient-to-r from-[#A259FF] to-[#FF7262] shadow-purple-200',
+  },
+  rose: {
+    card: 'bg-gradient-to-br from-[#FBF7F4] to-[#F6E2DD] border-[#EBDED7] shadow-rose-100',
+    imgCol: 'bg-[#FBF7F4]',
+    eyebrow: 'text-[#8A5A6B]',
+    cta: 'bg-gradient-to-r from-[#D23B26] to-[#8A5A6B] shadow-rose-200',
+  },
+};
+
 export function GuidePostPage() {
   const { slug } = useParams<{ slug: string }>();
   const found = getGuideByRouteSlug(slug ?? '');
@@ -42,6 +63,7 @@ export function GuidePostPage() {
   // frontmatter take the single-article path exactly as before.
   const hasPromo = Boolean(guide.promoUrl && guide.promoText);
   const [intro, afterIntro] = hasPromo ? splitAtFirstSection(beforeFaq) : [beforeFaq, ''];
+  const promoTheme = PROMO_THEMES[guide.promoTheme] ?? PROMO_THEMES.default;
   const otherHref = `/guides/${guide.slug}${ko ? '' : '-ko'}`;
 
   return (
@@ -88,20 +110,51 @@ export function GuidePostPage() {
           </article>
 
           {hasPromo && (
-            <aside className="my-9 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 p-6 sm:p-7">
-              <p className="text-[13px] font-semibold text-purple-600 mb-2">
-                {guide.promoNote}
-              </p>
-              <p className="text-[15px] text-gray-700 leading-relaxed mb-5">
-                {guide.promoText}
-              </p>
-              <a
-                href={guide.promoUrl}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[14px] hover:opacity-90 active:scale-95 transition-all shadow-md shadow-purple-200"
-              >
-                {guide.promoCta}
-                <ArrowRight className="w-4 h-4" />
-              </a>
+            <aside className={`my-9 rounded-2xl overflow-hidden border shadow-lg ${promoTheme.card}`}>
+              {/* Portrait screenshot: side-by-side from 821px, stacked below —
+                  the image is never cropped (no object-cover) because the
+                  screenshot's top-to-bottom sequence is the story. */}
+              <div className="flex flex-col min-[821px]:flex-row">
+                {guide.promoImage && (
+                  <a
+                    href={guide.promoUrl}
+                    aria-label={guide.promoCta}
+                    className={`block shrink-0 min-[821px]:w-[44%] min-[821px]:flex min-[821px]:items-center ${promoTheme.imgCol}`}
+                  >
+                    <img
+                      src={guide.promoImage}
+                      alt={guide.promoImageAlt}
+                      width={Number(guide.promoImageW) || undefined}
+                      height={Number(guide.promoImageH) || undefined}
+                      loading="lazy"
+                      className="block w-full h-auto"
+                    />
+                  </a>
+                )}
+                <div className="p-6 sm:p-8 flex flex-col justify-center">
+                  <p className={`text-[12px] font-bold uppercase tracking-wider mb-2 ${promoTheme.eyebrow}`}>
+                    {guide.promoNote}
+                  </p>
+                  {guide.promoTitle && (
+                    <h2 className="text-[23px] sm:text-[27px] font-extrabold text-gray-900 leading-tight mb-3">
+                      {guide.promoTitle}
+                    </h2>
+                  )}
+                  <p className="text-[15px] text-gray-600 leading-relaxed mb-6">
+                    {guide.promoText}
+                  </p>
+                  <a
+                    href={guide.promoUrl}
+                    className={`flex min-[821px]:inline-flex items-center justify-center gap-2 px-8 py-4 text-white rounded-2xl font-bold text-[16px] hover:opacity-90 active:scale-95 transition-all shadow-lg self-start w-full min-[821px]:w-auto ${promoTheme.cta}`}
+                  >
+                    {guide.promoCta}
+                    <ArrowRight className="w-5 h-5" />
+                  </a>
+                  {guide.promoFine && (
+                    <p className="text-[12px] text-gray-400 mt-4">{guide.promoFine}</p>
+                  )}
+                </div>
+              </div>
             </aside>
           )}
 
@@ -112,7 +165,10 @@ export function GuidePostPage() {
           )}
 
           {guide.boardUrl && (
-            <div className="mt-10 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-8">
+            /* Colour scheme is the pre-redesign board card (founder call:
+               light purple-50→pink-50 with the brand-gradient button, not the
+               solid purple) — the ad copy and layout stay. */
+            <div className="mt-10 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-7 sm:p-8">
               <div className="flex flex-col sm:flex-row items-center gap-7">
                 <img
                   src={guide.boardImage || '/guides/shared-board-app.jpg'}
@@ -121,16 +177,16 @@ export function GuidePostPage() {
                   className="w-44 sm:w-48 shrink-0 rounded-xl shadow-md border border-purple-100"
                 />
                 <div className="text-center sm:text-left">
-                  <p className="text-[13px] font-semibold text-purple-600 mb-2">
-                    {ko ? '이 리스트, 보드로 가져가기' : 'Take this list with you'}
+                  <p className="text-[12px] font-bold uppercase tracking-wider text-purple-600 mb-2">
+                    {ko ? '이 리스트를 SaveBoard 보드로' : 'This list as a SaveBoard board'}
                   </p>
-                  <h2 className="text-[23px] font-extrabold text-gray-900 mb-3">
-                    {ko ? '한 번에 저장하고, 필요할 때 꺼내보기' : 'Save it once, open it whenever'}
+                  <h2 className="text-[23px] sm:text-[26px] font-extrabold text-gray-900 leading-tight mb-3">
+                    {ko ? '링크 하나하나 확인하기 번거로우시죠?' : 'Tired of checking links one by one?'}
                   </h2>
-                  <p className="text-[15px] text-gray-500 mb-6">
+                  <p className="text-[15px] text-gray-500 leading-relaxed mb-6">
                     {ko
-                      ? '로그인 없이 열려요. 내 보드로 가져가면 다음에 약속 잡을 때 다시 검색하지 않아도 되고, 직접 찾은 곳도 더할 수 있어요.'
-                      : 'Opens without a login. Copy it to your own board and you won’t be searching for these again next time — and you can add your own finds.'}
+                      ? '이 페이지의 모든 링크를 한번에 한곳에 모아 보세요. 전부 SaveBoard 보드 하나에 비주얼 카드로 정리돼 있어요 — 로그인 없이 열리고, 내 보드로 가져가면 다음에 다시 검색하지 않아도 돼요.'
+                      : 'See every link on this page in one go — they’re all on a single SaveBoard board, laid out as visual cards. It opens without a login, and if you copy it to your own board you won’t be searching for these again.'}
                   </p>
                   {/* Plain <a>: /share/<token> is a different react-router route that
                       reads the board fresh; a client-side Link is fine, but an <a>
@@ -138,9 +194,9 @@ export function GuidePostPage() {
                   <a
                     href={guide.boardUrl}
                     onClick={() => track('board_click', { slug: guide.slug, lang: guide.lang })}
-                    className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-semibold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
+                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-bold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
                   >
-                    {ko ? '보드 열기' : 'Open the board'}
+                    {ko ? '모든 링크 한곳에서 열기' : 'Open all the links in one place'}
                     <ArrowRight className="w-4 h-4" />
                   </a>
                 </div>

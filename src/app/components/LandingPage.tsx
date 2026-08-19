@@ -2,6 +2,7 @@ import { Bookmark, Link2, FileText, Paperclip, StickyNote, Sparkles, Share2, Arr
 import { Link } from 'react-router';
 import { Capacitor } from '@capacitor/core';
 import { useLanguage } from '../context/LanguageContext';
+import { track } from '../lib/track';
 
 interface Props {
   onGetStarted: () => void;
@@ -284,6 +285,7 @@ export function LandingPage({ onGetStarted }: Props) {
             {!isNative && (
             <div className="flex gap-3 flex-wrap -mt-6 mb-10">
               <a href="https://apps.apple.com/app/id6770486850" target="_blank" rel="noopener noreferrer"
+                onClick={() => track('store_click_ios')}
                 className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-black text-white rounded-xl hover:opacity-90 active:scale-95 transition-all">
                 <svg viewBox="0 0 384 512" className="w-6 h-6 fill-white" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C71.4 141.6 16 184.6 16 272c0 26.1 4.8 53 14.3 80.7 12.8 36.9 58.9 127.3 107 125.8 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.3-83 102.5-120-65.2-30.7-61.7-90-61.3-89.8zM254.4 70.7c19.1-22.9 17.4-43.8 16.8-51.3-16.9.9-36.5 11.5-47.6 24.5-12.3 14-19.5 31.4-17.9 50.7 18.3 1.4 35-8 48.7-23.9z"/></svg>
                 <span className="text-left leading-tight">
@@ -292,6 +294,7 @@ export function LandingPage({ onGetStarted }: Props) {
                 </span>
               </a>
               <a href="https://play.google.com/store/apps/details?id=app.saveboard.saveboard" target="_blank" rel="noopener noreferrer"
+                onClick={() => track('store_click_android')}
                 className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-black text-white rounded-xl hover:opacity-90 active:scale-95 transition-all">
                 <svg viewBox="0 0 512 512" className="w-6 h-6" aria-hidden="true">
                   <path fill="#00D9FF" d="M48 59.5C45.5 62.9 44 67.9 44 74.3v363.4c0 6.4 1.5 11.4 4 14.8l1.2 1.2 203.5-203.5v-4.8L49.2 58.3 48 59.5z"/>

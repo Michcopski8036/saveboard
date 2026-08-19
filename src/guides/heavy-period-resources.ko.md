@@ -7,6 +7,17 @@ keywords: "과다월경, 월경과다, 생리량 많음, 월경량 측정, 생�
 lang: "ko"
 list_type: "thing"
 board_url: "https://www.saveboard.app/share/39627f62-7785-49ba-ba0d-06f8d097c204"
+promo_note: "먼저 밝혀요: 저희가 직접 만든 앱이에요"
+promo_title: "'얼마나 많아야 많은 걸까?' — 숫자로 확인하세요."
+promo_text: "PeriodVol은 기록한 패드·탐폰·컵으로 생리량을 ml로 추정하고, 이 페이지의 자료들이 말하는 주기당 80ml 기준선을 함께 보여줘요. 진단하는 앱이 아니에요 — '많은 것 같다' 대신 진료실에 가져갈 수 있는 숫자를 만들어 줘요. 무료고, 계정 없이 쓰고, 기록은 폰에만 남아요."
+promo_cta: "PeriodVol 무료로 써보기"
+promo_url: "https://periodvol.app/"
+promo_image: "/guides/periodvol-hero-ko.jpg"
+promo_image_alt: "87ml로 추정된 주기와 80ml 기준 초과 표시, 기록한 날짜가 표시된 달력이 보이는 PeriodVol 화면"
+promo_image_w: "600"
+promo_image_h: "1161"
+promo_fine: "이 가이드를 쓴 저희 팀이 만들었어요. 아래 목록은 이 배너와 무관하게 중립이고, PeriodVol은 목록에 없어요."
+promo_theme: "rose"
 ---
 
 # 과다월경, 어디서 확인해야 하나 — 공식 출처 7곳
