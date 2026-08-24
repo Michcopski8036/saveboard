@@ -215,6 +215,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     boardsByUserRes,
     pageEventsRes,
     automationRunsRes,
+    linksByUserRes,
   ] = await Promise.all([
     // All users via admin API
     supabase.auth.admin.listUsers({ perPage: 1000 }),
@@ -253,6 +254,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Routine self-reports
     supabase.from('automation_runs').select('routine, status, summary, artifact_url, ran_at')
       .order('ran_at', { ascending: false }).limit(20),
+
+    // Per-user link counts + first-save times (activation) — used to run as a
+    // second sequential round-trip after this batch, adding a full DB RTT.
+    supabase.from('links').select('user_id, created_at'),
   ]);
 
   // ── Users ─────────────────────────────────────────────────────────────────
@@ -396,7 +401,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const cancelledCount = subs.filter(s => s.status === 'canceled' || s.status === 'cancelled').length;
 
   // Enrich recentUsers with plan info and link counts
-  const { data: linksByUser } = await supabase.from('links').select('user_id, created_at');
+  const linksByUser = linksByUserRes.data;
   const userLinkCount: Record<string, number> = {};
   for (const row of (linksByUser ?? [])) {
     userLinkCount[row.user_id] = (userLinkCount[row.user_id] ?? 0) + 1;
