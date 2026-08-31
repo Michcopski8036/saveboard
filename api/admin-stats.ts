@@ -191,11 +191,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // /.dormant, or subscription details, and the cron isn't paying for data it
   // doesn't consume.
   if (cronOk) {
-    const { data: cronPageEvents } = await supabase.from('page_events')
-      .select('event, path, referrer, source, created_at')
-      .gte('created_at', new Date(now.getTime() - 14 * 86400000).toISOString());
-    const traffic = computeTraffic((cronPageEvents ?? []) as PageEvent[], now);
-    return res.status(200).json({ traffic, generatedAt: now.toISOString() });
+    const weekIso = new Date(now.getTime() - 7 * 86400000).toISOString();
+    const [pageEventsRes, cronUsersRes, cronLinksTotalRes, cronLinksWeekRes] = await Promise.all([
+      supabase.from('page_events')
+        .select('event, path, referrer, source, created_at')
+        .gte('created_at', new Date(now.getTime() - 14 * 86400000).toISOString()),
+      supabase.auth.admin.listUsers({ perPage: 1000 }),
+      supabase.from('links').select('id', { count: 'exact', head: true }),
+      supabase.from('links').select('id', { count: 'exact', head: true }).gte('created_at', weekIso),
+    ]);
+
+    const traffic = computeTraffic((pageEventsRes.data ?? []) as PageEvent[], now);
+
+    // 2026-08-31: AI Office 실적 패널이 SaveBoard도 "재방문·저장"으로 읽을 수 있게
+    // 집계 **숫자만** 추가한다. SaveBoard는 계정이 있는 앱이라 이 숫자들은 이미
+    // 아는 사실이다 — CourtClock처럼 익명 설치 ID를 새로 심을 이유가 없고, 그래야
+    // 스토어에 신고한 수집 항목도 그대로 둘 수 있다.
+    //
+    // 위 주석의 경계는 그대로다: 여기서 나가는 건 전부 스칼라 카운트이고,
+    // recentUsers/activeUsers(이메일·플랫폼), activation.neverSaved/.dormant,
+    // subscriptions는 여전히 사람 관리자 JWT 경로에서만 나온다. 사용자 목록을
+    // 읽긴 하지만 개별 행은 응답에 담지 않고 세기만 한다.
+    const cronUsers = cronUsersRes.data?.users ?? [];
+    const nowMs = now.getTime();
+    const seenMs = (u: { user_metadata?: { last_seen?: string } }) =>
+      Date.parse(u.user_metadata?.last_seen ?? '');
+    const within = (t: number, ms: number) => Number.isFinite(t) && nowMs - t <= ms;
+
+    const aggregate = {
+      totalUsers: cronUsers.length,
+      newThisWeek: cronUsers.filter(u => (u.created_at ?? '') >= weekIso).length,
+      // last_seen = 앱이 열려 있을 때 찍히는 하트비트, last_sign_in_at = 실제 인증.
+      // 둘 다 내보내는 이유는 "실행"과 "로그인"이 다른 질문이기 때문이다.
+      activeToday: cronUsers.filter(u => within(seenMs(u), 24 * 3600_000)).length,
+      activeWeek: cronUsers.filter(u => within(seenMs(u), 7 * 24 * 3600_000)).length,
+      loginsWeek: cronUsers.filter(u => within(Date.parse(u.last_sign_in_at ?? ''), 7 * 24 * 3600_000)).length,
+      totalLinks: cronLinksTotalRes.count ?? 0,
+      linksThisWeek: cronLinksWeekRes.count ?? 0,
+    };
+
+    return res.status(200).json({ traffic, aggregate, generatedAt: now.toISOString() });
   }
 
   const weekAgo  = new Date(now.getTime() - 7  * 86400000).toISOString();
