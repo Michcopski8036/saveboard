@@ -107,6 +107,14 @@ Subreddits: r/productivity, r/bookmarks, r/androidapps, r/iosapps, r/datacurator
 
 ---
 
+## SaaSHub  (2026-09-03 신규 — free self-serve, active)
+
+Full submission copy: `marketing/saashub-submission-saveboard.md`. Free, no account tier
+required to list. Already carries a "Bookmark Manager" alternatives page with Raindrop.io,
+Pinboard, Bookmark OS etc. — SaveBoard is not currently listed. Submission mechanics
+(exact field names, character limits) were not independently verified this run — see
+`marketing/directory-targets-2026-09-03.md`.
+
 ## G2 / Capterra  (lower priority — B2B review sites, consumer app fit is weak)
 
 Optional: create a Capterra/G2 product profile so the entity exists, but don't
@@ -114,6 +122,23 @@ invest heavily until you have users willing to leave reviews. AlternativeTo +
 Reddit + Product Hunt are the higher-leverage channels for a consumer app.
 
 ---
+
+## ⚠️ 2026-09-03 — SaaSHub 신규 타깃 발굴 (네트워크 제약 있었음)
+
+이번 실행은 `WebFetch`/`curl`이 이 세션의 네트워크 정책으로 전부 차단됐다(`EGRESS_BLOCKED`,
+`saveboard.app` 자기 사이트 포함). 그래서 이번 배치는 **WebSearch 요약만으로 조사**했고, 기존
+배치들의 기준("실제 페이지를 열어 다시 읽는다")을 못 지켰다 — 그래서 특정 매체 글을 인용하는
+신규 아웃리치 피치는 만들지 않았고, **자체 서술 캐노니컬 카피만 붙여넣는 셀프서브 디렉터리
+제출**로 범위를 좁혔다. 자세한 근거·거절한 후보 목록은 `marketing/directory-targets-2026-09-03.md`.
+
+- **SaaSHub** (`saashub.com`) — 무료 셀프서브 SaaS 디렉터리, 2026년 갱신 확인됨(북마크·생리앱
+  카테고리 둘 다 활성). Raindrop.io 등 경쟁사는 등재돼 있고 SaveBoard는 없음.
+  초안: `marketing/saashub-submission-saveboard.md`. 폼 정확한 필드명은 미확인(페이지 직접 못 엶)
+  — 제출 전 실제 폼을 열어 확인할 것.
+- PeriodVol용 SaaSHub·MyHealthApps.net 초안도 이번에 같이 썼다(라우틴 지침상 PeriodVol 몫도
+  이 저장소에 쓴다) — `marketing/saashub-submission-periodvol.md`,
+  `marketing/periodvol-myhealthapps-submission.md`. **PeriodVol 저장소엔 push 권한이 없어서
+  그쪽 `offsite-listings.md` 체크리스트에는 아직 반영 안 됨** — 실행하면 그쪽 파일에도 옮겨 적을 것.
 
 ## Priority order (2026-08-12 갱신)
 
@@ -133,3 +158,4 @@ Reddit + Product Hunt are the higher-leverage channels for a consumer app.
   뭘 해도 스팸으로 읽힌다(`u/PeriodVol`이 그 경우). 실제 사람이 참여하다 이해관계를 밝히고
   언급하는 건 대부분 허용된다. 카르마는 **댓글로** 쌓는다(글은 위험, 링크 금지).
 - ☐ Product Hunt · G2/Capterra — 미착수.
+- 📝 **SaaSHub (2026-09-03 초안)** — `marketing/saashub-submission-saveboard.md`. 미제출.
