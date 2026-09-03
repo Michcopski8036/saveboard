@@ -39,9 +39,11 @@ export function GuidePostPage() {
   useEffect(() => {
     if (!guide) return;
     const canonical = `${BASE_URL}/guides/${guide.slug}${guide.lang === 'ko' ? '-ko' : ''}`;
-    document.title = `${guide.title} — SaveBoard Guides`;
+    // Mirrors the prerendered title in scripts/prerender-seo.mjs.
+    const suffix = guide.lang === 'ko' ? 'SaveBoard 가이드' : 'SaveBoard Guides';
+    document.title = `${guide.title} — ${suffix}`;
     setMeta('description', guide.description);
-    setMeta('og:title', `${guide.title} — SaveBoard Guides`);
+    setMeta('og:title', `${guide.title} — ${suffix}`);
     setMeta('og:description', guide.description);
     setCanonical(canonical);
     return () => {
@@ -93,7 +95,7 @@ export function GuidePostPage() {
           <header className="mb-10">
             <div className="flex items-center gap-2 text-[13px] text-gray-400 mb-4">
               <Calendar className="w-3.5 h-3.5" />
-              {formatDate(guide.date)}
+              {formatDate(guide.date, guide.lang)}
             </div>
             <h1 className="text-[34px] sm:text-[42px] font-extrabold text-gray-900 leading-[1.12] tracking-tight mb-5">
               {guide.title}

@@ -206,7 +206,13 @@ function withSeo({ title, description, canonical, keywords = '', jsonLd = [], al
     ...jsonLd.map(item => `<script type="application/ld+json">${JSON.stringify(item)}</script>`),
   ].filter(Boolean).join('\n    ');
 
+  // The template is <html lang="en">. Without this, every Korean page ships
+  // claiming to be English — the most basic language signal a crawler reads,
+  // and the one Naver's Korean index is most likely to weigh.
+  const htmlLang = locale ? locale.replace('_', '-') : '';
+
   return template
+    .replace(/<html lang="[^"]*"/, htmlLang ? `<html lang="${esc(htmlLang)}"` : '$&')
     .replace(/<title>[\s\S]*?<!-- Favicon -->/, `${meta}\n\n    <!-- Favicon -->`)
     .replace(/\s*<!-- Open Graph -->[\s\S]*?<!-- JSON-LD structured data -->\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/, '')
     .replace(/<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect\(0,0,0,0\);white-space:nowrap">[\s\S]*?<\/h1>/, `<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap">${esc(fullTitle)}</h1>`)
@@ -370,7 +376,7 @@ function guideHtml(guide, otherLang) {
       <article>
         <p><a href="/guides">${guide.lang === 'ko' ? '전체 가이드' : 'All guides'}</a> · <a href="${escAttr(otherHref)}">${otherLabel}</a></p>
         <header>
-          <p><time datetime="${esc(guide.date)}">${esc(formatDate(guide.date))}</time></p>
+          <p><time datetime="${esc(guide.date)}">${esc(formatDate(guide.date, guide.lang))}</time></p>
           <h1>${esc(guide.title)}</h1>
           <p>${esc(guide.description)}</p>
         </header>
@@ -458,7 +464,7 @@ function guideHtml(guide, otherLang) {
   }
 
   return withSeo({
-    title: `${guide.title} — SaveBoard Guides`,
+    title: guide.lang === 'ko' ? `${guide.title} — SaveBoard 가이드` : `${guide.title} — SaveBoard Guides`,
     description: guide.description,
     keywords: guide.keywords,
     canonical,
@@ -706,8 +712,8 @@ function organization() {
   };
 }
 
-function formatDate(iso) {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString('en-AU', {
+function formatDate(iso, lang = 'en') {
+  return new Date(`${iso}T00:00:00`).toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-AU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

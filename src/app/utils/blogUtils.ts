@@ -45,7 +45,10 @@ export function getPostBySlug(slug: string): PostMeta | undefined {
   return allPosts.find(p => p.slug === slug);
 }
 
-export function formatDate(iso: string): string {
+export function formatDate(iso: string, lang: string = 'en'): string {
   const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+  // A Korean page showing "30 July 2026" reads as a translated-badly page to a
+  // reader and gives a crawler an English signal inside Korean content.
+  // Mirrors formatDate() in scripts/prerender-seo.mjs — keep the two in step.
+  return d.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
 }

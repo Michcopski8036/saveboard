@@ -61,7 +61,7 @@ export function GuideListPage() {
                   >
                     <div className="h-0.5" style={{ background: CARD_STRIP_GRADIENT }} />
                     <div className="p-6 flex flex-col flex-1">
-                      <p className="text-[12px] text-gray-400 mb-3">{formatDate(pair.date)}</p>
+                      <p className="text-[12px] text-gray-400 mb-3">{formatDate(pair.date, language)}</p>
                       <h2 className="text-[19px] font-bold text-gray-900 leading-snug mb-3 group-hover:text-purple-700 transition-colors">
                         {guide.title}
                       </h2>
