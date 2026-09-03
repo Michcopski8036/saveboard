@@ -1,7 +1,7 @@
 ---
 title: "무료로 쓰는 AI 챗봇 8곳 — '무료'가 실제로 어디까지인지 확인했습니다"
 date: "2026-08-04"
-description: "ChatGPT·Claude·Gemini 등 무료로 쓸 수 있는 AI 챗봇을, 각 회사가 공식적으로 밝힌 무료 범위 기준으로 정리했습니다. 한도를 공개하지 않는 곳은 그 사실까지 적었습니다."
+description: "ChatGPT·Claude·Gemini 등 무료 AI 챗봇을 각 회사가 공식으로 밝힌 무료 범위 기준으로 정리했습니다."
 slug: "free-ai-chatbots"
 keywords: "무료 AI 챗봇, ChatGPT 무료, Claude 무료, 제미나이 무료, AI 챗봇 비교, 무료 인공지능"
 lang: "ko"

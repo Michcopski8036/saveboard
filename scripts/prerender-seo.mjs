@@ -465,7 +465,10 @@ function guideHtml(guide, otherLang) {
   }
 
   return withSeo({
-    title: guide.lang === 'ko' ? `${guide.title} — SaveBoard 가이드` : `${guide.title} — SaveBoard Guides`,
+    // 한국어는 브랜드 접미를 'SaveBoard'까지만 — 네이버 제목 권장이 40자인데
+    // '가이드'까지 붙이면 서술형 제목이 잘리는 자리가 그만큼 앞당겨진다.
+    // 제목 자체는 줄이지 않는다: GSC에서 클릭을 만든 게 그 서술부다(korean bbq 8위).
+    title: guide.lang === 'ko' ? `${guide.title} — SaveBoard` : `${guide.title} — SaveBoard Guides`,
     description: guide.description,
     keywords: guide.keywords,
     canonical,

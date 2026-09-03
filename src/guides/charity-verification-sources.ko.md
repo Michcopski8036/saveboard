@@ -1,7 +1,7 @@
 ---
 title: "이 단체, 진짜 맞나요? 공식 확인처 8곳 — '등록'과 '평가'는 다릅니다"
 date: "2026-08-19"
-description: "Charity Navigator, Give.org, CharityWatch, Candid, 그리고 호주·영국·캐나다·한국의 정부 등록 시스템까지 — 각 사이트가 실제로 무엇을 확인해 주는지 자체 안내 페이지를 기준으로 정리했습니다."
+description: "Charity Navigator·Give.org·CharityWatch·Candid와 각국 정부 등록처가 무엇을 확인해 주는지 정리했습니다."
 slug: "charity-verification-sources"
 keywords: "기부단체 확인, 기부금단체 조회, 공익법인 조회, 기부단체 신뢰도, 자선단체 등록 확인, 국세청 지정기부금단체, 1365기부포털"
 lang: "ko"
