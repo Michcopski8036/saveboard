@@ -77,7 +77,7 @@ export function GuidePostPage() {
 
           <div className="flex items-center justify-between gap-4 mb-10">
             <Link
-              to="/guides"
+              to={ko ? '/guides-ko' : '/guides'}
               className="inline-flex items-center gap-1.5 text-[13px] font-medium text-gray-500 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />

@@ -50,7 +50,8 @@ for (const page of landings) {
   await writeRoute(page.route, articleHtml(page, { canonical: `${baseUrl}/${page.route}`, isLanding: true }));
 }
 
-await writeRoute('guides', guideIndexHtml());
+await writeRoute('guides', guideIndexHtml('en'));
+await writeRoute('guides-ko', guideIndexHtml('ko'));
 for (const pair of guidePairs) {
   await writeRoute(`guides/${pair.en.slug}`, guideHtml(pair.en, pair.ko));
   await writeRoute(`guides/${pair.en.slug}-ko`, guideHtml(pair.ko, pair.en));
@@ -374,7 +375,7 @@ function guideHtml(guide, otherLang) {
   const body = `
     <main class="seo-page">
       <article>
-        <p><a href="/guides">${guide.lang === 'ko' ? '전체 가이드' : 'All guides'}</a> · <a href="${escAttr(otherHref)}">${otherLabel}</a></p>
+        <p><a href="${guide.lang === 'ko' ? '/guides-ko' : '/guides'}">${guide.lang === 'ko' ? '전체 가이드' : 'All guides'}</a> · <a href="${escAttr(otherHref)}">${otherLabel}</a></p>
         <header>
           <p><time datetime="${esc(guide.date)}">${esc(formatDate(guide.date, guide.lang))}</time></p>
           <h1>${esc(guide.title)}</h1>
@@ -503,22 +504,42 @@ function promoHtml(guide) {
       </aside>`;
 }
 
-function guideIndexHtml() {
-  const title = 'Guides — SaveBoard';
-  const description = 'Researched, ranked lists — every item checked against its own source, and every list opens as a board you can keep.';
-  const canonical = `${baseUrl}/guides`;
+// The index exists in both languages. Without the Korean one, the seven
+// Korean guides had no page linking to them in their own language — a
+// crawler reaching /guides/<slug>-ko saw a page no Korean page pointed at.
+function guideIndexHtml(lang = 'en') {
+  // Declared inside the function: the writeRoute calls at the top of this file
+  // run before any module-level const further down is initialised.
+  const indexHrefs = { en: `${baseUrl}/guides`, ko: `${baseUrl}/guides-ko` };
+  const indexAlternates = [
+    { hreflang: 'en', href: indexHrefs.en, locale: 'en_AU' },
+    { hreflang: 'ko', href: indexHrefs.ko, locale: 'ko_KR' },
+    { hreflang: 'x-default', href: indexHrefs.en },
+  ];
+  const ko = lang === 'ko';
+  const title = ko ? '가이드 — SaveBoard' : 'Guides — SaveBoard';
+  const description = ko
+    ? '직접 조사해서 순위를 매긴 리스트 — 항목마다 원 출처를 확인했고, 리스트 전체가 그대로 보드로 열립니다.'
+    : 'Researched, ranked lists — every item checked against its own source, and every list opens as a board you can keep.';
+  const canonical = ko ? indexHrefs.ko : indexHrefs.en;
+  const otherHref = ko ? '/guides' : '/guides-ko';
   const body = `
     <main class="seo-page">
-      <h1>Guides</h1>
+      <p><a href="${escAttr(otherHref)}">${ko ? 'English' : '한국어'}</a></p>
+      <h1>${ko ? '가이드' : 'Guides'}</h1>
       <p>${esc(description)}</p>
       <section>
-        ${guidePairs.map(pair => `
+        ${guidePairs.map(pair => {
+          const guide = ko ? pair.ko : pair.en;
+          const href = ko ? `/guides/${pair.en.slug}-ko` : `/guides/${pair.en.slug}`;
+          return `
           <article>
-            <p><time datetime="${esc(pair.en.date)}">${esc(formatDate(pair.en.date))}</time></p>
-            <h2><a href="/guides/${esc(pair.en.slug)}">${esc(pair.en.title)}</a></h2>
-            <p>${esc(pair.en.description)}</p>
+            <p><time datetime="${esc(guide.date)}">${esc(formatDate(guide.date, lang))}</time></p>
+            <h2><a href="${escAttr(href)}">${esc(guide.title)}</a></h2>
+            <p>${esc(guide.description)}</p>
           </article>
-        `).join('')}
+        `;
+        }).join('')}
       </section>
       <p><a href="/blog">SaveBoard blog</a> · <a href="/">SaveBoard</a></p>
     </main>`;
@@ -529,7 +550,7 @@ function guideIndexHtml() {
     name: title,
     description,
     url: canonical,
-    inLanguage: 'en-AU',
+    inLanguage: ko ? 'ko-KR' : 'en-AU',
     isPartOf: { '@type': 'WebSite', name: siteName, url: baseUrl },
     publisher: organization(),
     mainEntity: {
@@ -537,8 +558,8 @@ function guideIndexHtml() {
       itemListElement: guidePairs.map((pair, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        url: `${baseUrl}/guides/${pair.en.slug}`,
-        name: pair.en.title,
+        url: `${baseUrl}/guides/${pair.en.slug}${ko ? '-ko' : ''}`,
+        name: (ko ? pair.ko : pair.en).title,
       })),
     },
   }, {
@@ -546,7 +567,7 @@ function guideIndexHtml() {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: siteName, item: baseUrl },
-      { '@type': 'ListItem', position: 2, name: 'Guides', item: canonical },
+      { '@type': 'ListItem', position: 2, name: ko ? '가이드' : 'Guides', item: canonical },
     ],
   }];
 
@@ -554,9 +575,12 @@ function guideIndexHtml() {
     title,
     description,
     canonical,
-    keywords: 'curated lists, ranked lists, best of lists, saveboard guides, 큐레이션 리스트, 추천 리스트',
+    keywords: ko
+      ? '큐레이션 리스트, 추천 리스트, 랭킹 리스트, 세이브보드 가이드'
+      : 'curated lists, ranked lists, best of lists, saveboard guides',
     jsonLd,
-    locale: 'en_AU',
+    alternates: indexAlternates,
+    locale: ko ? 'ko_KR' : 'en_AU',
   }, body);
 }
 
@@ -672,7 +696,17 @@ function sitemapXml() {
       changefreq: 'monthly',
       priority: '0.8',
     })),
-    { loc: `${baseUrl}/guides`, lastmod: guidePairs[0]?.en.date ?? today, changefreq: 'weekly', priority: '0.8' },
+    ...['en', 'ko'].map(lang => ({
+      loc: lang === 'ko' ? `${baseUrl}/guides-ko` : `${baseUrl}/guides`,
+      lastmod: guidePairs[0]?.en.date ?? today,
+      changefreq: 'weekly',
+      priority: '0.8',
+      alternates: [
+        { hreflang: 'en', href: `${baseUrl}/guides` },
+        { hreflang: 'ko', href: `${baseUrl}/guides-ko` },
+        { hreflang: 'x-default', href: `${baseUrl}/guides` },
+      ],
+    })),
     // Each language pair declares the other in-sitemap, which is the second
     // half of the hreflang contract (the pages carry <link rel=alternate>).
     ...guidePairs.flatMap(pair => {

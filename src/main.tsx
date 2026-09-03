@@ -31,6 +31,7 @@ function TrackedRoutes() {
           visitor gets the dashboard while crawlers see the prerendered HTML. */}
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/guides" element={<GuideListPage />} />
+      <Route path="/guides-ko" element={<GuideListPage lang="ko" />} />
       <Route path="/guides/:slug" element={<GuidePostPage />} />
       <Route path="/*" element={<App />} />
     </Routes>

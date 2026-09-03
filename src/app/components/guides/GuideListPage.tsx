@@ -9,20 +9,26 @@ import { CARD_STRIP_GRADIENT } from '../../lib/brand';
 
 const BASE_URL = 'https://www.saveboard.app';
 
-export function GuideListPage() {
+// `lang` is set by the /guides-ko route: that URL is the Korean index and
+// must stay Korean no matter what UI language the visitor has chosen, or the
+// page would contradict its own canonical and hreflang. On /guides (no prop)
+// the UI language still decides, as before.
+export function GuideListPage({ lang }: { lang?: 'en' | 'ko' } = {}) {
   const { language } = useLanguage();
-  const ko = language === 'ko';
+  const ko = (lang ?? language) === 'ko';
 
   useEffect(() => {
-    document.title = 'Guides — SaveBoard';
-    setMeta('description', 'Researched, ranked lists — every item checked against its own source, and every list opens as a board you can keep.');
-    setCanonical(`${BASE_URL}/guides`);
+    document.title = ko ? '가이드 — SaveBoard' : 'Guides — SaveBoard';
+    setMeta('description', ko
+      ? '직접 조사해서 순위를 매긴 리스트 — 항목마다 원 출처를 확인했고, 리스트 전체가 그대로 보드로 열립니다.'
+      : 'Researched, ranked lists — every item checked against its own source, and every list opens as a board you can keep.');
+    setCanonical(`${BASE_URL}${ko ? '/guides-ko' : '/guides'}`);
     return () => {
       document.title = 'SaveBoard — Stop scrolling. Find that link instantly.';
       setMeta('description', 'Tired of losing links in group chats? SaveBoard organises all your important links in one beautiful place.');
       setCanonical(BASE_URL);
     };
-  }, []);
+  }, [ko]);
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -61,7 +67,7 @@ export function GuideListPage() {
                   >
                     <div className="h-0.5" style={{ background: CARD_STRIP_GRADIENT }} />
                     <div className="p-6 flex flex-col flex-1">
-                      <p className="text-[12px] text-gray-400 mb-3">{formatDate(pair.date, language)}</p>
+                      <p className="text-[12px] text-gray-400 mb-3">{formatDate(pair.date, ko ? 'ko' : 'en')}</p>
                       <h2 className="text-[19px] font-bold text-gray-900 leading-snug mb-3 group-hover:text-purple-700 transition-colors">
                         {guide.title}
                       </h2>
