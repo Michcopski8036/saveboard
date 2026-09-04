@@ -543,9 +543,9 @@ function promoHtml(guide) {
   // 둥근 채움면이 감당한다. 색을 다시 세게 바꾸려면 누나에게 먼저 물을 것.
   const theme = guide.promoTheme === 'rose'
     ? { border: '#EBDED7', bg: '#FBF7F4', eyebrow: '#8A5A6B', cta: '#8A5A6B' }
-    // 보라 테마도 CTA만은 무토 — 버튼 색을 하나로 통일한다(2026-09-04 누나 지시).
-    // 테두리·배경·eyebrow 는 테마색 그대로라 제품 구분은 남는다.
-    : { border: '#e9d5ff', bg: '#faf5ff', eyebrow: '#9333ea', cta: '#8A5A6B' };
+    // ⛔ 보라 테마 CTA는 #A259FF 그대로. 무토는 **PeriodVol(로즈) 전용**이다
+    // — 2026-09-04에 잠깐 전부 무토로 통일했다가 누나가 되돌렸다. 다시 통일하지 말 것.
+    : { border: '#e9d5ff', bg: '#faf5ff', eyebrow: '#9333ea', cta: '#A259FF' };
   const img = guide.promoImage
     ? `<div class="pvp-media"><img src="${escAttr(guide.promoImage)}"
           alt="${escAttr(guide.promoImageAlt)}" width="${escAttr(guide.promoImageW)}" height="${escAttr(guide.promoImageH)}"
