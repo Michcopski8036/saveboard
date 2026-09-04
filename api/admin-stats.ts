@@ -109,7 +109,11 @@ async function handleAppConfig(req: VercelRequest, res: VercelResponse, actor: s
 // boardClicks7d, topSources, topReferrers}.
 type PageEvent = { event: string; path: string; referrer: string | null; source: string | null; created_at: string };
 
-function computeTraffic(events: PageEvent[], now: Date) {
+// `prevWeekViews` 는 8~14일 구간의 pageview 수다. 그 구간에서 필요한 것은 이 숫자
+// 하나뿐이라 행을 가져오지 않고 DB에서 세어 넘긴다 — 예전에는 14일치 행을 전부
+// 끌어와 JS에서 걸렀고, page_events 는 방문마다 커지므로 그게 이 엔드포인트가
+// 시간이 갈수록 느려지던 이유였다(2026-09-04).
+function computeTraffic(events: PageEvent[], now: Date, prevWeekViews: number) {
   const trafficNow = now.getTime();
   const ago = (days: number) => trafficNow - days * 86400000;
   const within = (e: PageEvent, from: number, to: number) => {
@@ -146,7 +150,7 @@ function computeTraffic(events: PageEvent[], now: Date) {
 
   return {
     visits7d:      views.filter(e => within(e, ago(7), trafficNow)).length,
-    visits7dPrev:  views.filter(e => within(e, ago(14), ago(7))).length,
+    visits7dPrev:  prevWeekViews,
     boardClicks7d: clicks.filter(e => within(e, ago(7), trafficNow)).length,
     guideViews7d: views.filter(e => e.path.startsWith('/guides') && within(e, ago(7), trafficNow)).length,
     storeClicksIos7d: events.filter(e => e.event === 'store_click_ios' && within(e, ago(7), trafficNow)).length,
@@ -162,6 +166,25 @@ function computeTraffic(events: PageEvent[], now: Date) {
       .slice(0, 10),
   };
 }
+
+
+// 개별 쿼리 시간을 재서 느린 놈을 이름으로 지목할 수 있게 한다. Promise.all 과
+// 동작이 같고(병렬·전부 대기), 마지막 배치의 소요시간만 모듈 변수에 남긴다.
+// 2026-09-04: 이 엔드포인트가 1.9~3.6초였는데 "무엇이 느린가"를 답할 수 없었다.
+let lastTimings: Array<{ i: number; ms: number }> = [];
+async function timedAll<T extends readonly Promise<any>[] | readonly any[]>(ps: T): Promise<any[]> {
+  const started = Date.now();
+  const out = await Promise.all(
+    (ps as any[]).map(async (pr, i) => {
+      const t0 = Date.now();
+      try { return await pr; } finally { lastTimings[i] = { i, ms: Date.now() - t0 }; }
+    })
+  );
+  lastTimings = lastTimings.filter(Boolean).sort((a, b) => b.ms - a.ms);
+  totalBatchMs = Date.now() - started;
+  return out;
+}
+let totalBatchMs = 0;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
@@ -198,16 +221,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // "0 saves in the last 7 days" was: a failed query, not an idle userbase.
     // page_events.created_at IS a timestamptz, so weekIso still belongs there.
     const weekMs = now.getTime() - 7 * 86400000;
-    const [pageEventsRes, cronUsersRes, cronLinksTotalRes, cronLinksWeekRes] = await Promise.all([
+    const [pageEventsRes, cronPrevWeekRes, cronUsersRes, cronLinksTotalRes, cronLinksWeekRes] = await Promise.all([
+      // 행은 7일치만 — 경로·유입처별 묶기가 그 구간만 쓴다(메인 핸들러와 동일).
       supabase.from('page_events')
         .select('event, path, referrer, source, created_at')
-        .gte('created_at', new Date(now.getTime() - 14 * 86400000).toISOString()),
+        .gte('created_at', new Date(now.getTime() - 7 * 86400000).toISOString()),
+      // 직전 주는 비교용 숫자 하나뿐이라 세기만 한다.
+      supabase.from('page_events').select('id', { count: 'exact', head: true })
+        .eq('event', 'pageview')
+        .gte('created_at', new Date(now.getTime() - 14 * 86400000).toISOString())
+        .lt('created_at',  new Date(now.getTime() -  7 * 86400000).toISOString()),
       supabase.auth.admin.listUsers({ perPage: 1000 }),
       supabase.from('links').select('id', { count: 'exact', head: true }),
       supabase.from('links').select('id', { count: 'exact', head: true }).gte('created_at', weekMs),
     ]);
 
-    const traffic = computeTraffic((pageEventsRes.data ?? []) as PageEvent[], now);
+    const traffic = computeTraffic((pageEventsRes.data ?? []) as PageEvent[], now, cronPrevWeekRes.count ?? 0);
 
     // 2026-08-31: AI Office 실적 패널이 SaveBoard도 "재방문·저장"으로 읽을 수 있게
     // 집계 **숫자만** 추가한다. SaveBoard는 계정이 있는 앱이라 이 숫자들은 이미
@@ -260,10 +289,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     sharedViewsRes,
     boardsByUserRes,
     pageEventsRes,
+    prevWeekViewsRes,
     automationRunsRes,
     linksByUserRes,
     appConfigRes,
-  ] = await Promise.all([
+  ] = await timedAll([
     // All users via admin API
     supabase.auth.admin.listUsers({ perPage: 1000 }),
 
@@ -294,9 +324,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // All boards (for per-user counts + resolving board_id → name for top boards)
     supabase.from('boards').select('id, owner_id, name'),
 
-    // Anonymous traffic, last 14 days (7d window + the previous 7d to compare against)
+    // 익명 트래픽 — 행은 최근 7일만. 그 구간만 경로·유입처별로 묶기 때문이다.
     supabase.from('page_events').select('event, path, referrer, source, created_at')
-      .gte('created_at', new Date(Date.now() - 14 * 86400000).toISOString()),
+      .gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString()),
+
+    // 직전 주(8~14일)는 비교용 숫자 하나뿐이라 행을 받지 않고 센다.
+    supabase.from('page_events').select('id', { count: 'exact', head: true })
+      .eq('event', 'pageview')
+      .gte('created_at', new Date(Date.now() - 14 * 86400000).toISOString())
+      .lt('created_at',  new Date(Date.now() -  7 * 86400000).toISOString()),
 
     // Routine self-reports
     supabase.from('automation_runs').select('routine, status, summary, artifact_url, ran_at')
@@ -570,7 +606,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // table degrades to "no data yet" instead of failing the whole dashboard.
   // (computeTraffic() is the same function the cron-secret short-circuit above
   // uses — kept as one implementation so the two paths can't drift apart.)
-  const traffic = computeTraffic((pageEventsRes.data ?? []) as PageEvent[], now);
+  const traffic = computeTraffic((pageEventsRes.data ?? []) as PageEvent[], now, prevWeekViewsRes.count ?? 0);
 
   return res.status(200).json({
     overview: { totalUsers, newThisWeek, newThisMonth, totalLinks, linksThisWeek, totalSharedBoards, totalShareViews },
@@ -579,6 +615,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     usersByCountry,
     unknownLocationCount: unknownCount,
     usersByPlatform: platformCount,
+    // 진단용 — 가장 느린 쿼리 5개(인덱스, ms)와 배치 전체 시간.
+    queryTimings: { totalMs: totalBatchMs, slowest: lastTimings.slice(0, 5) },
     usersByAppVersion: versionCount,
     updateGateImpact: { blockedByMin, behindLatest },
     presence: { activeNow, activeToday, activeWeek, loginsWeek, neverSeen: totalUsers - withSeen.length },
