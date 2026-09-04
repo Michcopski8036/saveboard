@@ -7,6 +7,11 @@ route: "link-save-app-ko"
 lang: "ko"
 alt_lang_url: "/"
 keywords: "링크 저장 앱, 북마크 앱, 북마크 정리 앱, 링크 관리 앱, 링크 모으기, 세이브보드, SaveBoard"
+promo_note: "이 글에 나오는 앱, 여기서 바로 시작해요"
+promo_title: "북마크를 다시 열게 되는 건 ‘알아볼 수 있을 때’예요"
+promo_text: "파란 글씨 한 줄 대신, 제목·설명·미리보기 이미지가 붙은 카드로 저장돼요. 카드를 보드로 묶고, 보드는 링크 하나로 건네면 받는 사람이 계정 없이 열어요. 저장 30개, 보드 5개까지 무료이고 카드 등록도 필요 없어요."
+promo_cta: "SaveBoard 무료로 시작하기"
+promo_url: "https://www.saveboard.app/"
 ---
 
 # 링크 저장 앱 SaveBoard — 북마크를 보드로

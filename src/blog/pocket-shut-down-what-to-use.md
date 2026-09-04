@@ -4,6 +4,12 @@ date: "2026-06-21"
 description: "Mozilla shut down Pocket in 2025. Here's what happened, what to do with your exported saves, and the best apps to use instead of Pocket in 2026."
 slug: "pocket-shut-down-what-to-use"
 keywords: "pocket shut down, pocket discontinued, is pocket gone, pocket shutting down, what happened to pocket, pocket replacement, mozilla pocket"
+promo_note: "Full disclosure: SaveBoard is our app"
+promo_title: "Pick one app and save your next link into it."
+promo_text: "That is the whole plan further down this page, and SaveBoard is the one we built for it: save from the share sheet in any app, every link becomes a visual card on a board you can search. Free for 30 links — no archive to recreate first."
+promo_cta: "Get SaveBoard — it’s free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "Made by the team behind this page. Raindrop.io and the Notion clipper are listed below for the cases they fit better."
 ---
 
 # Pocket Has Shut Down — Here's What to Use Instead (2026)

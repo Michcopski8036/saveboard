@@ -5,6 +5,12 @@ description: "Looking for a Raindrop.io alternative that's built for your phone?
 slug: "raindrop-alternative"
 route: "raindrop-alternative"
 keywords: "raindrop alternative, raindrop.io alternative, best raindrop alternative, mobile bookmark manager, visual bookmark app, raindrop vs, bookmark manager for iphone android"
+promo_note: "Full disclosure: SaveBoard is our app"
+promo_title: "Raindrop isn’t the problem. The phone is."
+promo_text: "If your saves arrive inside Instagram, YouTube and group chats, the only number that matters is how many taps it takes there. SaveBoard saves from the share sheet in one, and every link shows as a card instead of a line of text. Free for 30 links and 5 boards, which is enough to test it on a week of real saves."
+promo_cta: "Try SaveBoard — free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "Made by the team behind this page. SaveBoard is one of the two apps in the table below, so the table keeps Raindrop’s wins in it — browser extensions, nested collections, an unlimited free tier."
 ---
 
 # The Best Raindrop.io Alternative for Mobile (2026)

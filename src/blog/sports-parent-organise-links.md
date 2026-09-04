@@ -4,6 +4,12 @@ date: "2026-05-20"
 description: "Managing links for basketball, gymnastics, and tennis across multiple group chats? Here's how to stay on top of every schedule, form, and registration link."
 slug: "sports-parent-organise-links"
 keywords: "sports parent organisation, team links organiser, sports schedule app, group chat organisation, busy parent app"
+promo_note: "Full disclosure: SaveBoard is our app"
+promo_title: "Five links in five days, across five group chats."
+promo_text: "The system further down — one collection per activity, a one-line note on anything with a deadline — is what we built SaveBoard to do. Share the link the moment it lands, add “Due June 30 — all 3 kids”, and it is waiting in the app instead of 300 messages up the chat. Free for 30 links."
+promo_cta: "Get SaveBoard — it’s free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "Made by the team behind this post — the app it walks through is ours, built by a parent with kids in three sports."
 ---
 
 # The Busy Sports Parent's Guide to Organising Team Links

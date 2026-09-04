@@ -9,6 +9,26 @@ const baseUrl = 'https://www.saveboard.app';
 const siteName = 'SaveBoard';
 const ogImage = `${baseUrl}/og-image.png`;
 
+// The promo card's frontmatter, shared by guides, blog posts and landings.
+// Declared up here on purpose: parsePost() runs at module load (line below), so
+// a const further down the file would still be in its temporal dead zone.
+// One reader, one set of keys — a page that omits them gets '' everywhere and
+// renders no card at all.
+const PROMO_KEYS = {
+  promo_note: 'promoNote',
+  promo_title: 'promoTitle',
+  promo_text: 'promoText',
+  promo_cta: 'promoCta',
+  promo_url: 'promoUrl',
+  promo_image: 'promoImage',
+  promo_image_alt: 'promoImageAlt',
+  promo_image_w: 'promoImageW',
+  promo_image_h: 'promoImageH',
+  promo_fine: 'promoFine',
+  promo_theme: 'promoTheme',
+};
+const PROMO_DEFAULTS = Object.fromEntries(Object.values(PROMO_KEYS).map(field => [field, '']));
+
 const template = await readFile(path.join(distDir, 'index.html'), 'utf8');
 const files = (await readdir(blogDir)).filter(file => file.endsWith('.md'));
 const allPosts = (await Promise.all(files.map(async file => parsePost(await readFile(path.join(blogDir, file), 'utf8')))))
@@ -83,6 +103,10 @@ function parsePost(raw) {
     slug: data.slug ?? '',
     keywords: data.keywords ?? '',
     route: data.route ?? '',
+    // Blog posts and landings take the same promo_* card the guides use — same
+    // keys, same renderer (promoHtml). A page without them renders as before.
+    ...PROMO_DEFAULTS,
+    ...extractPromoFrontmatter(raw),
     // Guides pair languages by filename suffix; blog/landing pages have no such
     // pair, so the language and its counterpart URL are declared in frontmatter.
     // Without `lang`, every Korean page would ship as <html lang="en">.
@@ -117,7 +141,9 @@ function parseGuide(raw, lang) {
   // Restaurant + PostalAddress; everything else is a Thing with a name and a
   // link, because marking software up as a restaurant with a street address is
   // simply false.
-  return { ...post, lang, boardUrl: '', boardImage: '', listType: 'place', promoNote: '', promoTitle: '', promoText: '', promoCta: '', promoUrl: '', promoImage: '', promoImageAlt: '', promoImageW: '', promoImageH: '', promoFine: '', promoTheme: '', ...extractGuideFrontmatter(raw) };
+  // promo_* defaults and values already come through parsePost — the guides and
+  // the blog read the identical frontmatter keys.
+  return { ...post, lang, boardUrl: '', boardImage: '', listType: 'place', ...extractGuideFrontmatter(raw) };
 }
 
 function extractGuideFrontmatter(raw) {
@@ -133,17 +159,20 @@ function extractGuideFrontmatter(raw) {
     if (key === 'board_url') data.boardUrl = val;
     if (key === 'board_image') data.boardImage = val;
     if (key === 'list_type')   data.listType   = val;
-    if (key === 'promo_note')      data.promoNote     = val;
-    if (key === 'promo_title')     data.promoTitle    = val;
-    if (key === 'promo_text')      data.promoText     = val;
-    if (key === 'promo_cta')       data.promoCta      = val;
-    if (key === 'promo_url')       data.promoUrl      = val;
-    if (key === 'promo_image')     data.promoImage    = val;
-    if (key === 'promo_image_alt') data.promoImageAlt = val;
-    if (key === 'promo_image_w')   data.promoImageW   = val;
-    if (key === 'promo_image_h')   data.promoImageH   = val;
-    if (key === 'promo_fine')      data.promoFine     = val;
-    if (key === 'promo_theme')     data.promoTheme    = val;
+  }
+  return { ...data, ...extractPromoFrontmatter(raw) };
+}
+
+function extractPromoFrontmatter(raw) {
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) return {};
+  const data = {};
+  for (const line of match[1].split('\n')) {
+    const colon = line.indexOf(':');
+    if (colon === -1) continue;
+    const key = line.slice(0, colon).trim();
+    if (!PROMO_KEYS[key]) continue;
+    data[PROMO_KEYS[key]] = line.slice(colon + 1).trim().replace(/^"|"$/g, '');
   }
   return data;
 }
@@ -310,7 +339,16 @@ function relatedLandingsHtml(excludeRoute = '', lang = 'en') {
 function articleHtml(post, { canonical, isLanding }) {
   const ko = post.lang === 'ko';
   const content = post.content.replace(new RegExp(`^#\\s+${escapeRegExp(post.title)}\\s*\\n+`), '');
-  const article = markdownToHtml(content);
+  // Promo card (promo_* frontmatter) sits after the intro and before the first
+  // H2 — the same place guideHtml() puts it, via the same promoHtml(). Never at
+  // the very top or the very bottom. Posts without the frontmatter are untouched.
+  const promoSplit = post.promoUrl && post.promoText ? content.match(/\n(?=##\s)/) : null;
+  if (post.promoUrl && post.promoText && !promoSplit) {
+    console.error(`prerender-seo: "${post.slug}" has promo_* frontmatter but no H2 to sit after — card not rendered.`);
+  }
+  const article = promoSplit
+    ? markdownToHtml(content.slice(0, promoSplit.index).trim()) + promoHtml(post) + markdownToHtml(content.slice(promoSplit.index).trim())
+    : markdownToHtml(content);
   const faqs = extractFaq(content);
   const backLink = isLanding ? '' : `<p><a href="/blog">${ko ? '전체 글' : 'All articles'}</a></p>`;
   // Korean pages hand off to the Korean hub (/guides-ko), not the English blog —

@@ -1,4 +1,10 @@
-export interface PostMeta {
+import type { PromoFields } from '../components/PromoCard';
+
+/**
+ * `promo_*` is the same frontmatter the guides use (see guideUtils) — one set of
+ * keys, one card component. A post without them renders exactly as before.
+ */
+export interface PostMeta extends PromoFields {
   title: string;
   date: string;
   description: string;
@@ -14,7 +20,8 @@ export interface PostMeta {
 
 function parseFrontmatter(raw: string): PostMeta {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!match) return { title: '', date: '', description: '', slug: '', route: '', lang: 'en', altLangUrl: '', content: raw };
+  const noPromo: PromoFields = { promoNote: '', promoTitle: '', promoText: '', promoCta: '', promoUrl: '', promoImage: '', promoImageAlt: '', promoImageW: '', promoImageH: '', promoFine: '', promoTheme: '' };
+  if (!match) return { title: '', date: '', description: '', slug: '', route: '', lang: 'en', altLangUrl: '', ...noPromo, content: raw };
   const data: Record<string, string> = {};
   match[1].split('\n').forEach(line => {
     const colon = line.indexOf(':');
@@ -31,6 +38,17 @@ function parseFrontmatter(raw: string): PostMeta {
     route: data.route ?? '',
     lang: data.lang === 'ko' ? 'ko' : 'en',
     altLangUrl: data.alt_lang_url ?? '',
+    promoNote: data.promo_note ?? '',
+    promoTitle: data.promo_title ?? '',
+    promoText: data.promo_text ?? '',
+    promoCta: data.promo_cta ?? '',
+    promoUrl: data.promo_url ?? '',
+    promoImage: data.promo_image ?? '',
+    promoImageAlt: data.promo_image_alt ?? '',
+    promoImageW: data.promo_image_w ?? '',
+    promoImageH: data.promo_image_h ?? '',
+    promoFine: data.promo_fine ?? '',
+    promoTheme: data.promo_theme ?? '',
     content: match[2].trim(),
   };
 }

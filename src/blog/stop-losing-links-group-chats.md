@@ -6,6 +6,12 @@ slug: "stop-losing-links-group-chats"
 lang: "en"
 alt_lang_url: "/kakaotalk-link-save-ko"
 keywords: "losing links group chat, find links in group chat, save important links, group chat organisation tips"
+promo_note: "Full disclosure: SaveBoard is our app"
+promo_title: "Habit 1 is the whole thing: save it now, not later."
+promo_text: "Three seconds — long-press, Share, SaveBoard — and the link is out of the chat and into a collection you can search. Each card keeps its title, description and preview image, so the five-minute weekly review is a scan rather than a read. Free for 30 links and 5 boards."
+promo_cta: "Get SaveBoard — it’s free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "Made by the team behind this post. The five habits work in any link app — this is the one we make."
 ---
 
 # Stop Losing Important Links in Group Chats — 5 Simple Habits
