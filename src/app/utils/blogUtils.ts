@@ -5,12 +5,16 @@ export interface PostMeta {
   slug: string;
   /** Cornerstone landings render at top-level `/<route>`, not `/blog/<slug>`. */
   route: string;
+  /** 'ko' for the Korean product pages; everything else is English. */
+  lang: 'en' | 'ko';
+  /** Site-relative path of the same page in the other language, or ''. */
+  altLangUrl: string;
   content: string;
 }
 
 function parseFrontmatter(raw: string): PostMeta {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!match) return { title: '', date: '', description: '', slug: '', route: '', content: raw };
+  if (!match) return { title: '', date: '', description: '', slug: '', route: '', lang: 'en', altLangUrl: '', content: raw };
   const data: Record<string, string> = {};
   match[1].split('\n').forEach(line => {
     const colon = line.indexOf(':');
@@ -25,6 +29,8 @@ function parseFrontmatter(raw: string): PostMeta {
     description: data.description ?? '',
     slug: data.slug ?? '',
     route: data.route ?? '',
+    lang: data.lang === 'ko' ? 'ko' : 'en',
+    altLangUrl: data.alt_lang_url ?? '',
     content: match[2].trim(),
   };
 }
@@ -44,6 +50,19 @@ export const blogPosts: PostMeta[] = allPosts.filter(p => !p.route);
 export function getPostBySlug(slug: string): PostMeta | undefined {
   return allPosts.find(p => p.slug === slug);
 }
+
+/**
+ * Korean landings are rendered by a real route in main.tsx rather than falling
+ * through to <App/>. Without that, a human (and a JS-rendering crawler) landing
+ * on /pocket-alternative-ko sees the app's marketing page, not the article the
+ * prerendered HTML promises.
+ */
+export function getPostByRoute(route: string): PostMeta | undefined {
+  return allPosts.find(p => p.route === route);
+}
+
+/** Landings that need their own React route — see getPostByRoute. */
+export const koLandingPages: PostMeta[] = landingPages.filter(p => p.lang === 'ko');
 
 export function formatDate(iso: string, lang: string = 'en'): string {
   const d = new Date(iso + 'T00:00:00');

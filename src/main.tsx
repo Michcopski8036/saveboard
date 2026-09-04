@@ -6,6 +6,7 @@ import { JoinTeamBoard } from "./app/components/JoinTeamBoard.tsx";
 import { BlogListPage } from "./app/components/blog/BlogListPage.tsx";
 import { BlogPostPage } from "./app/components/blog/BlogPostPage.tsx";
 import { ResetPassword } from './app/components/ResetPassword';
+import { koLandingPages } from "./app/utils/blogUtils.ts";
 import { GuideListPage } from "./app/components/guides/GuideListPage.tsx";
 import { GuidePostPage } from "./app/components/guides/GuidePostPage.tsx";
 import { LanguageProvider } from "./app/context/LanguageContext.tsx";
@@ -33,6 +34,13 @@ function TrackedRoutes() {
       <Route path="/guides" element={<GuideListPage />} />
       <Route path="/guides-ko" element={<GuideListPage lang="ko" />} />
       <Route path="/guides/:slug" element={<GuidePostPage />} />
+      {/* Korean product landings get real routes. English landings still fall
+          through to <App/> — see the note in blogUtils.getPostByRoute; changing
+          that would change what a human sees on /pocket-alternative, which is a
+          separate decision. */}
+      {koLandingPages.map(page => (
+        <Route key={page.route} path={`/${page.route}`} element={<BlogPostPage landingRoute={page.route} />} />
+      ))}
       <Route path="/*" element={<App />} />
     </Routes>
   );
