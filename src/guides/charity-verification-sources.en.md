@@ -7,6 +7,12 @@ keywords: "is this charity legit, how to check if a charity is legitimate, chari
 lang: "en"
 list_type: "thing"
 board_url: ""
+promo_note: "Full disclosure: this is our app"
+promo_title: "Eight registries, and you will need them again next year."
+promo_text: "Checking one charity means opening several of these and closing them again. SaveBoard keeps the ones you actually used — the registry for your country, the rater that covers your kind of charity — in a board you can reopen at giving time instead of searching for them a second time."
+promo_cta: "Get SaveBoard — it’s free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "The eight sources below stay neutral — this banner doesn’t change what any of them is."
 ---
 
 # Is That Charity Legit? 8 Official Sources — and Why "Registered" Isn't "Rated"

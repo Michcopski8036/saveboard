@@ -7,6 +7,12 @@ keywords: "기부단체 확인, 기부금단체 조회, 공익법인 조회, 기
 lang: "ko"
 list_type: "thing"
 board_url: ""
+promo_note: "먼저 밝혀요: 이건 저희 앱이에요"
+promo_title: "확인처 여덟 곳, 내년에 또 찾게 돼요."
+promo_text: "단체 하나 확인하려면 이 중 몇 곳을 열었다 닫게 돼요. SaveBoard는 실제로 쓴 곳만 남겨둡니다 — 내 나라 등록 시스템, 내가 보는 종류의 단체를 다루는 평가 기관. 기부할 때 다시 검색하지 않고 보드를 열면 돼요."
+promo_cta: "SaveBoard 무료로 시작하기"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "아래 여덟 곳은 중립이에요 — 이 배너가 각 기관이 무엇인지를 바꾸지 않아요."
 ---
 
 # 이 단체, 진짜 맞나요? 공식 확인처 8곳 — "등록"과 "평가"는 다릅니다
