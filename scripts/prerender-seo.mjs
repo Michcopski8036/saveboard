@@ -410,16 +410,16 @@ function guideHtml(guide, otherLang) {
   // two in step when either changes.
   const boardKo = guide.lang === 'ko';
   const boardCta = guide.boardUrl
-    ? `<aside style="margin:24px 0;padding:20px;border:1px solid #e9d5ff;border-radius:16px;background:#faf5ff;max-width:680px">
+    ? `<aside aria-label="${boardKo ? '광고' : 'Advertisement'}" style="margin:24px 0;padding:20px;border:2px solid #e9d5ff;border-radius:16px;background:#faf5ff;max-width:680px">
         <img src="${escAttr(guide.boardImage || '/guides/shared-board-app.jpg')}" loading="lazy"
           alt="${boardKo ? '이 리스트의 보드를 휴대폰에서 연 화면' : 'This guide&#39;s board open on a phone'}"
           style="display:block;width:176px;border-radius:12px;margin:0 0 16px" />
         <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9333ea;margin:0 0 8px"><strong>${boardKo ? '이 리스트를 SaveBoard 보드로' : 'This list as a SaveBoard board'}</strong></p>
-        <p style="font-size:22px;font-weight:800;margin:0 0 10px">${boardKo ? '링크 하나하나 확인하기 번거로우시죠?' : 'Tired of checking links one by one?'}</p>
+        <p style="font-size:20px;font-weight:700;margin:0 0 10px">${boardKo ? '링크 하나하나 확인하기 번거로우시죠?' : 'Tired of checking links one by one?'}</p>
         <p style="margin:0 0 16px">${boardKo
           ? '이 페이지의 모든 링크를 한번에 한곳에 모아 보세요. 전부 SaveBoard 보드 하나에 비주얼 카드로 정리돼 있어요 — 로그인 없이 열리고, 내 보드로 가져가면 다음에 다시 검색하지 않아도 돼요.'
           : 'See every link on this page in one go — they&#39;re all on a single SaveBoard board, laid out as visual cards. It opens without a login, and if you copy it to your own board you won&#39;t be searching for these again.'}</p>
-        <p style="margin:0"><a href="${escAttr(guide.boardUrl)}" style="display:inline-block;padding:12px 24px;background:linear-gradient(90deg,#A259FF,#FF7262);color:#fff;border-radius:12px;font-weight:700;text-decoration:none">${boardKo ? '모든 링크 한곳에서 열기' : 'Open all the links in one place'} →</a></p>
+        <p style="margin:0"><a href="${escAttr(guide.boardUrl)}" style="display:inline-block;padding:12px 24px;background:linear-gradient(90deg,#A259FF,#FF7262);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35);border-radius:12px;font-weight:700;text-decoration:none">${boardKo ? '모든 링크 한곳에서 열기' : 'Open all the links in one place'} →</a></p>
       </aside>`
     : '';
 
@@ -546,14 +546,14 @@ function promoHtml(guide) {
           alt="${escAttr(guide.promoImageAlt)}" width="${escAttr(guide.promoImageW)}" height="${escAttr(guide.promoImageH)}"
           loading="lazy" style="display:block;width:100%;max-width:420px;height:auto" /></a>`
     : '';
-  return `<aside style="margin:24px 0;border:1px solid ${theme.border};border-radius:16px;overflow:hidden;background:${theme.bg};max-width:680px">
+  return `<aside aria-label="${guide.lang === 'ko' ? '광고' : 'Advertisement'}" style="margin:24px 0;border:2px solid ${theme.border};border-radius:16px;overflow:hidden;background:${theme.bg};max-width:680px">
         ${img}
         <div style="padding:20px">
           <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${theme.eyebrow};margin:0 0 8px"><strong>${esc(guide.promoNote)}</strong></p>
-          ${guide.promoTitle ? `<p style="font-size:22px;font-weight:800;margin:0 0 10px">${esc(guide.promoTitle)}</p>` : ''}
+          ${guide.promoTitle ? `<p style="font-size:20px;font-weight:700;margin:0 0 10px">${esc(guide.promoTitle)}</p>` : ''}
           <p style="margin:0 0 16px">${esc(guide.promoText)}</p>
           <p style="margin:0"><a href="${escAttr(guide.promoUrl)}" style="display:inline-block;padding:12px 24px;background:${theme.cta};color:#fff;border-radius:12px;font-weight:700;text-decoration:none">${esc(guide.promoCta)} →</a></p>
-          ${guide.promoFine ? `<p style="font-size:12px;color:#9ca3af;margin:12px 0 0">${esc(guide.promoFine)}</p>` : ''}
+          ${guide.promoFine ? `<p style="font-size:12px;color:#4b5563;margin:12px 0 0">${esc(guide.promoFine)}</p>` : ''}
         </div>
       </aside>`;
 }

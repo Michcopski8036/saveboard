@@ -115,7 +115,10 @@ export function GuidePostPage() {
           </article>
 
           {hasPromo && (
-            <aside className={`my-9 rounded-2xl overflow-hidden border shadow-lg ${promoTheme.card}`}>
+            <aside
+              aria-label={ko ? '광고' : 'Advertisement'}
+              className={`my-9 rounded-2xl overflow-hidden border-2 ${promoTheme.card}`}
+            >
               {/* Portrait screenshot: side-by-side from 821px, stacked below —
                   the image is never cropped (no object-cover) because the
                   screenshot's top-to-bottom sequence is the story. */}
@@ -132,7 +135,10 @@ export function GuidePostPage() {
                       width={Number(guide.promoImageW) || undefined}
                       height={Number(guide.promoImageH) || undefined}
                       loading="lazy"
-                      className="block w-full h-auto"
+                      /* 673~820px에서 세로 1,250px까지 자라 본문을 막았다.
+                         자르지 않고 상한만 건다(스크린샷의 위→아래가 이야기라 crop 금지).
+                         프리렌더는 이미 420px 캡이 있었다 — 그걸 여기로 맞춘다. */
+                      className="block w-full h-auto max-h-[420px] w-auto mx-auto min-[821px]:max-h-none min-[821px]:w-full"
                     />
                   </a>
                 )}
@@ -140,23 +146,29 @@ export function GuidePostPage() {
                   <p className={`text-[12px] font-bold uppercase tracking-wider mb-2 ${promoTheme.eyebrow}`}>
                     {guide.promoNote}
                   </p>
+                  {/* 제목이지만 <h2>가 아니다. 광고 문구가 문서 아웃라인에 들어가면
+                      제목 단위로 훑는 독자·스크린리더에게 글의 한 섹션으로 읽힌다.
+                      크기도 본문 H2(24px/700)보다 한 단계 아래로 둔다 — 이 글의
+                      상품은 신뢰이고, 광고가 콘텐츠보다 높은 계급을 가지면 안 된다. */}
                   {guide.promoTitle && (
-                    <h2 className="text-[23px] sm:text-[27px] font-extrabold text-gray-900 leading-tight mb-3">
+                    <p className="text-[19px] sm:text-[21px] font-bold text-gray-900 leading-tight mb-3">
                       {guide.promoTitle}
-                    </h2>
+                    </p>
                   )}
                   <p className="text-[15px] text-gray-600 leading-relaxed mb-6">
                     {guide.promoText}
                   </p>
                   <a
                     href={guide.promoUrl}
-                    className={`flex min-[821px]:inline-flex items-center justify-center gap-2 px-8 py-4 text-white rounded-2xl font-bold text-[16px] hover:opacity-90 active:scale-95 transition-all shadow-lg self-start w-full min-[821px]:w-auto ${promoTheme.cta}`}
+                    className={`flex min-[821px]:inline-flex items-center justify-center gap-2 px-8 py-4 text-white rounded-2xl font-bold text-[16px] hover:opacity-90 active:scale-95 transition-all [text-shadow:0_1px_2px_rgba(0,0,0,.35)] shadow-lg self-start w-full min-[821px]:w-auto ${promoTheme.cta}`}
                   >
                     {guide.promoCta}
                     <ArrowRight className="w-5 h-5" />
                   </a>
+                  {/* gray-400은 이 카드 배경에서 2.4:1 — 광고임을 밝히는 문장이 페이지에서
+                      가장 안 보이는 글자였다. gray-600은 7.0:1. */}
                   {guide.promoFine && (
-                    <p className="text-[12px] text-gray-400 mt-4">{guide.promoFine}</p>
+                    <p className="text-[12px] text-gray-600 mt-4">{guide.promoFine}</p>
                   )}
                 </div>
               </div>
@@ -173,22 +185,28 @@ export function GuidePostPage() {
             /* Colour scheme is the pre-redesign board card (founder call:
                light purple-50→pink-50 with the brand-gradient button, not the
                solid purple) — the ad copy and layout stay. */
-            <div className="mt-10 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-7 sm:p-8">
+            <aside
+              aria-label={ko ? '광고' : 'Advertisement'}
+              className="mt-10 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-100 p-6 sm:p-8"
+            >
               <div className="flex flex-col sm:flex-row items-center gap-7">
                 <img
                   src={guide.boardImage || '/guides/shared-board-app.jpg'}
                   alt={ko ? '이 리스트의 보드를 휴대폰에서 연 화면' : 'This guide’s board open on a phone'}
                   loading="lazy"
-                  className="w-44 sm:w-48 shrink-0 rounded-xl shadow-md border border-purple-100"
+                  className="w-56 sm:w-48 shrink-0 rounded-xl shadow-md border border-purple-100"
                 />
-                <div className="text-center sm:text-left">
+                {/* 폰에서도 왼쪽 정렬. 5줄짜리 본문을 가운데 정렬하면 줄마다 시작점을
+                    다시 찾아야 하고, 같은 페이지의 promo 카드는 왼쪽 정렬이라 형제
+                    카드 둘이 다른 규칙을 쓰게 된다. */}
+                <div className="text-left">
                   <p className="text-[12px] font-bold uppercase tracking-wider text-purple-600 mb-2">
                     {ko ? '이 리스트를 SaveBoard 보드로' : 'This list as a SaveBoard board'}
                   </p>
-                  <h2 className="text-[23px] sm:text-[26px] font-extrabold text-gray-900 leading-tight mb-3">
+                  <p className="text-[19px] sm:text-[21px] font-bold text-gray-900 leading-tight mb-3">
                     {ko ? '링크 하나하나 확인하기 번거로우시죠?' : 'Tired of checking links one by one?'}
-                  </h2>
-                  <p className="text-[15px] text-gray-500 leading-relaxed mb-6">
+                  </p>
+                  <p className="text-[15px] text-gray-600 leading-relaxed mb-6">
                     {ko
                       ? '이 페이지의 모든 링크를 한번에 한곳에 모아 보세요. 전부 SaveBoard 보드 하나에 비주얼 카드로 정리돼 있어요 — 로그인 없이 열리고, 내 보드로 가져가면 다음에 다시 검색하지 않아도 돼요.'
                       : 'See every link on this page in one go — they’re all on a single SaveBoard board, laid out as visual cards. It opens without a login, and if you copy it to your own board you won’t be searching for these again.'}
@@ -199,14 +217,14 @@ export function GuidePostPage() {
                   <a
                     href={guide.boardUrl}
                     onClick={() => track('board_click', { slug: guide.slug, lang: guide.lang })}
-                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-bold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-purple-200"
+                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-bold text-[15px] hover:opacity-90 active:scale-95 transition-all [text-shadow:0_1px_2px_rgba(0,0,0,.35)] shadow-lg shadow-purple-200"
                   >
                     {ko ? '모든 링크 한곳에서 열기' : 'Open all the links in one place'}
                     <ArrowRight className="w-4 h-4" />
                   </a>
                 </div>
               </div>
-            </div>
+            </aside>
           )}
 
           {faqSection && (
