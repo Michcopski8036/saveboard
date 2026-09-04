@@ -7,6 +7,17 @@ keywords: "플로 대체 앱, 클루 대체, 생리 앱 추천, 생리주기 앱
 lang: "ko"
 list_type: "software"
 board_url: ""
+promo_note: "먼저 밝혀요: 이건 저희가 만들었어요"
+promo_title: "네 번째 이유에는 답이 거의 없어요."
+promo_text: "프라이버시도, 가격도, 기능 과다도 위에 좋은 답이 있어요. 측정만 비어 있어요. PeriodVol은 이미 기록하는 것(패드·탐폰·컵)에서 밀리리터를 추정하고 한 주기가 80ml를 넘으면 표시해요. 진료실에서 \"많은 것 같아요\" 대신 숫자로 시작할 수 있어요. 무료로 쓸 수 있고 선택형 일회성 구매가 하나 있어요. 기록은 휴대폰에만 남아요."
+promo_cta: "PeriodVol 무료로 써보기"
+promo_url: "https://periodvol.app/"
+promo_image: "/guides/periodvol-hero-ko.jpg"
+promo_image_alt: "PeriodVol이 한 주기를 87ml로 추정하고 80ml 기준선을 넘었다고 표시한 화면, 기록한 날짜 달력"
+promo_image_w: "600"
+promo_image_h: "1225"
+promo_fine: "이 가이드를 만든 팀이 만든 앱이에요. PeriodVol은 위 순위 6개에 들어 있지 않고 표는 중립이에요 — 클로즈드 소스라 그 축에서는 drip과 Euki가 앞섭니다."
+promo_theme: "rose"
 status: "승인 대기"
 ---
 

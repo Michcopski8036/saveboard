@@ -7,6 +7,17 @@ keywords: "flo alternatives, clue alternatives, period tracker alternatives, pri
 lang: "en"
 list_type: "software"
 board_url: ""
+promo_note: "Full disclosure: we built this one"
+promo_title: "The fourth reason has one answer."
+promo_text: "Privacy, price and bloat all have good answers above. Measurement barely does. PeriodVol estimates your flow in millilitres from what you already log — pad, tampon or cup — and marks the cycle that crosses 80 ml, so an appointment starts with a number instead of \"I think it\u0027s a lot\". Free to use, one optional one-time purchase, and your entries stay on your phone."
+promo_cta: "Try PeriodVol — free"
+promo_url: "https://periodvol.app/"
+promo_image: "/guides/periodvol-hero.jpg"
+promo_image_alt: "PeriodVol showing a cycle estimated at 87 ml, flagged above the 80 ml heavy threshold, with a calendar of logged days"
+promo_image_w: "600"
+promo_image_h: "1225"
+promo_fine: "Made by the team behind this guide. PeriodVol is not one of the six ranked above, and the table stays neutral — it is closed source, which drip and Euki beat it on."
+promo_theme: "rose"
 status: "승인 대기"
 ---
 
