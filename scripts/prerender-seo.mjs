@@ -600,16 +600,25 @@ function promoHtml(guide) {
     .pvp-media img{display:block;width:100%;height:auto}
     .pvp-body{padding:20px;min-width:0}
     .pvp-eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
-    .pvp-title{font-size:20px;font-weight:700;margin:0 0 10px;text-wrap:balance}
-    .pvp-text{margin:0 0 16px}
-    .pvp-cta{display:inline-block;padding:12px 24px;color:#fff;border-radius:12px;font-weight:700}
-    .pvp-fine{font-size:12px;color:#4b5563;margin:12px 0 0}
+    /* 제목이지만 h 태그가 아니다 — 광고 문구가 문서 아웃라인에 들어가면 제목 단위로
+       훑는 독자·스크린리더에게 글의 한 섹션으로 읽힌다. 본문 H2보다 한 단계 아래. */
+    .pvp-title{font-size:19px;font-weight:700;color:#111827;margin:0 0 10px;text-wrap:balance;line-height:1.25}
+    .pvp-text{color:#4b5563;margin:0 0 20px}
+    /* 좁은 폭에서는 버튼이 폭을 꽉 채운다 — 손가락으로 누르는 화면이라 넓을수록 낫다. */
+    .pvp-cta{display:flex;width:100%;justify-content:center;align-items:center;gap:8px;
+      padding:14px 28px;color:#fff;border-radius:14px;font-weight:700;font-size:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,.14);text-shadow:0 1px 2px rgba(0,0,0,.35)}
+    /* 광고임을 밝히는 문장이 페이지에서 가장 안 보이는 글자가 되면 안 된다. #4b5563 = 7.0:1 */
+    .pvp-fine{font-size:12px;color:#4b5563;margin:16px 0 0}
+    @media (min-width:520px){ .pvp-title{font-size:21px} }
     @media (min-width:620px){
       .pvp-in{flex-direction:row;align-items:stretch}
       /* 이미지 열 45%. 세로는 가운데 — 이미지 비율이 제각각이라(PeriodVol 600x1225,
          CourtClock 720x775) 위로 붙이면 짧은 이미지 아래가 비어 보인다. */
       .pvp-media{width:45%;max-width:320px;display:flex;align-items:center}
       .pvp-body{flex:1;padding:26px 28px;display:flex;flex-direction:column;justify-content:center}
+      /* 넓은 화면에서는 버튼이 글자 폭만큼만 — 꽉 찬 버튼은 데스크톱에서 과하다. */
+      .pvp-cta{display:inline-flex;width:auto;align-self:flex-start}
     }
   </style>`;
   // 카드 전체가 하나의 클릭 대상이다. 예전에는 이미지와 버튼만 눌렸고 제목·본문은
