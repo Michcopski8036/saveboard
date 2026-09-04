@@ -7,6 +7,12 @@ route: "kakaotalk-link-save-ko"
 lang: "ko"
 alt_lang_url: "/blog/stop-losing-links-group-chats"
 keywords: "단톡방 링크 정리, 카톡 링크 저장, 링크 모으기, 카톡 공유 링크 저장, 단톡방 정리, 링크 저장 앱"
+promo_note: "먼저 밝혀요: SaveBoard는 저희가 만든 앱이에요"
+promo_title: "‘혹시 아까 그 링크 다시…’에 링크 하나로 답하기"
+promo_text: "나만 잘 보관하면 절반만 해결돼요. SaveBoard는 보드 하나를 통째로 공개 링크로 만들 수 있어서, 단톡방에는 그 링크만 올리면 돼요. 받는 사람은 계정도 설치도 없이 브라우저에서 열고, 나중에 보드를 고치면 같은 링크에서 최신 상태가 보여요. 저장 30개, 보드 5개까지 무료예요."
+promo_cta: "SaveBoard 무료로 시작하기"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "이 글을 쓴 팀이 만든 앱이에요. 아래 카카오톡 ‘서랍’ 이야기는 이 배너와 무관해요."
 ---
 
 # 단톡방 링크 정리, 카톡에서 안 잃어버리는 법

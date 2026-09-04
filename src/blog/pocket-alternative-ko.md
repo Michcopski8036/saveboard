@@ -7,6 +7,12 @@ route: "pocket-alternative-ko"
 lang: "ko"
 alt_lang_url: "/pocket-alternative"
 keywords: "포켓 종료, 포켓 대체 앱, Pocket 대신, 나중에 읽기 앱, 읽을거리 저장 앱, 포켓 대체, 북마크 앱"
+promo_note: "먼저 밝혀요: SaveBoard는 저희가 만든 앱이에요"
+promo_title: "‘나에게 보내기’로 돌아가 있었다면"
+promo_text: "저장은 쉬운데 꺼내기가 어려운 게 문제였어요. SaveBoard는 공유 시트로 한 번 보내면 제목·설명·미리보기 이미지가 붙은 카드로 남고, 보드는 링크 하나로 단톡방에 그대로 넘길 수 있어요. 받는 사람은 계정 없이 열려요. 저장 30개, 보드 5개까지 무료예요."
+promo_cta: "SaveBoard 무료로 시작하기"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "이 글을 쓴 팀이 만든 앱이에요. 아래 표의 Raindrop.io는 데스크톱에서 더 나은 선택이라 그대로 뒀어요."
 ---
 
 # 포켓(Pocket) 종료 후 쓸 대체 앱

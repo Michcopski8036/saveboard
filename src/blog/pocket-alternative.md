@@ -7,6 +7,12 @@ route: "pocket-alternative"
 lang: "en"
 alt_lang_url: "/pocket-alternative-ko"
 keywords: "pocket alternative, best pocket alternative, pocket replacement, pocket shut down, pocket discontinued, what to use instead of pocket, read later app, save links app"
+promo_note: "Full disclosure: SaveBoard is our app"
+promo_title: "You don’t have to rebuild the whole export in one sitting."
+promo_text: "Start with the next link you save — from Instagram, YouTube, a group chat or your browser. One tap from the share sheet and it lands as a card with its title, description and preview image, on a board you can find again. Free for 30 links, no card required."
+promo_cta: "Get SaveBoard — it’s free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "Made by the team behind this page. Raindrop.io is in the table above because it is the better answer for a desktop library of hundreds — that stays true whether or not you tap this."
 ---
 
 # The Best Pocket Alternative in 2026 (Now That Pocket Has Shut Down)

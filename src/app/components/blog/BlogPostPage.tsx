@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Calendar } from 'lucide-react';
 import { getPostBySlug, getPostByRoute, formatDate } from '../../utils/blogUtils';
 import { renderMarkdown } from '../../utils/markdownRenderer';
 import { Nav, BlogFooter } from './BlogListPage';
+import { PromoCard, hasPromoCard, splitAtFirstSection } from '../PromoCard';
 import { useLanguage } from '../../context/LanguageContext';
 
 const BASE_URL = 'https://www.saveboard.app';
@@ -53,6 +54,12 @@ export function BlogPostPage({ landingRoute }: { landingRoute?: string } = {}) {
 
   if (!post) return <Navigate to="/blog" replace />;
 
+  // Promo card (promo_* frontmatter): after the intro, before the first H2 —
+  // the same placement the guides use, via the same component. Posts without the
+  // frontmatter take the single-article path exactly as before.
+  const hasPromo = hasPromoCard(post);
+  const [intro, afterIntro] = hasPromo ? splitAtFirstSection(post.content) : [post.content, ''];
+
   return (
     <div className="min-h-screen bg-white font-sans">
       <Nav />
@@ -84,8 +91,16 @@ export function BlogPostPage({ landingRoute }: { landingRoute?: string } = {}) {
           <div className="h-px bg-gray-100 mb-10" />
 
           <article className="prose-style">
-            {renderMarkdown(post.content)}
+            {renderMarkdown(intro)}
           </article>
+
+          {hasPromo && <PromoCard promo={post} ko={post.lang === 'ko'} />}
+
+          {afterIntro && (
+            <article className="prose-style">
+              {renderMarkdown(afterIntro)}
+            </article>
+          )}
 
           <div className="mt-16 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 p-8 text-center">
             <p className="text-[13px] font-semibold text-purple-600 mb-2">{ko ? '써볼 준비 됐나요?' : 'Ready to try it?'}</p>

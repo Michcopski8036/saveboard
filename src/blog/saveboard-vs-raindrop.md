@@ -5,6 +5,12 @@ description: "SaveBoard vs Raindrop.io compared head-to-head — mobile vs deskt
 slug: "saveboard-vs-raindrop"
 route: "saveboard-vs-raindrop"
 keywords: "saveboard vs raindrop, raindrop vs saveboard, raindrop.io comparison, best bookmark manager 2026, mobile bookmark manager, visual bookmarks"
+promo_note: "Full disclosure: SaveBoard is our app"
+promo_title: "One of the two apps on this page is ours."
+promo_text: "Which is why the page also has a section on where Raindrop.io wins — nested collections, browser extensions, full-text search, an unlimited free tier. Read both sides, then try the one that matches where you actually save. SaveBoard is free for 30 links and 5 boards."
+promo_cta: "Try SaveBoard — free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "Made by the team behind this comparison. The Raindrop.io column stays exactly as it is whether or not you tap this."
 ---
 
 # SaveBoard vs Raindrop.io: Which Bookmark Manager Should You Use? (2026)

@@ -4,6 +4,16 @@ date: "2026-05-23"
 description: "Traditional bookmarks are just a list of website names. Visual bookmarks show you what each link actually is. Here's why it makes a huge difference."
 slug: "visual-bookmarks-better-than-url-list"
 keywords: "visual bookmarks, visual link saver, bookmark app with preview, link cards app, bookmark organiser"
+promo_note: "Full disclosure: SaveBoard is our app"
+promo_title: "This is what the card version looks like."
+promo_text: "The comparison at the end of this post — preview image, readable title, description, source domain, your own note — is a SaveBoard board. Saving is one tap from the share sheet in any app, and a board can be handed to someone as a single link. Free for 30 links and 5 boards."
+promo_cta: "Get SaveBoard — it’s free"
+promo_url: "https://www.saveboard.app/"
+promo_image: "/guides/shared-board-app.jpg"
+promo_image_alt: "A SaveBoard board open on a phone: saved links shown as cards with preview images, titles and source domains"
+promo_image_w: "520"
+promo_image_h: "722"
+promo_fine: "Made by the team behind this post — the app in the screenshot is ours."
 ---
 
 # Why Visual Bookmarks Are Better Than a List of URLs

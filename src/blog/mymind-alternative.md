@@ -5,6 +5,12 @@ description: "Looking for a mymind alternative that doesn't require a subscripti
 slug: "mymind-alternative"
 route: "mymind-alternative"
 keywords: "mymind alternative, mymind alternative free, mymind vs, free mymind alternative, visual bookmark app, mobile bookmark manager, mymind pricing"
+promo_note: "Full disclosure: SaveBoard is our app"
+promo_title: "The difference that doesn’t move: one of the two has a free tier."
+promo_text: "The prices are in different currencies, so the maths depends on the day. The free tier doesn’t: SaveBoard is free for 30 saved links and 5 boards, no card and no trial clock, so you can find out in a week whether boards you sort yourself beat AI sorting for you."
+promo_cta: "Try SaveBoard — free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "Made by the team behind this page. SaveBoard is one of the two apps in the table, so the table stays neutral on purpose — including the part where mymind is better at screenshots and moodboards."
 ---
 
 # The Best mymind Alternative With a Free Plan (2026)

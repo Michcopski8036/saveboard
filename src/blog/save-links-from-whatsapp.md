@@ -4,6 +4,12 @@ date: "2026-05-19"
 description: "Tired of losing important links in WhatsApp group chats? Here's the easiest way to save, organise, and find links from any group chat in seconds."
 slug: "save-links-from-whatsapp"
 keywords: "save links whatsapp, whatsapp group chat links, link saver app, organise whatsapp links"
+promo_note: "Full disclosure: SaveBoard is our app"
+promo_title: "Day 3 it’s buried. Day 7 you’re asking the group again."
+promo_text: "The steps further down take about three seconds in practice: long-press the link in WhatsApp, Share, SaveBoard, pick a collection. The title, description and preview image come across on their own, so a week later you recognise the link instead of decoding a URL. Free for 30 links."
+promo_cta: "Get SaveBoard — it’s free"
+promo_url: "https://www.saveboard.app/"
+promo_fine: "Made by the team behind this post — the app it walks through is ours, and we would rather say so at the top than at the bottom."
 ---
 
 # How to Save Links from WhatsApp Group Chats (And Actually Find Them Later)
