@@ -542,19 +542,26 @@ function promoHtml(guide) {
     ? { border: '#EBDED7', bg: '#FBF7F4', eyebrow: '#8A5A6B', cta: '#8A5A6B' }
     : { border: '#e9d5ff', bg: '#faf5ff', eyebrow: '#9333ea', cta: '#A259FF' };
   const img = guide.promoImage
-    ? `<a href="${escAttr(guide.promoUrl)}"><img src="${escAttr(guide.promoImage)}"
+    ? `<img src="${escAttr(guide.promoImage)}"
           alt="${escAttr(guide.promoImageAlt)}" width="${escAttr(guide.promoImageW)}" height="${escAttr(guide.promoImageH)}"
-          loading="lazy" style="display:block;width:100%;max-width:420px;height:auto" /></a>`
+          loading="lazy" style="display:block;width:100%;max-width:420px;height:auto" />`
     : '';
-  return `<aside aria-label="${guide.lang === 'ko' ? '광고' : 'Advertisement'}" style="margin:24px 0;border:2px solid ${theme.border};border-radius:16px;overflow:hidden;background:${theme.bg};max-width:680px">
-        ${img}
-        <div style="padding:20px">
-          <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${theme.eyebrow};margin:0 0 8px"><strong>${esc(guide.promoNote)}</strong></p>
-          ${guide.promoTitle ? `<p style="font-size:20px;font-weight:700;margin:0 0 10px">${esc(guide.promoTitle)}</p>` : ''}
-          <p style="margin:0 0 16px">${esc(guide.promoText)}</p>
-          <p style="margin:0"><a href="${escAttr(guide.promoUrl)}" style="display:inline-block;padding:12px 24px;background:${theme.cta};color:#fff;border-radius:12px;font-weight:700;text-decoration:none">${esc(guide.promoCta)} →</a></p>
-          ${guide.promoFine ? `<p style="font-size:12px;color:#4b5563;margin:12px 0 0">${esc(guide.promoFine)}</p>` : ''}
-        </div>
+  // 카드 전체가 하나의 클릭 대상이다. 예전에는 이미지와 버튼만 눌렸고 제목·본문은
+  // 죽은 영역이었다 — 폰에서 카드의 대부분이 그 죽은 영역이었다(2026-09-04 누나 지시).
+  // 그래서 바깥을 <a>로 감싸고 버튼은 <span>으로 바꿨다. <a> 안에 <a>는 못 넣는다.
+  // 스크린리더가 카드 전문을 링크 이름으로 읽지 않도록 aria-label 로 요약한다.
+  return `<aside aria-label="${guide.lang === 'ko' ? '광고' : 'Advertisement'}" style="margin:24px 0;max-width:680px">
+        <a href="${escAttr(guide.promoUrl)}" aria-label="${escAttr(guide.promoCta)}"
+           style="display:block;border:2px solid ${theme.border};border-radius:16px;overflow:hidden;background:${theme.bg};color:inherit;text-decoration:none">
+          ${img}
+          <div style="padding:20px">
+            <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${theme.eyebrow};margin:0 0 8px"><strong>${esc(guide.promoNote)}</strong></p>
+            ${guide.promoTitle ? `<p style="font-size:20px;font-weight:700;margin:0 0 10px">${esc(guide.promoTitle)}</p>` : ''}
+            <p style="margin:0 0 16px">${esc(guide.promoText)}</p>
+            <p style="margin:0"><span style="display:inline-block;padding:12px 24px;background:${theme.cta};color:#fff;border-radius:12px;font-weight:700">${esc(guide.promoCta)} →</span></p>
+            ${guide.promoFine ? `<p style="font-size:12px;color:#4b5563;margin:12px 0 0">${esc(guide.promoFine)}</p>` : ''}
+          </div>
+        </a>
       </aside>`;
 }
 
