@@ -1,14 +1,45 @@
 {
-  "regions": ["icn1"],
+  "regions": [
+    "icn1"
+  ],
+  "redirects": [
+    {
+      "source": "/guides/charity-verification-sources",
+      "destination": "/guides",
+      "permanent": true
+    },
+    {
+      "source": "/guides/charity-verification-sources-ko",
+      "destination": "/guides-ko",
+      "permanent": true
+    }
+  ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/robots.txt", "destination": "/api/robots" },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/robots"
+    },
     {
       "source": "/share/:token",
-      "has": [{ "type": "query", "key": "app" }],
+      "has": [
+        {
+          "type": "query",
+          "key": "app"
+        }
+      ],
       "destination": "/index.html"
     },
-    { "source": "/share/:token", "destination": "/api/share-preview?token=:token" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/share/:token",
+      "destination": "/api/share-preview?token=:token"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
