@@ -192,13 +192,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // doesn't consume.
   if (cronOk) {
     const weekIso = new Date(now.getTime() - 7 * 86400000).toISOString();
+    // links.created_at is a bigint of epoch ms (the client writes Date.now()),
+    // NOT a timestamptz — comparing it to an ISO string makes Postgres reject the
+    // filter, and `count ?? 0` below then reports a confident zero. That is what
+    // "0 saves in the last 7 days" was: a failed query, not an idle userbase.
+    // page_events.created_at IS a timestamptz, so weekIso still belongs there.
+    const weekMs = now.getTime() - 7 * 86400000;
     const [pageEventsRes, cronUsersRes, cronLinksTotalRes, cronLinksWeekRes] = await Promise.all([
       supabase.from('page_events')
         .select('event, path, referrer, source, created_at')
         .gte('created_at', new Date(now.getTime() - 14 * 86400000).toISOString()),
       supabase.auth.admin.listUsers({ perPage: 1000 }),
       supabase.from('links').select('id', { count: 'exact', head: true }),
-      supabase.from('links').select('id', { count: 'exact', head: true }).gte('created_at', weekIso),
+      supabase.from('links').select('id', { count: 'exact', head: true }).gte('created_at', weekMs),
     ]);
 
     const traffic = computeTraffic((pageEventsRes.data ?? []) as PageEvent[], now);
@@ -226,9 +232,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       activeToday: cronUsers.filter(u => within(seenMs(u), 24 * 3600_000)).length,
       activeWeek: cronUsers.filter(u => within(seenMs(u), 7 * 24 * 3600_000)).length,
       loginsWeek: cronUsers.filter(u => within(Date.parse(u.last_sign_in_at ?? ''), 7 * 24 * 3600_000)).length,
-      totalLinks: cronLinksTotalRes.count ?? 0,
-      linksThisWeek: cronLinksWeekRes.count ?? 0,
+      // A failed count must not arrive as 0. Reporting "nobody saved this week"
+      // when the question was never answered is worse than reporting nothing:
+      // it reads as a finding and gets acted on. null means "unknown"; the cron
+      // skips those rather than writing them.
+      totalLinks: cronLinksTotalRes.error ? null : (cronLinksTotalRes.count ?? 0),
+      linksThisWeek: cronLinksWeekRes.error ? null : (cronLinksWeekRes.count ?? 0),
     };
+    if (cronLinksWeekRes.error) console.log('[admin-stats] links week count failed:', cronLinksWeekRes.error.message);
 
     return res.status(200).json({ traffic, aggregate, generatedAt: now.toISOString() });
   }
