@@ -1,37 +1,55 @@
 import { useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router';
 import { ArrowLeft, ArrowRight, Calendar } from 'lucide-react';
-import { getPostBySlug, formatDate } from '../../utils/blogUtils';
+import { getPostBySlug, getPostByRoute, formatDate } from '../../utils/blogUtils';
 import { renderMarkdown } from '../../utils/markdownRenderer';
 import { Nav, BlogFooter } from './BlogListPage';
 import { useLanguage } from '../../context/LanguageContext';
 
 const BASE_URL = 'https://www.saveboard.app';
 
-export function BlogPostPage() {
+/**
+ * `landingRoute` renders a top-level landing (`/pocket-alternative-ko`) instead
+ * of a `/blog/:slug` post. Without it those URLs fall through to <App/> and a
+ * human — or a crawler that runs the JS — gets the marketing page while only the
+ * prerendered HTML holds the article.
+ */
+export function BlogPostPage({ landingRoute }: { landingRoute?: string } = {}) {
   const { language } = useLanguage();
-  const ko = language === 'ko';
   const { slug } = useParams<{ slug: string }>();
-  const post = getPostBySlug(slug ?? '');
+  const post = landingRoute ? getPostByRoute(landingRoute) : getPostBySlug(slug ?? '');
+  // A Korean page stays Korean even for a reader whose UI language is English:
+  // the article itself is Korean, so English chrome around it reads as a bug.
+  const ko = post?.lang === 'ko' || language === 'ko';
+  const isLanding = Boolean(landingRoute);
 
   // Landings live at /<route>; /blog/<slug> would be a duplicate URL competing with it.
   useEffect(() => {
-    if (post?.route) window.location.replace(`/${post.route}`);
-  }, [post]);
+    if (!isLanding && post?.route) window.location.replace(`/${post.route}`);
+  }, [post, isLanding]);
 
   useEffect(() => {
-    if (!post || post.route) return;
-    document.title = `${post.title} — SaveBoard Blog`;
+    if (!post || (!isLanding && post.route)) return;
+    // Mirrors withSeo() in scripts/prerender-seo.mjs. If these drift, the title a
+    // crawler reads in the HTML and the one it reads after running the JS differ.
+    const title = isLanding
+      ? (post.title.includes('SaveBoard') ? post.title : `${post.title} — SaveBoard`)
+      : `${post.title} — SaveBoard${post.lang === 'ko' ? '' : ' Blog'}`;
+    const canonical = isLanding ? `${BASE_URL}/${post.route}` : `${BASE_URL}/blog/${post.slug}`;
+    const prevLang = document.documentElement.lang;
+    document.title = title;
     setMeta('description', post.description);
-    setMeta('og:title', `${post.title} — SaveBoard Blog`);
+    setMeta('og:title', title);
     setMeta('og:description', post.description);
-    setCanonical(`${BASE_URL}/blog/${post.slug}`);
+    setCanonical(canonical);
+    if (post.lang === 'ko') document.documentElement.lang = 'ko-KR';
     return () => {
+      document.documentElement.lang = prevLang;
       document.title = 'SaveBoard — Stop scrolling. Find that link instantly.';
       setMeta('description', 'Tired of losing links in group chats? SaveBoard organises all your important links in one beautiful place.');
       setCanonical(BASE_URL);
     };
-  }, [post]);
+  }, [post, isLanding]);
 
   if (!post) return <Navigate to="/blog" replace />;
 
@@ -43,17 +61,17 @@ export function BlogPostPage() {
         <div className="max-w-2xl mx-auto">
 
           <Link
-            to="/blog"
+            to={isLanding ? (ko ? '/guides-ko' : '/blog') : '/blog'}
             className="inline-flex items-center gap-1.5 text-[13px] font-medium text-gray-500 hover:text-gray-900 transition-colors mb-10"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            {ko ? '전체 글' : 'All articles'}
+            {isLanding ? (ko ? 'SaveBoard 가이드' : 'SaveBoard blog') : ko ? '전체 글' : 'All articles'}
           </Link>
 
           <header className="mb-10">
             <div className="flex items-center gap-2 text-[13px] text-gray-400 mb-4">
               <Calendar className="w-3.5 h-3.5" />
-              {formatDate(post.date)}
+              {formatDate(post.date, post.lang)}
             </div>
             <h1 className="text-[36px] sm:text-[44px] font-extrabold text-gray-900 leading-[1.1] tracking-tight mb-5">
               {post.title}

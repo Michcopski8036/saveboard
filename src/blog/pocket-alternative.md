@@ -4,6 +4,8 @@ date: "2026-06-22"
 description: "Pocket has shut down. Here's the best Pocket alternative in 2026 — a mobile-first, visual link saver that's free to start, with a simple way to bring your old saves across."
 slug: "pocket-alternative"
 route: "pocket-alternative"
+lang: "en"
+alt_lang_url: "/pocket-alternative-ko"
 keywords: "pocket alternative, best pocket alternative, pocket replacement, pocket shut down, pocket discontinued, what to use instead of pocket, read later app, save links app"
 ---
 

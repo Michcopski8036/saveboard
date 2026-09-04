@@ -40,7 +40,10 @@ export function GuidePostPage() {
     if (!guide) return;
     const canonical = `${BASE_URL}/guides/${guide.slug}${guide.lang === 'ko' ? '-ko' : ''}`;
     // Mirrors the prerendered title in scripts/prerender-seo.mjs.
-    const suffix = guide.lang === 'ko' ? 'SaveBoard 가이드' : 'SaveBoard Guides';
+    // Korean stops at 'SaveBoard' — matches withSeo() in scripts/prerender-seo.mjs
+    // (commit f4c6ad1e, Naver's 40-character title). The rendered title is the one
+    // Google keeps, so leaving '가이드' here undid that change on every Korean guide.
+    const suffix = guide.lang === 'ko' ? 'SaveBoard' : 'SaveBoard Guides';
     document.title = `${guide.title} — ${suffix}`;
     setMeta('description', guide.description);
     setMeta('og:title', `${guide.title} — ${suffix}`);

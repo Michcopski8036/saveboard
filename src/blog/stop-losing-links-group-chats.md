@@ -3,6 +3,8 @@ title: "Stop Losing Important Links in Group Chats — 5 Simple Habits"
 date: "2026-05-22"
 description: "Important links shared in group chats disappear fast. Here are 5 simple habits to make sure you never lose a registration form, schedule, or document link again."
 slug: "stop-losing-links-group-chats"
+lang: "en"
+alt_lang_url: "/kakaotalk-link-save-ko"
 keywords: "losing links group chat, find links in group chat, save important links, group chat organisation tips"
 ---
 

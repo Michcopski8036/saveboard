@@ -19,6 +19,10 @@ const allPosts = (await Promise.all(files.map(async file => parsePost(await read
 // — better for SEO/AEO than /blog/* for cornerstone landing pages. The rest are blog posts.
 const landings = allPosts.filter(post => post.route);
 const posts = allPosts.filter(post => !post.route);
+// The blog index and its Blog JSON-LD are English. A Korean post would show up
+// there as a Korean title inside an English list with no Korean index to sit in,
+// so it is prerendered and put in the sitemap but left out of the index.
+const indexPosts = posts.filter(post => post.lang !== 'ko');
 
 const guideFiles = (await readdir(guidesDir).catch(() => [])).filter(f => /\.(en|ko)\.md$/.test(f));
 const guidesBySlug = new Map();
@@ -79,8 +83,30 @@ function parsePost(raw) {
     slug: data.slug ?? '',
     keywords: data.keywords ?? '',
     route: data.route ?? '',
+    // Guides pair languages by filename suffix; blog/landing pages have no such
+    // pair, so the language and its counterpart URL are declared in frontmatter.
+    // Without `lang`, every Korean page would ship as <html lang="en">.
+    lang: data.lang === 'ko' ? 'ko' : 'en',
+    // `alt_lang_url` is the site-relative path of the same page in the other
+    // language ("/pocket-alternative"). Both sides must declare each other —
+    // a one-way hreflang is ignored.
+    altLangUrl: data.alt_lang_url ?? '',
     content: match[2].trim(),
   };
+}
+
+// hreflang pair for a blog/landing page that declares `alt_lang_url`.
+// Pages without it get no alternates, exactly as before.
+function postAlternates(page, canonical) {
+  if (!page.altLangUrl) return [];
+  const other = page.altLangUrl.startsWith('http') ? page.altLangUrl : `${baseUrl}${page.altLangUrl}`;
+  const en = page.lang === 'ko' ? other : canonical;
+  const ko = page.lang === 'ko' ? canonical : other;
+  return [
+    { hreflang: 'en', href: en, locale: 'en_AU' },
+    { hreflang: 'ko', href: ko, locale: 'ko_KR' },
+    { hreflang: 'x-default', href: en },
+  ];
 }
 
 // Guides reuse parsePost's frontmatter parser, then add the two guide-only
@@ -229,7 +255,7 @@ function blogIndexHtml() {
       <h1>SaveBoard Blog</h1>
       <p>${esc(description)}</p>
       <section>
-        ${posts.map(post => `
+        ${indexPosts.map(post => `
           <article>
             <p><time datetime="${esc(post.date)}">${esc(formatDate(post.date))}</time></p>
             <h2><a href="/blog/${esc(post.slug)}">${esc(post.title)}</a></h2>
@@ -251,7 +277,7 @@ function blogIndexHtml() {
       url: canonical,
       description,
       publisher: organization(),
-      blogPost: posts.map(post => ({
+      blogPost: indexPosts.map(post => ({
         '@type': 'BlogPosting',
         headline: post.title,
         url: `${baseUrl}/blog/${post.slug}`,
@@ -266,12 +292,15 @@ function blogIndexHtml() {
 // Cornerstone landings are excluded from the post list, which left them with no incoming
 // internal links at all — Google discovered them from the sitemap but kept deprioritising
 // the crawl. This block links them from the blog index and from every article.
-function relatedLandingsHtml(excludeRoute = '') {
-  const related = landings.filter(page => page.route !== excludeRoute);
+function relatedLandingsHtml(excludeRoute = '', lang = 'en') {
+  // Korean pages list Korean landings and vice versa: a Korean reader has no
+  // use for "Compare SaveBoard" in English, and mixing the two would put a
+  // Korean-language link block on every English page.
+  const related = landings.filter(page => page.route !== excludeRoute && page.lang === lang);
   if (!related.length) return '';
   return `
       <section>
-        <h2>Compare SaveBoard</h2>
+        <h2>${lang === 'ko' ? '함께 보면 좋은 페이지' : 'Compare SaveBoard'}</h2>
         <ul>
           ${related.map(page => `<li><a href="/${esc(page.route)}">${esc(page.title)}</a></li>`).join('')}
         </ul>
@@ -279,23 +308,31 @@ function relatedLandingsHtml(excludeRoute = '') {
 }
 
 function articleHtml(post, { canonical, isLanding }) {
+  const ko = post.lang === 'ko';
   const content = post.content.replace(new RegExp(`^#\\s+${escapeRegExp(post.title)}\\s*\\n+`), '');
   const article = markdownToHtml(content);
   const faqs = extractFaq(content);
-  const backLink = isLanding ? '' : '<p><a href="/blog">All articles</a></p>';
+  const backLink = isLanding ? '' : `<p><a href="/blog">${ko ? '전체 글' : 'All articles'}</a></p>`;
+  // Korean pages hand off to the Korean hub (/guides-ko), not the English blog —
+  // the blog index and every post on it are English.
+  const footLink = isLanding
+    ? (ko
+        ? '<p><a href="/guides-ko">SaveBoard 가이드 보기</a></p>'
+        : '<p><a href="/blog">Read the SaveBoard blog</a></p>')
+    : '';
   const body = `
     <main class="seo-page">
       <article>
         ${backLink}
         <header>
-          <p><time datetime="${esc(post.date)}">${esc(formatDate(post.date))}</time></p>
+          <p><time datetime="${esc(post.date)}">${esc(formatDate(post.date, post.lang))}</time></p>
           <h1>${esc(post.title)}</h1>
           <p>${esc(post.description)}</p>
         </header>
         ${article}
       </article>
-      ${relatedLandingsHtml(post.route)}
-      ${isLanding ? '<p><a href="/blog">Read the SaveBoard blog</a></p>' : ''}
+      ${relatedLandingsHtml(post.route, post.lang)}
+      ${footLink}
     </main>`;
 
   const jsonLd = [{
@@ -307,6 +344,7 @@ function articleHtml(post, { canonical, isLanding }) {
     image: ogImage,
     datePublished: post.date,
     dateModified: post.date,
+    inLanguage: ko ? 'ko-KR' : 'en-AU',
     author: { '@type': 'Organization', name: siteName },
     publisher: organization(),
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
@@ -325,11 +363,24 @@ function articleHtml(post, { canonical, isLanding }) {
   }
 
   return withSeo({
-    title: isLanding ? post.title : `${post.title} — SaveBoard Blog`,
+    // Korean brand suffix stops at "— SaveBoard" (12 chars) — same reason as the
+    // guides: Naver recommends a 40-character title and "Blog"/"가이드" only
+    // eats into the descriptive part that earns the click.
+    title: isLanding ? post.title : `${post.title} — SaveBoard${ko ? '' : ' Blog'}`,
     description: post.description,
     keywords: post.keywords,
     canonical,
     jsonLd,
+    alternates: postAlternates(post, canonical),
+    // An English page only declares a locale when it has a Korean counterpart:
+    // og:locale:alternate is meaningless without og:locale, and setting it on
+    // the unpaired English pages would relabel <html lang> across the whole
+    // existing site for no gain.
+    locale: ko ? 'ko_KR' : (post.altLangUrl ? 'en_AU' : ''),
+    // article: timestamps are new, so they go on the new pages only — the point
+    // of this change set is to add Korean pages, not to re-cut the English ones.
+    published: ko ? post.date : '',
+    modified: ko ? post.date : '',
   }, body);
 }
 
@@ -544,7 +595,9 @@ function guideIndexHtml(lang = 'en') {
         `;
         }).join('')}
       </section>
-      <p><a href="/blog">SaveBoard blog</a> · <a href="/">SaveBoard</a></p>
+      <p>${ko
+        ? koLandingLinksHtml() || '<a href="/">SaveBoard</a>'
+        : '<a href="/blog">SaveBoard blog</a> · <a href="/">SaveBoard</a>'}</p>
     </main>`;
 
   const jsonLd = [{
@@ -585,6 +638,15 @@ function guideIndexHtml(lang = 'en') {
     alternates: indexAlternates,
     locale: ko ? 'ko_KR' : 'en_AU',
   }, body);
+}
+
+// The Korean product pages have no Korean hub linking to them: the blog index is
+// English and the landings are excluded from it by design. The Korean guides are
+// the only Korean pages already in the index, so they carry the links.
+function koLandingLinksHtml() {
+  return landings.filter(page => page.lang === 'ko')
+    .map(page => `<a href="/${esc(page.route)}">${esc(page.title)}</a>`)
+    .join(' · ');
 }
 
 // Parse an "## FAQ" / "## Frequently Asked Questions" section: each "### Question"
@@ -692,12 +754,14 @@ function sitemapXml() {
       lastmod: page.date,
       changefreq: 'monthly',
       priority: '0.9',
+      alternates: postAlternates(page, `${baseUrl}/${page.route}`),
     })),
     ...posts.map(post => ({
       loc: `${baseUrl}/blog/${post.slug}`,
       lastmod: post.date,
       changefreq: 'monthly',
       priority: '0.8',
+      alternates: postAlternates(post, `${baseUrl}/blog/${post.slug}`),
     })),
     ...['en', 'ko'].map(lang => ({
       loc: lang === 'ko' ? `${baseUrl}/guides-ko` : `${baseUrl}/guides`,
