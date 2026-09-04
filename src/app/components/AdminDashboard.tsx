@@ -29,6 +29,8 @@ export interface AdminStats {
     locale: string; platform: string; lastSeen: string; provider: string; country: string;
   }>;
   usersByPlatform: Record<string, number>;
+  usersByAppVersion?: Record<string, Record<string, number>>;
+  updateGateImpact?: { blockedByMin: Record<string, number>; behindLatest: Record<string, number> };
   presence: { activeNow: number; activeToday: number; activeWeek: number; loginsWeek: number; neverSeen: number };
   activeUsers: Array<{
     id: string; email: string; lastSeen: string;
@@ -827,6 +829,50 @@ export function AdminDashboard({ onClose, userEmail }: { onClose: () => void; us
                   <p className="text-[11px] -mt-2" style={{ color: t.textFaint }}>
                     Device and location are recorded when a user signs in, so “Not recorded” clears as existing users return.
                   </p>
+
+                  {/* 네이티브 앱 버전 분포 — min_version 을 올리기 전에 몇 명이 잠기는지
+                      보기 위한 것. 값은 사용자가 다음에 로그인할 때 채워진다. */}
+                  {(['ios', 'android'] as const).some(p => Object.keys(stats.usersByAppVersion?.[p] ?? {}).length > 0) && (
+                    <div className="rounded-2xl p-4" style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
+                      <p className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: t.textMuted }}>
+                        앱 버전 · 업데이트 게이트 영향
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {(['ios', 'android'] as const).map(plat => {
+                          const versions = Object.entries(stats.usersByAppVersion?.[plat] ?? {})
+                            .sort((a, b) => b[0].localeCompare(a[0], undefined, { numeric: true }));
+                          const blocked = stats.updateGateImpact?.blockedByMin?.[plat] ?? 0;
+                          const behind  = stats.updateGateImpact?.behindLatest?.[plat] ?? 0;
+                          return (
+                            <div key={plat}>
+                              <p className="text-[12px] font-semibold mb-2" style={{ color: t.textPrimary }}>
+                                {plat === 'ios' ? 'iOS' : 'Android'}
+                              </p>
+                              {versions.length === 0 ? (
+                                <p className="text-[11px]" style={{ color: t.textFaint }}>아직 기록된 버전 없음</p>
+                              ) : (
+                                <>
+                                  {versions.map(([v, n]) => (
+                                    <div key={v} className="flex justify-between text-[12px] py-0.5">
+                                      <span className="font-mono" style={{ color: t.textMuted }}>{v}</span>
+                                      <span style={{ color: t.textPrimary }}>{n}명</span>
+                                    </div>
+                                  ))}
+                                  <p className="text-[11px] mt-2" style={{ color: blocked > 0 ? '#EF4444' : t.textFaint }}>
+                                    차단 중 <b>{blocked}명</b> · 배너만 <b>{behind}명</b>
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[11px] mt-3" style={{ color: t.textFaint }}>
+                        “차단 중”은 <span className="font-mono">min_version</span> 미만이라 지금 앱을 못 쓰는 사용자다.
+                        버전은 사용자가 다음에 로그인할 때 채워지므로 초기에는 실제보다 적게 보인다.
+                      </p>
+                    </div>
+                  )}
 
                   <WorldMap usersByCountry={stats.usersByCountry} unknownLocationCount={stats.unknownLocationCount} />
                   <div>

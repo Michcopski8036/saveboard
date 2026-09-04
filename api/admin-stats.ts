@@ -262,6 +262,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     pageEventsRes,
     automationRunsRes,
     linksByUserRes,
+    appConfigRes,
   ] = await Promise.all([
     // All users via admin API
     supabase.auth.admin.listUsers({ perPage: 1000 }),
@@ -304,6 +305,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Per-user link counts + first-save times (activation) — used to run as a
     // second sequential round-trip after this batch, adding a full DB RTT.
     supabase.from('links').select('user_id, created_at'),
+
+    // 업데이트 게이트 설정 — 아래 blockedByMin/behindLatest 계산에 쓴다.
+    supabase.from('app_config').select('platform, latest_version, min_version'),
   ]);
 
   // ── Users ─────────────────────────────────────────────────────────────────
@@ -382,6 +386,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   for (const u of allUsers) {
     const p: string = u.user_metadata?.platform ?? '';
     platformCount[p in platformCount ? p : 'unknown'] += 1;
+  }
+
+  // 네이티브 앱 버전 분포 — min_version 을 올리기 전에 "몇 명이 잠기는가"를
+  // 알기 위한 것이다(2026-09-04에 min 을 latest 로 올렸다가 되돌린 사고 이후 추가).
+  // 값은 기존 사용자가 다음에 로그인할 때부터 채워지므로 초기엔 대부분 비어 있다.
+  const versionCount: Record<string, Record<string, number>> = { ios: {}, android: {} };
+  for (const u of allUsers) {
+    const p: string = u.user_metadata?.platform ?? '';
+    const v: string = u.user_metadata?.app_version ?? '';
+    if ((p === 'ios' || p === 'android') && v) {
+      versionCount[p][v] = (versionCount[p][v] ?? 0) + 1;
+    }
+  }
+  // min_version 미만 = 지금 차단 화면을 보는 사용자 수. app_config 와 같은 비교
+  // 규칙(UpdateGate.tsx cmpVersion)을 써야 화면과 숫자가 어긋나지 않는다.
+  const cmpVer = (a: string, b: string) => {
+    const pa = a.split('.').map(n => parseInt(n, 10) || 0);
+    const pb = b.split('.').map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const d = (pa[i] || 0) - (pb[i] || 0);
+      if (d) return d < 0 ? -1 : 1;
+    }
+    return 0;
+  };
+  const cfgRows = (appConfigRes?.data ?? []) as Array<{ platform: string; min_version?: string; latest_version?: string }>;
+  const blockedByMin: Record<string, number> = {};
+  const behindLatest: Record<string, number> = {};
+  for (const plat of ['ios', 'android'] as const) {
+    const cfg = cfgRows.find(r => r.platform === plat);
+    let blocked = 0, behind = 0;
+    for (const [v, n] of Object.entries(versionCount[plat])) {
+      if (cfg?.min_version && cmpVer(v, cfg.min_version) < 0) blocked += n;
+      else if (cfg?.latest_version && cmpVer(v, cfg.latest_version) < 0) behind += n;
+    }
+    blockedByMin[plat] = blocked;
+    behindLatest[plat] = behind;
   }
 
   const usersByCountry = Object.entries(countryCount)
@@ -539,6 +579,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     usersByCountry,
     unknownLocationCount: unknownCount,
     usersByPlatform: platformCount,
+    usersByAppVersion: versionCount,
+    updateGateImpact: { blockedByMin, behindLatest },
     presence: { activeNow, activeToday, activeWeek, loginsWeek, neverSeen: totalUsers - withSeen.length },
     activeUsers,
     topCategories,

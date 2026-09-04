@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import { supabase } from './supabase';
 
 /**
@@ -6,7 +7,13 @@ import { supabase } from './supabase';
  * so the admin dashboard can show where users are and what they run on.
  *
  * Deliberately minimal: platform ('ios' | 'android' | 'web'), the browser/device
- * locale, and a last-seen timestamp. No IP, no device fingerprint, no third party.
+ * locale, the installed native app version, and a last-seen timestamp. No IP, no
+ * device fingerprint, no third party.
+ *
+ * `app_version` exists so the update gate can be set with the blast radius known.
+ * Raising `min_version` hard-blocks everyone below it, and until 2026-09-04 there
+ * was no way to answer "how many people is that?" before pressing save. Native
+ * only — the web build has no store version, so web users simply never set it.
  *
  * `last_seen` is a full timestamp so the admin dashboard can tell "signed in right
  * now" from "signed in this morning". It is a heartbeat, not a behavioural log — it
@@ -28,9 +35,17 @@ export async function recordProfileMeta(user: { user_metadata?: Record<string, a
   const meta     = user.user_metadata ?? {};
   const now      = Date.now();
 
+  // Native store build version, e.g. "1.0.14" — the same value UpdateGate compares
+  // against app_config. Best-effort: a missing plugin must not cost us the heartbeat.
+  let appVersion = '';
+  if (Capacitor.isNativePlatform()) {
+    try { appVersion = (await CapApp.getInfo())?.version ?? ''; } catch { /* ignore */ }
+  }
+
   const patch: Record<string, string> = {};
-  if (platform && meta.platform !== platform) patch.platform = platform;
-  if (locale   && meta.locale   !== locale)   patch.locale   = locale;
+  if (platform   && meta.platform    !== platform)   patch.platform    = platform;
+  if (locale     && meta.locale      !== locale)     patch.locale      = locale;
+  if (appVersion && meta.app_version !== appVersion) patch.app_version = appVersion;
 
   // Heartbeat, throttled — auth events (including hourly token refresh) would
   // otherwise write far more often than the dashboard's resolution needs.
