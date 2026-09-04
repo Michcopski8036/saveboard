@@ -568,8 +568,9 @@ function promoHtml(guide) {
     .pvp-fine{font-size:12px;color:#4b5563;margin:12px 0 0}
     @media (min-width:620px){
       .pvp-in{flex-direction:row;align-items:stretch}
-      /* 시안 비율: 이미지 열이 45% 가까이 차지하고 위에서부터 채운다(가운데 정렬 아님). */
-      .pvp-media{width:45%;max-width:320px;display:flex;align-items:flex-start}
+      /* 이미지 열 45%. 세로는 가운데 — 이미지 비율이 제각각이라(PeriodVol 600x1225,
+         CourtClock 720x775) 위로 붙이면 짧은 이미지 아래가 비어 보인다. */
+      .pvp-media{width:45%;max-width:320px;display:flex;align-items:center}
       .pvp-body{flex:1;padding:26px 28px;display:flex;flex-direction:column;justify-content:center}
     }
   </style>`;
