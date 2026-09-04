@@ -538,29 +538,56 @@ function guideHtml(guide, otherLang) {
 function promoHtml(guide) {
   // Mirrors PROMO_THEMES in GuidePostPage.tsx: default = SaveBoard purple,
   // rose = PeriodVol's palette.
+  // rose = PeriodVol 팔레트. CTA는 무토 #8A5A6B — 2026-09-04 누나 확정(빨강 #D23B26을
+  // 화면에서 보고 되돌림). 배경·테두리와 톤이 가까운 편이니 대비는 흰 글자와
+  // 둥근 채움면이 감당한다. 색을 다시 세게 바꾸려면 누나에게 먼저 물을 것.
   const theme = guide.promoTheme === 'rose'
     ? { border: '#EBDED7', bg: '#FBF7F4', eyebrow: '#8A5A6B', cta: '#8A5A6B' }
     : { border: '#e9d5ff', bg: '#faf5ff', eyebrow: '#9333ea', cta: '#A259FF' };
   const img = guide.promoImage
-    ? `<img src="${escAttr(guide.promoImage)}"
+    ? `<div class="pvp-media"><img src="${escAttr(guide.promoImage)}"
           alt="${escAttr(guide.promoImageAlt)}" width="${escAttr(guide.promoImageW)}" height="${escAttr(guide.promoImageH)}"
-          loading="lazy" style="display:block;width:100%;max-width:420px;height:auto" />`
+          loading="lazy" /></div>`
     : '';
+  // 배치: 넓은 화면에서 왼쪽 이미지 / 오른쪽 텍스트+버튼(2026-09-04 누나 지시).
+  // 좁은 화면에서는 세로로 쌓는다 — 나란히 두면 양쪽 다 못 읽을 폭이 된다.
+  // 인라인 스타일로는 미디어 쿼리를 못 쓰므로 카드가 자기 스타일을 함께 내보낸다.
+  const css = `<style>
+    .pvp{display:block;border-radius:16px;overflow:hidden;color:inherit;text-decoration:none}
+    .pvp-in{display:flex;flex-direction:column}
+    .pvp-media{flex:none;background:#fff}
+    .pvp-title{line-height:1.25}
+    .pvp-media img{display:block;width:100%;height:auto}
+    .pvp-body{padding:20px;min-width:0}
+    .pvp-eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+    .pvp-title{font-size:20px;font-weight:700;margin:0 0 10px;text-wrap:balance}
+    .pvp-text{margin:0 0 16px}
+    .pvp-cta{display:inline-block;padding:12px 24px;color:#fff;border-radius:12px;font-weight:700}
+    .pvp-fine{font-size:12px;color:#4b5563;margin:12px 0 0}
+    @media (min-width:620px){
+      .pvp-in{flex-direction:row;align-items:stretch}
+      /* 시안 비율: 이미지 열이 45% 가까이 차지하고 위에서부터 채운다(가운데 정렬 아님). */
+      .pvp-media{width:45%;max-width:320px;display:flex;align-items:flex-start}
+      .pvp-body{flex:1;padding:26px 28px;display:flex;flex-direction:column;justify-content:center}
+    }
+  </style>`;
   // 카드 전체가 하나의 클릭 대상이다. 예전에는 이미지와 버튼만 눌렸고 제목·본문은
   // 죽은 영역이었다 — 폰에서 카드의 대부분이 그 죽은 영역이었다(2026-09-04 누나 지시).
   // 그래서 바깥을 <a>로 감싸고 버튼은 <span>으로 바꿨다. <a> 안에 <a>는 못 넣는다.
   // 스크린리더가 카드 전문을 링크 이름으로 읽지 않도록 aria-label 로 요약한다.
-  return `<aside aria-label="${guide.lang === 'ko' ? '광고' : 'Advertisement'}" style="margin:24px 0;max-width:680px">
-        <a href="${escAttr(guide.promoUrl)}" aria-label="${escAttr(guide.promoCta)}"
-           style="display:block;border:2px solid ${theme.border};border-radius:16px;overflow:hidden;background:${theme.bg};color:inherit;text-decoration:none">
-          ${img}
-          <div style="padding:20px">
-            <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${theme.eyebrow};margin:0 0 8px"><strong>${esc(guide.promoNote)}</strong></p>
-            ${guide.promoTitle ? `<p style="font-size:20px;font-weight:700;margin:0 0 10px">${esc(guide.promoTitle)}</p>` : ''}
-            <p style="margin:0 0 16px">${esc(guide.promoText)}</p>
-            <p style="margin:0"><span style="display:inline-block;padding:12px 24px;background:${theme.cta};color:#fff;border-radius:12px;font-weight:700">${esc(guide.promoCta)} →</span></p>
-            ${guide.promoFine ? `<p style="font-size:12px;color:#4b5563;margin:12px 0 0">${esc(guide.promoFine)}</p>` : ''}
-          </div>
+  return `${css}<aside aria-label="${guide.lang === 'ko' ? '광고' : 'Advertisement'}" style="margin:24px 0;max-width:680px">
+        <a class="pvp" href="${escAttr(guide.promoUrl)}" aria-label="${escAttr(guide.promoCta)}"
+           style="border:2px solid ${theme.border};background:${theme.bg}">
+          <span class="pvp-in">
+            ${img}
+            <span class="pvp-body">
+              <span class="pvp-eyebrow" style="display:block;color:${theme.eyebrow}"><strong>${esc(guide.promoNote)}</strong></span>
+              ${guide.promoTitle ? `<span class="pvp-title" style="display:block">${esc(guide.promoTitle)}</span>` : ''}
+              <span class="pvp-text" style="display:block">${esc(guide.promoText)}</span>
+              <span class="pvp-cta" style="background:${theme.cta}">${esc(guide.promoCta)} →</span>
+              ${guide.promoFine ? `<span class="pvp-fine" style="display:block">${esc(guide.promoFine)}</span>` : ''}
+            </span>
+          </span>
         </a>
       </aside>`;
 }
