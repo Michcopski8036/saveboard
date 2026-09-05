@@ -123,6 +123,9 @@ function AppContent() {
   const [selectMode, setSelectMode]     = useState(false);
   const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
   const [showAddModal, setShowAddModal] = useState(false);
+  // 이번에 열린 Add 모달이 다른 앱의 공유에서 왔는지. ref인 이유는 저장 성공 콜백에서
+  // 읽는데 그 사이 리렌더에 얽히면 안 되기 때문이다.
+  const cameFromShareRef = useRef(false);
   const [addBoards, setAddBoards] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen]   = useState(false);
   // Fixed sidebar width on md+ — user's choice, persisted per device. `sidebarOpen`
@@ -254,6 +257,12 @@ function AppContent() {
             try { shared = decodeURIComponent(raw); } catch { /* keep raw */ }
             const urlMatch = shared.match(/https?:\/\/[^\s]+/);
             setUrlInput(urlMatch ? urlMatch[0] : shared.trim());
+            // 공유로 들어온 것임을 기억해 둔다. 저장이 끝나면 앱을 내려서 사용자를
+            // 원래 보던 앱(인스타·유튜브 등)으로 돌려보내기 위해서다 — iOS는 공유
+            // 시트 위에서 저장이 끝나 흐름이 안 끊기는데, 안드로이드는 앱이 통째로
+            // 열려서 저장 뒤 사용자가 SaveBoard 안에 남는다. 탭 수는 같지만 그 차이가
+            // "저장하고 하던 걸 계속한다"와 "저장하러 앱을 다녀온다"를 가른다.
+            cameFromShareRef.current = true;
             setShowAddModal(true);
           })
           .catch(() => { /* nothing shared */ });
@@ -628,7 +637,21 @@ function AppContent() {
   const weekLinks = links.filter(l => now - l.savedAt.getTime() < weekMs).length;
 
   // ── Handlers ───────────────────────────────────────────────────────────────
-  const closeModal = () => { setShowAddModal(false); setUrlInput(''); setErrorMessage(''); setSuccessMessage(''); setInfoMessage(''); setAddBoards(new Set()); };
+  const closeModal = () => { cameFromShareRef.current = false; setShowAddModal(false); setUrlInput(''); setErrorMessage(''); setSuccessMessage(''); setInfoMessage(''); setAddBoards(new Set()); };
+
+  // 공유로 들어와 저장까지 끝났으면 앱을 내려 원래 앱으로 돌려보낸다.
+  // ⚠️ 성공 경로에서만 부른다 — 취소하거나 실패했는데 앱이 사라지면 사용자는
+  //    저장이 됐는지 알 수 없는 채로 쫓겨난 셈이 된다.
+  // ⚠️ 안드로이드 전용이다. iOS는 minimizeApp을 허용하지 않고, 애초에 공유 시트
+  //    위에서 저장이 끝나 이 문제가 없다.
+  const leaveAfterShareSave = async () => {
+    if (!cameFromShareRef.current) return;
+    cameFromShareRef.current = false;
+    if (Capacitor.getPlatform() !== 'android') return;
+    // 토스트를 읽을 시간을 조금 준 뒤에 내린다.
+    await new Promise(r => setTimeout(r, 900));
+    try { await CapApp.minimizeApp(); } catch { /* 안 되면 그냥 앱에 남는다 — 예전 동작 */ }
+  };
 
   // Ask for a store rating at a positive moment (50+ links saved, or 5+ boards),
   // once per user. Native in-app review dialog — no app exit. No-op on web.
@@ -1477,7 +1500,7 @@ function AppContent() {
               <input
                 type="text" value={urlInput}
                 onChange={e => setUrlInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !isAdding && urlInput.trim()) handleAddUrl(undefined, closeModal); }}
+                onKeyDown={e => { if (e.key === 'Enter' && !isAdding && urlInput.trim()) handleAddUrl(undefined, () => { leaveAfterShareSave(); closeModal(); }); }}
                 placeholder={ko ? "https://… 또는 메모 작성" : "https://… or write a note"}
                 autoFocus
                 className="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none transition-all"
@@ -1526,7 +1549,7 @@ function AppContent() {
                   : <Paperclip className="w-3.5 h-3.5" />}
                 {isUploading ? 'Uploading…' : 'File'}
               </button>
-              <button onClick={() => handleAddUrl(undefined, closeModal)} disabled={isAdding || !urlInput.trim()}
+              <button onClick={() => handleAddUrl(undefined, () => { leaveAfterShareSave(); closeModal(); })} disabled={isAdding || !urlInput.trim()}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
                 style={{ background: t.accentBg }}>
                 {isAdding ? (
