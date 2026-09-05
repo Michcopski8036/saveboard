@@ -55,16 +55,23 @@ for (const file of guideFiles) {
   if (!guidesBySlug.has(slug)) guidesBySlug.set(slug, {});
   guidesBySlug.get(slug)[lang] = guide;
 }
+// 한 언어만 있는 가이드도 낸다(2026-09-05). 예전에는 쌍이 없으면 통째로 건너뛰어서,
+// 한국 독자만을 위한 글은 아예 만들 수 없었다 — 파일을 두고도 조용히 사라졌다.
+// 짝이 있는 글에만 hreflang 을 건다(아래 alternates). 짝이 없는데 hreflang 을 걸면
+// 존재하지 않는 URL 을 가리키게 된다.
 const guidePairs = [...guidesBySlug.entries()]
   .filter(([slug, pair]) => {
-    if (!pair.en || !pair.ko) {
-      console.error(`prerender-seo: guide "${slug}" is missing its ${pair.en ? 'ko' : 'en'} pair — skipping.`);
+    if (!pair.en && !pair.ko) {
+      console.error(`prerender-seo: guide "${slug}" has no readable language file — skipping.`);
       return false;
     }
     return true;
   })
   .map(([, pair]) => pair)
-  .sort((a, b) => b.en.date.localeCompare(a.en.date));
+  .sort((a, b) => (b.en ?? b.ko).date.localeCompare((a.en ?? a.ko).date));
+
+/** 슬러그는 언어와 무관하다 — 어느 쪽이 있든 같은 값이다. */
+const pairSlug = pair => (pair.en ?? pair.ko).slug;
 
 await writeRoute('blog', blogIndexHtml());
 for (const post of posts) {
@@ -77,8 +84,9 @@ for (const page of landings) {
 await writeRoute('guides', guideIndexHtml('en'));
 await writeRoute('guides-ko', guideIndexHtml('ko'));
 for (const pair of guidePairs) {
-  await writeRoute(`guides/${pair.en.slug}`, guideHtml(pair.en, pair.ko));
-  await writeRoute(`guides/${pair.en.slug}-ko`, guideHtml(pair.ko, pair.en));
+  // 한 언어만 있는 가이드는 그 언어만 낸다. 없는 쪽 주소를 만들면 빈 페이지가 생긴다.
+  if (pair.en) await writeRoute(`guides/${pairSlug(pair)}`, guideHtml(pair.en, pair.ko));
+  if (pair.ko) await writeRoute(`guides/${pairSlug(pair)}-ko`, guideHtml(pair.ko, pair.en));
 }
 
 await writeFile(path.join(distDir, 'sitemap.xml'), sitemapXml(), 'utf8');
@@ -667,9 +675,9 @@ function guideIndexHtml(lang = 'en') {
       <h1>${ko ? '가이드' : 'Guides'}</h1>
       <p>${esc(description)}</p>
       <section>
-        ${guidePairs.map(pair => {
+        ${guidePairs.filter(pair => (ko ? pair.ko : pair.en)).map(pair => {
           const guide = ko ? pair.ko : pair.en;
-          const href = ko ? `/guides/${pair.en.slug}-ko` : `/guides/${pair.en.slug}`;
+          const href = ko ? `/guides/${pairSlug(pair)}-ko` : `/guides/${pairSlug(pair)}`;
           return `
           <article>
             <p><time datetime="${esc(guide.date)}">${esc(formatDate(guide.date, lang))}</time></p>
@@ -695,10 +703,10 @@ function guideIndexHtml(lang = 'en') {
     publisher: organization(),
     mainEntity: {
       '@type': 'ItemList',
-      itemListElement: guidePairs.map((pair, i) => ({
+      itemListElement: guidePairs.filter(pair => (ko ? pair.ko : pair.en)).map((pair, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        url: `${baseUrl}/guides/${pair.en.slug}${ko ? '-ko' : ''}`,
+        url: `${baseUrl}/guides/${pairSlug(pair)}${ko ? '-ko' : ''}`,
         name: (ko ? pair.ko : pair.en).title,
       })),
     },
@@ -849,7 +857,7 @@ function sitemapXml() {
     })),
     ...['en', 'ko'].map(lang => ({
       loc: lang === 'ko' ? `${baseUrl}/guides-ko` : `${baseUrl}/guides`,
-      lastmod: guidePairs[0]?.en.date ?? today,
+      lastmod: guidePairs[0] ? (guidePairs[0].en ?? guidePairs[0].ko).date : today,
       changefreq: 'weekly',
       priority: '0.8',
       alternates: [
@@ -861,17 +869,19 @@ function sitemapXml() {
     // Each language pair declares the other in-sitemap, which is the second
     // half of the hreflang contract (the pages carry <link rel=alternate>).
     ...guidePairs.flatMap(pair => {
-      const en = `${baseUrl}/guides/${pair.en.slug}`;
-      const ko = `${baseUrl}/guides/${pair.en.slug}-ko`;
-      const alternates = [
-        { hreflang: 'en', href: en },
-        { hreflang: 'ko', href: ko },
-        { hreflang: 'x-default', href: en },
-      ];
-      return [
-        { loc: en, lastmod: pair.en.date, changefreq: 'monthly', priority: '0.9', alternates },
-        { loc: ko, lastmod: pair.ko.date, changefreq: 'monthly', priority: '0.9', alternates },
-      ];
+      const slug = pairSlug(pair);
+      const enUrl = `${baseUrl}/guides/${slug}`;
+      const koUrl = `${baseUrl}/guides/${slug}-ko`;
+      // hreflang 은 양쪽이 실제로 존재할 때만 — 없는 URL 을 가리키면 무효한 선언이다.
+      const alternates = (pair.en && pair.ko) ? [
+        { hreflang: 'en', href: enUrl },
+        { hreflang: 'ko', href: koUrl },
+        { hreflang: 'x-default', href: enUrl },
+      ] : [];
+      const out = [];
+      if (pair.en) out.push({ loc: enUrl, lastmod: pair.en.date, changefreq: 'monthly', priority: '0.9', alternates });
+      if (pair.ko) out.push({ loc: koUrl, lastmod: pair.ko.date, changefreq: 'monthly', priority: '0.9', alternates });
+      return out;
     }),
   ];
 
