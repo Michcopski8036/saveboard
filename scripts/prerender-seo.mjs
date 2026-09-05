@@ -833,13 +833,23 @@ function splitOnHeadings(block) {
 }
 
 function inline(text) {
-  return esc(text)
+  // 인라인 코드(`foo`)를 먼저 빼둔다. 안 그러면 코드 안의 * 나 [ 가 굵게·링크로
+  // 해석되고, 무엇보다 이 규칙이 없으면 백틱이 글자 그대로 화면에 나간다
+  // (2026-09-05에 실제로 나가고 있었다 — 한 가이드에 36개).
+  // React 쪽 src/app/utils/markdownRenderer.tsx 와 짝이다. 한쪽만 고치지 말 것.
+  const codes = [];
+  let out = esc(text).replace(/`([^`]+)`/g, (_m, code) => {
+    codes.push(code);
+    return `\u0000CODE${codes.length - 1}\u0000`;
+  });
+  out = out
     // Images first: "![alt](src)" would otherwise be consumed by the link rule.
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt, src) =>
       `<img src="${escAttr(src)}" alt="${escAttr(alt)}" loading="lazy" />`)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label, href) => `<a href="${escAttr(href)}">${label}</a>`);
+  return out.replace(/\u0000CODE(\d+)\u0000/g, (_m, i) => `<code>${codes[Number(i)]}</code>`);
 }
 
 function sitemapXml() {

@@ -5,8 +5,13 @@ import React from 'react';
 function inlineFormat(text: string): React.ReactNode {
   // Images are matched before links: "![alt](src)" also matches the link
   // pattern, so the image alternative has to come first in the split.
-  const parts = text.split(/(!\[[^\]]*\]\([^)]+\)|\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g);
+  // 인라인 코드(`foo`)를 분할 패턴 맨 앞에 둔다 — 코드 안의 * 나 [ 가 굵게·링크로
+  // 해석되면 안 되고, 이 갈래가 없으면 백틱이 글자 그대로 화면에 남는다.
+  // 프리렌더 scripts/prerender-seo.mjs 의 inline() 과 짝이다. 한쪽만 고치지 말 것.
+  const parts = text.split(/(`[^`]+`|!\[[^\]]*\]\([^)]+\)|\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g);
   return parts.map((part, i) => {
+    if (part.length > 2 && part.startsWith('`') && part.endsWith('`'))
+      return <code key={i} className="px-1 py-0.5 rounded bg-gray-100 text-[0.9em]">{part.slice(1, -1)}</code>;
     const img = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
     if (img)
       return (
