@@ -48,7 +48,10 @@ export function GuidePostPage() {
   // frontmatter take the single-article path exactly as before.
   const hasPromo = hasPromoCard(guide);
   const [intro, afterIntro] = hasPromo ? splitAtFirstSection(beforeFaq) : [beforeFaq, ''];
-  const otherHref = `/guides/${guide.slug}${ko ? '' : '-ko'}`;
+  // Only offer the other language when that file actually exists — a
+  // Korean-only guide has no English page, and a link to one would 404.
+  const otherLang = ko ? found?.pair.en : found?.pair.ko;
+  const otherHref = otherLang ? `/guides/${guide.slug}${ko ? '' : '-ko'}` : '';
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -65,13 +68,15 @@ export function GuidePostPage() {
               <ArrowLeft className="w-3.5 h-3.5" />
               {ko ? '전체 가이드' : 'All guides'}
             </Link>
-            <Link
-              to={otherHref}
-              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-gray-500 hover:text-gray-900 transition-colors"
-            >
-              <Languages className="w-3.5 h-3.5" />
-              {ko ? 'English' : '한국어'}
-            </Link>
+            {otherHref ? (
+              <Link
+                to={otherHref}
+                className="inline-flex items-center gap-1.5 text-[13px] font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                <Languages className="w-3.5 h-3.5" />
+                {ko ? 'English' : '한국어'}
+              </Link>
+            ) : null}
           </div>
 
           <header className="mb-10">

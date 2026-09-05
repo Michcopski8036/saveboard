@@ -34,11 +34,17 @@ export interface GuideMeta {
   content: string;
 }
 
+/**
+ * A guide is published in whichever languages it actually has a file for.
+ * Both sides are optional: a Korean-only guide exists at `/guides/<slug>-ko`
+ * with no English counterpart, and the UI must not invent the missing URL.
+ * Mirrors the same rule in scripts/prerender-seo.mjs.
+ */
 export interface GuidePair {
   slug: string;
   date: string;
-  en: GuideMeta;
-  ko: GuideMeta;
+  en?: GuideMeta;
+  ko?: GuideMeta;
 }
 
 function parseGuide(raw: string): GuideMeta {
@@ -86,10 +92,13 @@ for (const raw of Object.values(rawModules)) {
   bySlug.set(guide.slug, entry);
 }
 
-// A post needs both languages to publish — same rule prerender-seo.mjs applies.
+// One language is enough to publish — same rule prerender-seo.mjs applies.
+// Requiring both used to make Korean-only guides disappear from the app while
+// the prerendered HTML still existed: the crawler saw the page, a reader got
+// redirected to /guides.
 export const guidePairs: GuidePair[] = [...bySlug.entries()]
-  .filter(([, pair]) => pair.en && pair.ko)
-  .map(([slug, pair]) => ({ slug, date: pair.en!.date, en: pair.en!, ko: pair.ko! }))
+  .filter(([, pair]) => pair.en || pair.ko)
+  .map(([slug, pair]) => ({ slug, date: (pair.en ?? pair.ko)!.date, en: pair.en, ko: pair.ko }))
   .sort((a, b) => b.date.localeCompare(a.date));
 
 /**
@@ -101,5 +110,9 @@ export function getGuideByRouteSlug(routeSlug: string): { guide: GuideMeta; pair
   const baseSlug = wantsKo ? routeSlug.slice(0, -3) : routeSlug;
   const pair = guidePairs.find(p => p.slug === baseSlug);
   if (!pair) return undefined;
-  return { guide: wantsKo ? pair.ko : pair.en, pair };
+  // Asking for a language this guide was never written in is a miss, not an
+  // empty page — the caller redirects to the index.
+  const guide = wantsKo ? pair.ko : pair.en;
+  if (!guide) return undefined;
+  return { guide, pair };
 }
