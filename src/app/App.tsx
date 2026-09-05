@@ -684,6 +684,35 @@ function AppContent() {
     } catch { setHeaderStatus('error'); setTimeout(() => setHeaderStatus('idle'), 2000); }
   };
 
+  // 인스타그램·틱톡 등이 주는 OG 이미지는 **서명된 임시 URL**이라 며칠 뒤 죽는다.
+  // 그 주소만 적어두면 카드가 나중에 빈 상자가 된다 — 링크는 남았는데 그림만 사라지는
+  // 실패라, 오래 쓴 사람일수록 더 많이 겪는다. 그래서 저장 시점에 우리 버킷으로 복사한다.
+  //
+  // 만료되는 곳만 복사한다(2026-09-05 결정). YouTube 썸네일(img.youtube.com)은 만료되지
+  // 않으므로 그대로 두는 편이 저장 용량에 낫다. 다른 곳에서 같은 일이 생기면 서버의
+  // IMAGE_HOSTS 에 도메인을 더한다.
+  //
+  // ⚠️ 실패해도 저장을 막지 않는다. 원래 주소를 그대로 쓰면 지금까지의 동작이고,
+  //    이미지 하나 때문에 링크 저장 자체를 잃는 쪽이 훨씬 나쁘다.
+  const EXPIRING_IMAGE_HOSTS = ['cdninstagram.com', 'fbcdn.net', 'tiktokcdn.com', 'tiktokcdn-us.com', 'twimg.com'];
+  const cacheExpiringImage = async (imageUrl: string, uid: string): Promise<string> => {
+    if (!imageUrl || imageUrl.startsWith('placeholder:')) return imageUrl;
+    let host = '';
+    try { host = new URL(imageUrl).hostname.replace('www.', ''); } catch { return imageUrl; }
+    if (!EXPIRING_IMAGE_HOSTS.some(h => host === h || host.endsWith('.' + h))) return imageUrl;
+    try {
+      const res = await fetch(`/api/proxy?mode=image&url=${encodeURIComponent(imageUrl)}`, { signal: AbortSignal.timeout(15000) });
+      if (!res.ok) return imageUrl;
+      const blob = await res.blob();
+      if (!blob.type.startsWith('image/')) return imageUrl;
+      const ext = blob.type.includes('png') ? 'png' : blob.type.includes('webp') ? 'webp' : 'jpg';
+      const path = `${uid}/thumb_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from('pdfs').upload(path, blob, { contentType: blob.type });
+      if (error) return imageUrl;
+      return supabase.storage.from('pdfs').getPublicUrl(path).data.publicUrl;
+    } catch { return imageUrl; }
+  };
+
   const handleAddUrl = async (urlOverride?: string, onSuccess?: () => void) => {
     const input = (urlOverride ?? urlInput).trim();
     if (!input || !user) return;
@@ -733,7 +762,8 @@ function AppContent() {
       const cats = targetCats.filter(cat => !links.some(l => l.url === url && l.category === cat));
       if (cats.length === 0) { setErrorMessage('Already saved'); return; }
       const meta = await fetchMetadata(url);
-      const n = await insertInto({ user_id: user.id, url, title: meta.title || 'Web Page', description: meta.description || '', image: meta.image || 'placeholder:default' }, cats);
+      const image = await cacheExpiringImage(meta.image || '', user.id);
+      const n = await insertInto({ user_id: user.id, url, title: meta.title || 'Web Page', description: meta.description || '', image: image || 'placeholder:default' }, cats);
       setUrlInput(''); setSuccessMessage(`Link added${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.();
       maybeAskReview(links.length + n, categories.length);
     } catch { setErrorMessage('Failed. Please try again.'); }
