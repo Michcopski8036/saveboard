@@ -158,6 +158,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.json({ title: 'YouTube Video', description: 'View on YouTube', image });
     }
 
+    // ── TikTok: oembed ────────────────────────────────────────────────
+    // 틱톡은 공유 시 vt.tiktok.com/<코드> 단축 링크를 주고, 그 페이지는 OG 태그를
+    // 봇에게 내주지 않는다. 그래서 예전에는 제목이 URL 마지막 조각("ZSqND4WPj")이 되고
+    // 이미지가 아예 없었다. oEmbed 는 인증 없이 제목·작성자·썸네일을 주고, 단축 링크를
+    // 그대로 넣어도 풀어서 답한다 — YouTube·Vimeo 와 같은 처리를 붙인다.
+    if (hostname.includes('tiktok.com')) {
+      try {
+        const oe = await fetch(
+          `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`,
+          { signal: AbortSignal.timeout(5000) }
+        );
+        if (oe.ok) {
+          const d = await oe.json();
+          if (d.title || d.thumbnail_url) {
+            return res.json({
+              title: d.title || 'TikTok',
+              description: d.author_name ? `Video by ${d.author_name}` : '',
+              image: d.thumbnail_url || '',
+            });
+          }
+        }
+      } catch { /* 아래 일반 경로로 떨어진다 */ }
+    }
+
     // ── Vimeo: oembed ─────────────────────────────────────────────────
     if (hostname.includes('vimeo.com')) {
       const oe = await fetch(
