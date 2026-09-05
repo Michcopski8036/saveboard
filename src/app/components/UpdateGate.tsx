@@ -90,7 +90,13 @@ export function UpdateGate() {
 
   // soft — dismissible banner
   return (
-    <div className="fixed top-0 inset-x-0 z-[90] px-3 pt-3 pointer-events-none">
+    // 상태바(노치·다이내믹아일랜드) 아래에서 시작해야 한다. pt-3 만 두면 배너가 시계와
+    // 통신사 아이콘 위로 올라가 문구가 가려진다 — 실기기에서 확인됨(2026-09-05).
+    // 헤더·랜딩 네비 등 이 앱의 다른 상단 고정 요소들은 모두 이 값을 쓴다.
+    <div
+      className="fixed top-0 inset-x-0 z-[90] px-3 pointer-events-none"
+      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+    >
       <div className="mx-auto max-w-md flex items-center gap-3 rounded-xl px-4 py-2.5 shadow-lg pointer-events-auto"
         style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}>
         <Download className="w-4 h-4 shrink-0" style={{ color: '#7C3AED' }} />
