@@ -449,7 +449,8 @@ function guideHtml(guide, otherLang) {
   const enUrl = `${baseUrl}/guides/${otherLang && guide.lang === 'ko' ? otherLang.slug : guide.slug}`;
   const koSlug = guide.lang === 'ko' ? guide.slug : (otherLang ? otherLang.slug : guide.slug);
   const canonical = guide.lang === 'ko' ? `${baseUrl}/guides/${koSlug}-ko` : `${baseUrl}/guides/${guide.slug}`;
-  const otherHref = guide.lang === 'ko' ? `/guides/${koSlug}` : `/guides/${koSlug}-ko`;
+  // 짝이 없으면 다른 언어 링크를 아예 내보내지 않는다 — 없는 페이지로 보내는 링크다.
+  const otherHref = otherLang ? (guide.lang === 'ko' ? `/guides/${koSlug}` : `/guides/${koSlug}-ko`) : '';
   const otherLabel = guide.lang === 'ko' ? 'English' : '한국어';
 
   // Same ad copy as the app page's board card (GuidePostPage.tsx) — keep the
@@ -472,7 +473,7 @@ function guideHtml(guide, otherLang) {
   const body = `
     <main class="seo-page">
       <article>
-        <p><a href="${guide.lang === 'ko' ? '/guides-ko' : '/guides'}">${guide.lang === 'ko' ? '전체 가이드' : 'All guides'}</a> · <a href="${escAttr(otherHref)}">${otherLabel}</a></p>
+        <p><a href="${guide.lang === 'ko' ? '/guides-ko' : '/guides'}">${guide.lang === 'ko' ? '전체 가이드' : 'All guides'}</a>${otherHref ? ` · <a href="${escAttr(otherHref)}">${otherLabel}</a>` : ''}</p>
         <header>
           <p><time datetime="${esc(guide.date)}">${esc(formatDate(guide.date, guide.lang))}</time></p>
           <h1>${esc(guide.title)}</h1>
@@ -490,11 +491,14 @@ function guideHtml(guide, otherLang) {
   const guideImage = ogImage;
   const enHref = `${baseUrl}/guides/${guide.lang === 'ko' ? koSlug : guide.slug}`;
   const koHref = `${baseUrl}/guides/${koSlug}-ko`;
-  const alternates = [
+  // hreflang 은 양쪽이 실제로 있을 때만 — 사이트맵과 같은 규칙이다(2026-09-05).
+  // 짝 없는 가이드에 걸면 존재하지 않는 URL 을 선언하게 되고, og:locale:alternate 도
+  // 같은 배열에서 나오므로 없는 언어판을 있다고 광고하게 된다.
+  const alternates = otherLang ? [
     { hreflang: 'en', href: enHref, locale: 'en_AU' },
     { hreflang: 'ko', href: koHref, locale: 'ko_KR' },
     { hreflang: 'x-default', href: enHref },
-  ];
+  ] : [];
 
   const jsonLd = [{
     '@context': 'https://schema.org',
@@ -751,7 +755,11 @@ function extractFaq(md) {
   const flush = () => { if (q && a.length) faqs.push({ q: stripMd(q), a: stripMd(a.join(' ')) }); q = null; a = []; };
   for (const line of md.split('\n')) {
     const h2 = line.match(/^##\s+(.*)/);
-    if (h2) { flush(); inFaq = /^(faq|frequently asked questions)\b/i.test(h2[1].trim()); continue; }
+    // 헤딩 목록은 위 faqSplit 정규식과 같은 집합이어야 한다 — 다르면 FAQ 섹션은
+    // 렌더되는데 FAQPage JSON-LD 만 조용히 빠진다(한국어 '자주 묻는 질문'이 그랬다).
+    // \b 는 ASCII 단어문자 기준이라 '질문' 뒤에서는 성립하지 않는다 — 한국어 헤딩은
+    // 별도 대안으로 둔다.
+    if (h2) { flush(); inFaq = /^(faq|frequently asked questions)\b/i.test(h2[1].trim()) || /^자주 묻는 질문/.test(h2[1].trim()); continue; }
     if (!inFaq) continue;
     const h3 = line.match(/^###\s+(.*)/);
     if (h3) { flush(); q = h3[1].trim(); continue; }

@@ -52,12 +52,14 @@ export function GuideListPage({ lang }: { lang?: 'en' | 'ko' } = {}) {
             </p>
           </div>
 
-          {guidePairs.length === 0 ? (
+          {guidePairs.filter(pair => (ko ? pair.ko : pair.en)).length === 0 ? (
             <p className="text-center text-gray-400">{ko ? '아직 가이드가 없어요.' : 'No guides yet.'}</p>
           ) : (
             <div className="grid sm:grid-cols-2 gap-6">
-              {guidePairs.map(pair => {
-                const guide = ko ? pair.ko : pair.en;
+              {guidePairs.filter(pair => (ko ? pair.ko : pair.en)).map(pair => {
+                // The filter above guarantees this side exists — an index only
+                // lists the guides written in its own language.
+                const guide = (ko ? pair.ko : pair.en)!;
                 const href = ko ? `/guides/${pair.slug}-ko` : `/guides/${pair.slug}`;
                 return (
                   <Link
