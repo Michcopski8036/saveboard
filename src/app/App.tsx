@@ -713,6 +713,19 @@ function AppContent() {
     } catch { return imageUrl; }
   };
 
+  // 저장이 끝난 뒤 조용히 썸네일을 우리 사본으로 갈아끼운다. 화면상 달라지는 건 없고
+  // (같은 그림이다) 며칠 뒤에도 안 사라지게 되는 것뿐이다.
+  // ⚠️ 실패하면 아무것도 하지 않는다 — 원래 주소가 남고, 그건 예전 동작이다.
+  //    복사가 끝나기 전에 앱을 닫으면 그 링크는 교체되지 않은 채로 남는다(다시 시도하지 않는다).
+  const replaceExpiringThumb = async (rawImage: string, uid: string, ids: string[]) => {
+    if (!rawImage || !ids.length) return;
+    const cached = await cacheExpiringImage(rawImage, uid);
+    if (cached === rawImage) return;   // 복사 안 했거나 실패 — 손대지 않는다
+    const { error } = await supabase.from('links').update({ image: cached }).in('id', ids);
+    if (error) return;
+    setLinks(p => p.map(l => (ids.includes(l.id) ? { ...l, image: cached } : l)));
+  };
+
   const handleAddUrl = async (urlOverride?: string, onSuccess?: () => void) => {
     const input = (urlOverride ?? urlInput).trim();
     if (!input || !user) return;
@@ -734,12 +747,12 @@ function AppContent() {
         const { error } = await supabase.from('links').insert(rows.map(({ category, ...db }) => db));
         if (error) throw error;
         setLinks(p => [...rows.map(r => ({ ...r, boardId: r.board_id, savedAt: new Date(r.created_at) })), ...p] as LinkData[]);
-        return rows.length;
+        return rows;   // 개수가 아니라 행을 돌려준다 — 썸네일 사본으로 교체할 때 id가 필요하다
       };
 
       const embedData = parseEmbedCode(input);
       if (embedData) {
-        const n = await insertInto({ user_id: user.id, url: embedData.url, title: embedData.title || 'Embedded Content', description: embedData.description || '', image: embedData.image || 'placeholder:default' }, targetCats);
+        const n = (await insertInto({ user_id: user.id, url: embedData.url, title: embedData.title || 'Embedded Content', description: embedData.description || '', image: embedData.image || 'placeholder:default' }, targetCats)).length;
         setUrlInput(''); setSuccessMessage(`Added${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.(); maybeAskReview(links.length + n, categories.length); return;
       }
 
@@ -753,7 +766,7 @@ function AppContent() {
         const nl = input.indexOf('\n');
         const memoTitle = (nl === -1 ? input : input.slice(0, nl)).trim().slice(0, 100) || 'Note';
         const memoBody  = nl === -1 ? '' : input.slice(nl + 1).trim();
-        const n = await insertInto({ user_id: user.id, url: '#', title: memoTitle, description: memoBody, image: 'placeholder:memo' }, targetCats);
+        const n = (await insertInto({ user_id: user.id, url: '#', title: memoTitle, description: memoBody, image: 'placeholder:memo' }, targetCats)).length;
         setUrlInput(''); setSuccessMessage(`Note saved${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.(); return;
       }
 
@@ -762,8 +775,12 @@ function AppContent() {
       const cats = targetCats.filter(cat => !links.some(l => l.url === url && l.category === cat));
       if (cats.length === 0) { setErrorMessage('Already saved'); return; }
       const meta = await fetchMetadata(url);
-      const image = await cacheExpiringImage(meta.image || '', user.id);
-      const n = await insertInto({ user_id: user.id, url, title: meta.title || 'Web Page', description: meta.description || '', image: image || 'placeholder:default' }, cats);
+      // 카드를 **먼저** 만들고 썸네일 복사는 뒤에서 한다. 복사를 저장 흐름 안에 두면
+      // 인스타·틱톡 링크마다 이미지 왕복이 하나 더 붙어 저장이 눈에 띄게 느려졌다 —
+      // 저장은 매번 하는 일이라 그 몇 초가 매번 체감된다.
+      const rows = await insertInto({ user_id: user.id, url, title: meta.title || 'Web Page', description: meta.description || '', image: meta.image || 'placeholder:default' }, cats);
+      const n = rows.length;
+      void replaceExpiringThumb(meta.image || '', user.id, rows.map(r => r.id));
       setUrlInput(''); setSuccessMessage(`Link added${boardSuffix(n)}!`); setTimeout(() => setSuccessMessage(''), 2500); onSuccess?.();
       maybeAskReview(links.length + n, categories.length);
     } catch { setErrorMessage('Failed. Please try again.'); }
