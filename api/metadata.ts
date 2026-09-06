@@ -179,7 +179,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
           }
         }
-      } catch { /* 아래 일반 경로로 떨어진다 */ }
+      } catch { /* 스텁으로 */ }
+      // oEmbed 가 답하지 않으면 여기서 끝낸다 — YouTube·Vimeo 와 같다. 일반 경로로
+      // 떨어지면 리다이렉트 5홉 × 8초를 다 돌 수 있는데, 클라이언트는 10초에 포기하므로
+      // 그 뒤는 아무도 듣지 않는 일이다. 그리고 틱톡 페이지는 봇에게 OG 태그를 안 주니
+      // 다 돌아도 결과는 어차피 "제목=호스트명, 이미지 없음"이다.
+      return res.json({ title: 'TikTok', description: '', image: '' });
     }
 
     // ── Vimeo: oembed ─────────────────────────────────────────────────

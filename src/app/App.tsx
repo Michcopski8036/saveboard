@@ -39,6 +39,10 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
 import { MultiBackend, TouchTransition, MouseTransition } from 'react-dnd-multi-backend';
 
+// 만료되는 CDN 호스트. api/proxy.ts 의 IMAGE_HOSTS 와 **같은 목록이어야 한다** — 이쪽이
+// 먼저 거르므로 서버에만 더하면 조용히 아무 일도 안 일어난다.
+const EXPIRING_IMAGE_HOSTS = ['cdninstagram.com', 'fbcdn.net', 'tiktokcdn.com', 'tiktokcdn-us.com', 'twimg.com'];
+
 const HTML5toTouch = {
   backends: [
     { id: 'html5', backend: HTML5Backend, transition: MouseTransition },
@@ -689,12 +693,14 @@ function AppContent() {
   // 실패라, 오래 쓴 사람일수록 더 많이 겪는다. 그래서 저장 시점에 우리 버킷으로 복사한다.
   //
   // 만료되는 곳만 복사한다(2026-09-05 결정). YouTube 썸네일(img.youtube.com)은 만료되지
-  // 않으므로 그대로 두는 편이 저장 용량에 낫다. 다른 곳에서 같은 일이 생기면 서버의
-  // IMAGE_HOSTS 에 도메인을 더한다.
+  // 않으므로 그대로 두는 편이 저장 용량에 낫다.
+  // ⚠️ 다른 곳에서 같은 일이 생기면 **두 곳에 다** 더해야 한다: 모듈 상단의
+  //    EXPIRING_IMAGE_HOSTS(클라이언트가 먼저 거른다)와 api/proxy.ts 의 IMAGE_HOSTS(서버
+  //    문지기). 한쪽만 더하면 조용히 아무 일도 안 일어난다. 한 파일로 못 합치는 이유:
+  //    api/ 는 파일별로 따로 트랜스파일돼 src/ 를 import 할 수 없다(api/admin-stats.ts 참조).
   //
   // ⚠️ 실패해도 저장을 막지 않는다. 원래 주소를 그대로 쓰면 지금까지의 동작이고,
   //    이미지 하나 때문에 링크 저장 자체를 잃는 쪽이 훨씬 나쁘다.
-  const EXPIRING_IMAGE_HOSTS = ['cdninstagram.com', 'fbcdn.net', 'tiktokcdn.com', 'tiktokcdn-us.com', 'twimg.com'];
   const cacheExpiringImage = async (imageUrl: string, uid: string): Promise<string> => {
     if (!imageUrl || imageUrl.startsWith('placeholder:')) return imageUrl;
     let host = '';

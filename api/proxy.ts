@@ -32,6 +32,8 @@ function toAmpUrl(url: string): string {
 // ⚠️ 새 파일을 만들지 않고 이 함수에 얹은 이유: Vercel 서버리스 함수가 정확히 12개로
 //    상한에 걸려 있다. 13번째 파일은 **배포 전체를 실패시키고 prod는 이전 빌드를 계속
 //    서빙한다**(메모리 vercel_api_gotchas). 새 엔드포인트가 필요하면 이렇게 얹을 것.
+// ⚠️ src/app/App.tsx 의 EXPIRING_IMAGE_HOSTS 와 같은 목록이어야 한다 — 클라이언트가 먼저
+//    거르므로 여기에만 더하면 조용히 아무 일도 안 일어난다.
 const IMAGE_HOSTS = [
   'cdninstagram.com', 'fbcdn.net',      // Instagram / Facebook
   'tiktokcdn.com', 'tiktokcdn-us.com',  // TikTok
