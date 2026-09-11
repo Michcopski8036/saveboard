@@ -1033,7 +1033,7 @@ function AppContent() {
   const handleRestorePurchases = async () => {
     if (!user) throw new Error('Not signed in');
     if (Capacitor.isNativePlatform()) {
-      const { StoreKit } = await import('./lib/storekit');
+      const { StoreKit, STORE_SOURCE } = await import('./lib/storekit');
       const { transactions } = await StoreKit.restorePurchases();
       if (!transactions.length) throw new Error('No active subscription found');
       // Record the most recent active transaction in Supabase
@@ -1049,7 +1049,7 @@ function AppContent() {
         boards_limit: '15',
         file_size_limit: '20MB',
         storage_limit: '2GB',
-        source: 'apple',
+        source: STORE_SOURCE,
       }, { onConflict: 'user_id' });
       await refreshSubscription();
     } else {
