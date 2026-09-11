@@ -49,6 +49,9 @@ repositories {
 }
 
 dependencies {
+    // Google Play Billing — StoreKitPlugin.java. Play 는 매년 최소 버전을 올리므로
+    // 업데이트가 거부되면 여기부터 확인할 것.
+    implementation "com.android.billingclient:billing:7.1.1"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"

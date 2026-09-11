@@ -17,6 +17,9 @@ public class MainActivity extends BridgeActivity {
     // status-bar icon colour to match the current theme so icons stay legible.
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Google Play Billing. Must be registered before super.onCreate() — the bridge
+        // is built there, and a plugin added afterwards is invisible to the web layer.
+        registerPlugin(StoreKitPlugin.class);
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         applySystemBarIconColors();

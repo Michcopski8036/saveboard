@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { X, Check, Zap, Users, Sparkles, Loader2 } from 'lucide-react';
-import { StoreKit, IAP_PRODUCTS, type StoreProduct } from '../lib/storekit';
+import { StoreKit, IAP_PRODUCTS, STORE_SOURCE, type StoreProduct } from '../lib/storekit';
 import { supabase } from '../lib/supabase';
 import { authedPost } from '../lib/authedFetch';
 import { useLanguage } from '../context/LanguageContext';
@@ -101,6 +101,11 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
       .finally(() => setLoading(false));
   }, []);
 
+  // 스토어에서 상품이 하나도 안 오면 결제 버튼이 없는 빈 화면이 된다. 안드로이드에서는
+  // Play Console 에 구독 상품이 아직 없거나 심사 전이면 실제로 그렇게 된다 — 그때는
+  // 막다른 화면 대신 웹에서 결제하라는 안내로 물러난다(2026-09-11).
+  const storeUnavailable = !loading && products.length === 0;
+
   const findProduct = (id: string) => products.find(p => p.id === id);
   const monthly = findProduct(IAP_PRODUCTS.proMonthly);
   const yearly  = findProduct(IAP_PRODUCTS.proYearly);
@@ -122,7 +127,7 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
         boards_limit: '15',
         file_size_limit: '20MB',
         storage_limit: '2GB',
-        source: 'apple',
+        source: STORE_SOURCE,
       }, { onConflict: 'user_id' });
       onPurchaseSuccess?.();
       onClose();
@@ -135,6 +140,12 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
     }
   };
 
+  if (storeUnavailable) {
+    return <AndroidWebPaymentView isPro={isPro} onShowTerms={onShowTerms} onShowPrivacy={onShowPrivacy} />;
+  }
+
+  const isAndroid = Capacitor.getPlatform() === 'android';
+
   return (
     <div className="p-6 space-y-5">
       <div className="text-center">
@@ -143,7 +154,9 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
           <span className="text-[11px] font-bold uppercase tracking-widest text-purple-600">{tr('upgradeToPro')}</span>
         </div>
         <h2 className="text-[22px] font-bold text-gray-900 mb-1">{tr('saveMoreOrganize')}</h2>
-        <p className="text-[13px] text-gray-500">{ko ? 'Apple 구독 설정에서 언제든 해지할 수 있어요' : 'Cancel anytime in your Apple subscription settings'}</p>
+        <p className="text-[13px] text-gray-500">{isAndroid
+          ? (ko ? 'Google Play 구독 설정에서 언제든 해지할 수 있어요' : 'Cancel anytime in your Google Play subscription settings')
+          : (ko ? 'Apple 구독 설정에서 언제든 해지할 수 있어요' : 'Cancel anytime in your Apple subscription settings')}</p>
       </div>
 
       <ul className="space-y-2.5 px-1">
@@ -202,8 +215,12 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
 
       {errorMsg && <p className="text-center text-[13px] text-red-500">{errorMsg}</p>}
 
+      {/* 결제 고지는 스토어마다 요구 문구가 다르다 — 애플 문구를 안드로이드에 그대로
+          두면 사실과 다르고(Apple ID 로 청구되지 않는다) 심사에서도 걸린다. */}
       <p className="text-center text-[10px] text-gray-400 leading-relaxed">
-        Prices are shown in your local currency as determined by your App Store region. Payment will be charged to your Apple ID. Subscription renews automatically unless cancelled at least 24 hours before the end of the current period. Manage in Apple ID settings.
+        {isAndroid
+          ? 'Prices are shown in your local currency as determined by your Google Play region. Payment will be charged to your Google Play account. Subscription renews automatically unless cancelled at least 24 hours before the end of the current period. Manage in Google Play subscription settings.'
+          : 'Prices are shown in your local currency as determined by your App Store region. Payment will be charged to your Apple ID. Subscription renews automatically unless cancelled at least 24 hours before the end of the current period. Manage in Apple ID settings.'}
       </p>
 
       <div className="flex items-center justify-center gap-3 text-[11px]">
@@ -381,9 +398,10 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
               </div>
             </div>
 
-            {/* iOS: Apple IAP view. Android: web-payment notice (Play billing policy —
-                no Stripe checkout inside the app). Web: Stripe pricing cards. */}
-            {platform === 'ios' ? (
+            {/* 스토어 결제 화면은 iOS·Android 공용이다. 두 플랫폼 모두 자기 스토어의
+                결제를 써야 하고(App Store 3.1.1 / Play 결제정책), StoreKit 플러그인이
+                양쪽에 같은 이름·같은 메서드로 붙어 있다. 웹만 Stripe 가격표를 쓴다. */}
+            {platform === 'ios' || platform === 'android' ? (
               <IAPUpgradeView
                 userId={userId}
                 isPro={isPro}
@@ -392,8 +410,6 @@ export function UpgradePage({ onClose, currentLinks, currentBoards, currentStora
                 onShowTerms={onShowTerms}
                 onShowPrivacy={onShowPrivacy}
               />
-            ) : platform === 'android' ? (
-              <AndroidWebPaymentView isPro={isPro} onShowTerms={onShowTerms} onShowPrivacy={onShowPrivacy} />
             ) : (
               <>
                 {/* Web/Android: Stripe pricing cards */}
