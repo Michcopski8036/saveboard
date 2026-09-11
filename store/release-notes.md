@@ -5,6 +5,33 @@ Console release notes. Play's limit is 500 characters per language.
 
 ---
 
+## Android 1.0.18 (Android only)
+
+⚠️ **이 빌드는 먼저 Internal testing 으로 간다, Production 이 아니다.** Play Console 에서
+구독 상품(`pro_monthly` / `pro_yearly`)을 만들려면 BILLING 권한을 가진 빌드가 트랙에 먼저
+올라가 있어야 하고, 상품을 만들고 실제 구매를 테스트해 본 뒤에 Production 으로 올린다.
+그래서 **아래 노트는 Production 승격 때 쓸 것**이고, Internal testing 단계에서는 필요 없다.
+
+노트가 "결제가 고쳐졌다"가 아니라 "앱 안에서 살 수 있다"라고 말하는 이유: 안드로이드
+앱에는 인앱 결제가 **원래 없었다**. 고친 게 아니라 없던 길이 생긴 것이다.
+
+### English
+
+You can now upgrade to Pro without leaving the app. Android purchases go
+through Google Play, the same way the iPhone app uses the App Store — pick
+monthly or yearly, pay with the card already on your Google account, and Pro
+unlocks straight away. If you already subscribed on the web, nothing changes
+and you do not need to buy again.
+
+### 한국어
+
+이제 앱을 벗어나지 않고 Pro 로 업그레이드할 수 있습니다. 안드로이드 결제는 구글 플레이로
+처리돼요. 아이폰 앱이 앱스토어를 쓰는 것과 같은 방식입니다. 월간이나 연간을 고르고 구글
+계정에 등록된 카드로 결제하면 바로 Pro 가 열립니다. 웹에서 이미 구독 중이라면 그대로
+유지되고, 다시 결제할 필요는 없습니다.
+
+---
+
 ## iOS 1.0.11 (iOS only)
 
 iOS-only build; Android stays at 1.0.16 (its AAB is built and waiting to be

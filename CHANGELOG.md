@@ -21,8 +21,10 @@ notes live in `store/release-notes.md`.
 
 | iOS | build | Android | vc | Status | Date |
 |---|---|---|---|---|---|
+| — | — | 1.0.18 | 22 | **AAB built 2026-09-11 — not uploaded** — Google Play 결제를 앱 안에 붙였다. 이 빌드가 Play Console 에서 구독 상품을 만들 수 있게 하는 첫 빌드다(BILLING 권한이 있는 빌드가 트랙에 올라가야 Create subscription 버튼이 열린다). 상품이 아직 없으면 기존 웹 결제 화면으로 조용히 내려간다 | 2026-09-11 |
+| — | — | 1.0.17 | 21 | **Play 심사 제출됨 2026-09-11**(창업자 업로드) — 안드로이드에서 Pro 결제를 시작조차 못 하던 것 수정(`startCheckout` 상대경로 + create-checkout CORS). 1.0.16 의 내용을 전부 포함 | 2026-09-10 |
 | 1.0.11 | 23 | — | — | **iOS only — uploaded to App Store Connect 2026-09-10, NOT submitted for review** (founder submits). Same client code as Android 1.0.16 | 2026-09-10 |
-| — | — | 1.0.16 | 20 | **AAB built 2026-09-10 — not uploaded** (founder uploads) — the app can finally reach our own API (expiring-thumbnail copy, account delete, in-app admin), TikTok share links read as video instead of "Article" | 2026-09-10 |
+| — | — | 1.0.16 | 20 | **업로드 전에 1.0.17 로 대체됨** — the app can finally reach our own API (expiring-thumbnail copy, account delete, in-app admin), TikTok share links read as video instead of "Article" | 2026-09-10 |
 | 1.0.10 | 22 | 1.0.15 | 19 | **LIVE both stores** — iOS approved, released 2026-09-09 (App Store Connect + `itunes lookup` au/gb/kr all `1.0.10 2026-09-09`, re-checked 2026-09-10; the **us** storefront still answers `1.0.9` — stale CDN cache, not a second train). Play page store-verified 2026-09-10 | 2026-09-09 |
 | 1.0.9 | 21 | 1.0.14 | 18 | **LIVE both stores** (store-verified 2026-09-09: iOS released 2026-08-14, Play shows 1.0.14) — Android payment-screen fix (Apple IAP view shown since 05-27 → paying impossible) + all Aug feature work, cumulative | 2026-08-13 |
 | 1.0.8 | 20 | — | — | **iOS LIVE 2026-07-28** (store-verified 2026-08-13) — YouTube in-app playback fix (WKWebView UA + IFrame Player API), billing-failure recovery, iPhone layout (safe-area top, bottom-nav spacing). Android 1.0.13/vc17 was built 07-23 but **never uploaded** → superseded by 1.0.14/vc18 | 2026-07-27 |
@@ -75,6 +77,41 @@ checked by grep against the shipped bundle, not from the installed app.
 **Not done on purpose:** not submitted for review, no store metadata changes,
 `app_config` untouched. **After 1.0.11 goes live:** bump
 `app_config.latest_version` (iOS `1.0.11`).
+
+## Android 1.0.18 (versionCode 22) — built 2026-09-11
+
+**Google Play 결제를 앱 안에 붙였다.** 여태 안드로이드 앱에는 인앱 결제가 **설계상
+아예 없었다** — iOS 는 StoreKit 으로 앱 안에서 사고, 안드로이드는 "웹에서 결제하세요"
+화면을 띄웠다. 1.0.17 이 고친 건 그 웹 결제 버튼이 눌리지 않던 것이고, 앱 안에서
+사는 길 자체는 이 빌드가 처음이다.
+
+**구현** (`ad327b8e`)
+- `android/.../StoreKitPlugin.java` — Play Billing 7.1.1. **iOS 플러그인과 같은 JS 이름
+  (`StoreKit`)과 같은 메서드 3개**(getProducts / purchase / restorePurchases)를 노출해서
+  `src/app/lib/storekit.ts` 가 플랫폼을 몰라도 되게 했다. 웹 레이어의 구매 흐름은 하나로 유지된다.
+- `MainActivity.java` — `registerPlugin(StoreKitPlugin.class)` 을 **`super.onCreate()` 앞에**.
+  뒤에 두면 브리지가 이미 만들어진 뒤라 등록이 안 먹는다.
+- `storekit.ts` — 상품 ID 가 스토어마다 다르다. Apple `app.saveboard.pro.per.monthly` /
+  `app.saveboard.pro.yearly`, Google `pro_monthly` / `pro_yearly`. `STORE_SOURCE` 도
+  `apple` / `google` 로 갈라져 subscriptions 행에 어디서 산 건지 남는다.
+- `UpgradePage.tsx` — 안드로이드도 IAP 화면으로 보낸다. **단, Play 에 상품이 아직 없으면
+  `getProducts` 가 빈 배열을 주고, 그때는 기존 웹 결제 화면으로 조용히 내려간다.**
+  콘솔 설정 전에 이 빌드가 나가도 지금보다 나빠지지 않게 하려는 장치다.
+
+**Play 특성 중 StoreKit 과 달라서 물리는 것**
+- 구독은 *오퍼*를 통해서만 살 수 있다 → 구매 플로우에 `offerToken` 이 필요하다.
+- 3일 안에 acknowledge 하지 않은 구매는 구글이 **자동 환불**한다 → 도착 즉시 acknowledge.
+- Play 는 클라이언트에 만료일을 주지 않는다 → `expiresDate` 는 null, `current_period_end` 도 null.
+
+**⚠️ 이 빌드를 올리기 전에는 Play Console 에서 구독 상품을 만들 수 없다.** Monetize →
+Subscriptions 가 "Create subscription" 대신 **"Upload a new APK"** 만 보여주는 이유가
+그것이다. 콘솔은 `com.android.vending.BILLING` 권한을 가진 빌드가 트랙에 올라간 뒤에야
+상품 생성을 연다. 순서: **1.0.18 을 Internal testing 에 업로드 → 상품 `pro_monthly` /
+`pro_yearly` 생성 + Activate → License testing 에 계정 추가 → 실제 구매 테스트.**
+
+검증 (2026-09-11): `jarsigner -verify` → `jar verified.`, 번들 매니페스트 versionName
+`1.0.18` / versionCode `22`, `com.android.vending.BILLING` 있음, dex 에 `StoreKitPlugin`
++ Play Billing 클래스, 웹 번들에 `pro_monthly` / `pro_yearly` / `"google"` 있음.
 
 ## Android 1.0.17 (versionCode 21) — built 2026-09-10
 
