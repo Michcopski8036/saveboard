@@ -41,8 +41,11 @@ import java.util.Map;
  *    We acknowledge as soon as it arrives.
  *  - Play does not hand the client an expiry date. `expiresDate` is therefore null here,
  *    while iOS fills it. The subscriptions row simply stores null for current_period_end.
- *  - The billing connection drops (app backgrounded, Play services updated). Every call
- *    re-establishes it first rather than assuming it is alive.
+ *  - The billing connection drops (app backgrounded, Play services updated). Billing 8's
+ *    enableAutoServiceReconnection() handles that; withConnection() still covers the very
+ *    first call, when nothing has connected yet.
+ *  - ⚠️ Play Console REJECTS an upload built against Billing < 8.0.0 (hit on 2026-09-11
+ *    with 7.1.1). Keep this dependency current.
  */
 @CapacitorPlugin(name = "StoreKit")
 public class StoreKitPlugin extends Plugin implements PurchasesUpdatedListener {
@@ -58,6 +61,7 @@ public class StoreKitPlugin extends Plugin implements PurchasesUpdatedListener {
     public void load() {
         billingClient = BillingClient.newBuilder(getContext())
             .setListener(this)
+            .enableAutoServiceReconnection()
             .enablePendingPurchases(
                 com.android.billingclient.api.PendingPurchasesParams.newBuilder()
                     .enableOneTimeProducts()
@@ -107,12 +111,16 @@ public class StoreKitPlugin extends Plugin implements PurchasesUpdatedListener {
         QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
             .setProductList(products).build();
 
-        withConnection(call, () -> billingClient.queryProductDetailsAsync(params, (result, details) -> {
+        withConnection(call, () -> billingClient.queryProductDetailsAsync(params, (result, queryResult) -> {
             if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                 call.reject("Could not load products: " + result.getDebugMessage()); return;
             }
             JSArray out = new JSArray();
-            for (ProductDetails d : details) {
+            // Billing 8 wraps the list (it also reports ids it could not fetch, via
+            // getUnfetchedProductList()). An id missing here means the product does not
+            // exist or is not Active in Play Console — the empty list is what makes
+            // UpgradePage fall back to the web checkout.
+            for (ProductDetails d : queryResult.getProductDetailsList()) {
                 productCache.put(d.getProductId(), d);
                 JSObject p = new JSObject();
                 p.put("id", d.getProductId());

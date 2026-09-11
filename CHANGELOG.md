@@ -21,7 +21,7 @@ notes live in `store/release-notes.md`.
 
 | iOS | build | Android | vc | Status | Date |
 |---|---|---|---|---|---|
-| — | — | 1.0.18 | 22 | **AAB built 2026-09-11 — not uploaded** — Google Play 결제를 앱 안에 붙였다. 이 빌드가 Play Console 에서 구독 상품을 만들 수 있게 하는 첫 빌드다(BILLING 권한이 있는 빌드가 트랙에 올라가야 Create subscription 버튼이 열린다). 상품이 아직 없으면 기존 웹 결제 화면으로 조용히 내려간다 | 2026-09-11 |
+| — | — | 1.0.18 | 23 | **AAB built 2026-09-11** — Google Play 결제를 앱 안에 붙였다. (vc22 는 업로드에서 거부됨 — Billing 7.1.1 → 8.3.0 으로 올려 vc23 으로 재빌드) 이 빌드가 Play Console 에서 구독 상품을 만들 수 있게 하는 첫 빌드다(BILLING 권한이 있는 빌드가 트랙에 올라가야 Create subscription 버튼이 열린다). 상품이 아직 없으면 기존 웹 결제 화면으로 조용히 내려간다 | 2026-09-11 |
 | — | — | 1.0.17 | 21 | **Play 심사 제출됨 2026-09-11**(창업자 업로드) — 안드로이드에서 Pro 결제를 시작조차 못 하던 것 수정(`startCheckout` 상대경로 + create-checkout CORS). 1.0.16 의 내용을 전부 포함 | 2026-09-10 |
 | 1.0.11 | 23 | — | — | **iOS only — uploaded to App Store Connect 2026-09-10, NOT submitted for review** (founder submits). Same client code as Android 1.0.16 | 2026-09-10 |
 | — | — | 1.0.16 | 20 | **업로드 전에 1.0.17 로 대체됨** — the app can finally reach our own API (expiring-thumbnail copy, account delete, in-app admin), TikTok share links read as video instead of "Article" | 2026-09-10 |
@@ -78,7 +78,7 @@ checked by grep against the shipped bundle, not from the installed app.
 `app_config` untouched. **After 1.0.11 goes live:** bump
 `app_config.latest_version` (iOS `1.0.11`).
 
-## Android 1.0.18 (versionCode 22) — built 2026-09-11
+## Android 1.0.18 (versionCode 23) — built 2026-09-11
 
 **Google Play 결제를 앱 안에 붙였다.** 여태 안드로이드 앱에는 인앱 결제가 **설계상
 아예 없었다** — iOS 는 StoreKit 으로 앱 안에서 사고, 안드로이드는 "웹에서 결제하세요"
@@ -109,9 +109,26 @@ Subscriptions 가 "Create subscription" 대신 **"Upload a new APK"** 만 보여
 상품 생성을 연다. 순서: **1.0.18 을 Internal testing 에 업로드 → 상품 `pro_monthly` /
 `pro_yearly` 생성 + Activate → License testing 에 계정 추가 → 실제 구매 테스트.**
 
+**⚠️ vc22 는 업로드에서 거부됐다 — Play Billing 8.0.0 미만은 못 올린다.** Internal testing
+업로드 화면이 에러로 막았다: *"Your app currently uses Play Billing Library version 7.1.1
+and must update to at least version 8.0.0."* 이건 경고가 아니라 **업로드를 막는 에러**다.
+7.1.1 → **8.3.0** 으로 올리고 vc23 으로 다시 빌드했다. 업로드된 versionCode 는 재사용할 수
+없어서 번호도 같이 올라갔다(버전명은 1.0.18 그대로 — 아무에게도 나간 적이 없다).
+
+**Billing 8 에서 깨진 곳 (하나)**: `queryProductDetailsAsync` 의 콜백이 `List<ProductDetails>`
+대신 **`QueryProductDetailsResult`** 를 준다 → `getProductDetailsList()` 로 꺼낸다. 이 래퍼는
+못 찾은 상품 id 도 `getUnfetchedProductList()` 로 알려 주는데, **상품이 Play Console 에 없거나
+Active 가 아니면 여기로 빠진다** — 그때 빈 목록이 나오고, 그게 UpgradePage 가 웹 결제로
+내려가는 조건이다.
+
+**덤으로 붙인 것**: `enableAutoServiceReconnection()` (8.0.0 신규). 앱이 백그라운드로 갔다
+오거나 Play 서비스가 갱신되면 결제 연결이 끊기는데, 이제 라이브러리가 알아서 다시 붙는다.
+
 검증 (2026-09-11): `jarsigner -verify` → `jar verified.`, 번들 매니페스트 versionName
 `1.0.18` / versionCode `22`, `com.android.vending.BILLING` 있음, dex 에 `StoreKitPlugin`
 + Play Billing 클래스, 웹 번들에 `pro_monthly` / `pro_yearly` / `"google"` 있음.
+재검증 (vc23): `jar verified.`, versionName `1.0.18` / versionCode `23`, BILLING 있음,
+dex 에 Billing 8 의 `QueryProductDetailsResult`.
 
 ## Android 1.0.17 (versionCode 21) — built 2026-09-10
 

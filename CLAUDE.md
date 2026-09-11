@@ -35,7 +35,7 @@ Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn — a
 - **`store/release-notes.md` holds copy-paste-ready store notes (EN + KO).** Write them as part of preparing a release, not after. If a release has no user-facing change, say so plainly rather than inventing one.
 
 ## Android release
-- Version in `android/app/build.gradle`: `versionCode` (must increase) + `versionName`. **Current: versionCode 22 / 1.0.18.**
+- Version in `android/app/build.gradle`: `versionCode` (must increase) + `versionName`. **Current: versionCode 23 / 1.0.18.**
 - Signing: gitignored `android/keystore.properties`. Gradle needs:
   `JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`
 - Build AAB:
@@ -45,13 +45,16 @@ Part of the **Creators Loft** studio (also PeriodVol). Founder: Mihee Youn — a
   ```
   Output: `android/app/build/outputs/bundle/release/app-release.aab`
 - **인앱 결제(Play Billing)는 1.0.18/vc22 부터.** 안드로이드 구매는 `StoreKitPlugin.java`
-  (Play Billing 7.1.1) 가 처리하고, **iOS 플러그인과 같은 JS 이름 `StoreKit` + 같은 메서드 3개**를
+  (Play Billing **8.3.0**) 가 처리하고, **iOS 플러그인과 같은 JS 이름 `StoreKit` + 같은 메서드 3개**를
   노출한다 — `src/app/lib/storekit.ts` 는 어느 스토어인지 모른 채 그대로 쓴다. 상품 ID 만 갈린다:
   Apple `app.saveboard.pro.per.monthly`/`app.saveboard.pro.yearly`, Google `pro_monthly`/`pro_yearly`.
   ⚠️ **Play Console 은 BILLING 권한을 가진 빌드가 트랙에 올라가기 전까지 구독 상품 생성을 막는다**
   (Monetize → Subscriptions 가 "Create subscription" 대신 "Upload a new APK" 만 보여준다).
   그래서 순서가 빌드 업로드 → 상품 생성이지, 그 반대가 아니다. 상품이 없으면 `getProducts` 가
   빈 배열을 주고 앱은 기존 웹 결제 화면으로 조용히 내려간다.
+  ⚠️ **Billing 라이브러리가 8.0.0 미만이면 업로드 자체가 거부된다** (2026-09-11, 7.1.1 로 물림 —
+  경고가 아니라 에러다). 8.x 에서 `queryProductDetailsAsync` 콜백은 `List<ProductDetails>` 가
+  아니라 `QueryProductDetailsResult` 를 준다.
 - Upload: Play Console → Production → Create release → **Upload** the AAB (or Add from library if already uploaded) → release notes → Start rollout. (Managed publishing off = auto-publish after Google review.)
 - Builds are **cumulative** — a newer versionCode contains all prior changes; version codes need not be contiguous.
 - **Verifying an AAB — do not grep for a constant-folded URL.** `apiUrl()` builds
