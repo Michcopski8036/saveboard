@@ -436,6 +436,8 @@ function guideHtml(guide, otherLang) {
   // Same order as the app page: list, then the board link, then the FAQ.
   const faqSplit = content.match(/\n(?=##\s+(?:FAQ|Frequently Asked Questions|자주 묻는 질문))/i);
   const preFaq = faqSplit ? content.slice(0, faqSplit.index).trim() : content;
+  // 이 가이드를 렌더하는 동안 본문의 우리 제품 링크에 붙일 키.
+  CURRENT_SRC_KEY = `${guide.slug}-${guide.lang}`;
   // Own-app disclosure banner (promo_* frontmatter) goes right after the intro,
   // before the first H2 — same placement as GuidePostPage.tsx. Guides without
   // the frontmatter render exactly as before.
@@ -444,6 +446,7 @@ function guideHtml(guide, otherLang) {
     ? markdownToHtml(preFaq.slice(0, introSplit.index).trim()) + promoHtml(guide) + markdownToHtml(preFaq.slice(introSplit.index).trim())
     : markdownToHtml(preFaq);
   const faqArticle = faqSplit ? markdownToHtml(content.slice(faqSplit.index).trim()) : '';
+  CURRENT_SRC_KEY = '';  // 블로그 등 다른 렌더로 새지 않게 바로 비운다
   const faqs = extractFaq(content);
   const items = extractListItems(content);
   assertPlaceRatings(guide, items);
@@ -849,7 +852,10 @@ function inline(text) {
       `<img src="${escAttr(src)}" alt="${escAttr(alt)}" loading="lazy" />`)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label, href) => `<a href="${escAttr(href)}">${label}</a>`);
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label, href) => {
+      const to = CURRENT_SRC_KEY && isOwnProduct(href) ? withGuideSrc(href, CURRENT_SRC_KEY) : href;
+      return `<a href="${escAttr(to)}">${label}</a>`;
+    });
   return out.replace(/\u0000CODE(\d+)\u0000/g, (_m, i) => `<code>${codes[Number(i)]}</code>`);
 }
 
@@ -946,6 +952,22 @@ function esc(value) {
 // 떨어진다 — 어느 가이드가 사람을 데려왔는지 알 수 없었다(2026-09-12 확인, 가이드 유입 0건).
 // CourtClock이 ?utm_source=courtclock 으로 이미 잡히는 것과 같은 방식으로 태그를 붙인다.
 // 이미 utm_source/src가 있으면 손대지 않는다. src/app/utils/guideUtils.ts 와 같은 규칙.
+// 본문 링크 중 **우리 다른 제품**으로 가는 것만 태그한다. saveboard.app 자기 자신은
+// 제외 — 가이드끼리 잇는 내부 링크까지 태그하면 내부 이동이 유입으로 잡힌다.
+function isOwnProduct(href) {
+  // 목록을 함수 **안**에 둔다. 모듈 최상위에 두면 이 선언이 파일 뒤쪽이라
+  // 렌더 시점엔 아직 대입 전(undefined)이고, 아래 catch가 그 TypeError를 삼켜
+  // 조용히 false를 돌려준다 — 2026-09-12에 const·var 둘 다로 당했다.
+  const hosts = [/^courtclock-iota\.vercel\.app$/, /^periodvol\.app$/, /^studigo\.info$/];
+  try { return hosts.some((re) => re.test(new URL(href).hostname.replace(/^www\./, ''))); }
+  catch { return false; }
+}
+
+// 본문 링크 태깅 키. inline()은 표·리스트 등 여러 함수를 거쳐 불려서 인자로 넘기면
+// 중간 함수를 전부 고쳐야 한다(2026-09-12에 그렇게 하다 빌드를 세 번 깼다).
+// 빌드 스크립트는 단일 스레드이고 렌더가 동기로 끝나므로 모듈 변수 하나가 안전하다.
+var CURRENT_SRC_KEY = '';  // var: 이 선언은 파일 뒤쪽에 있고 렌더는 그 전에 돈다(호이스팅 필요)
+
 function withGuideSrc(url, key) {
   if (!url) return url;
   try {

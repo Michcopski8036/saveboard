@@ -3,7 +3,7 @@ import { Link, useParams, Navigate } from 'react-router';
 import { ArrowLeft, ArrowRight, Calendar, Languages } from 'lucide-react';
 import { getGuideByRouteSlug, withGuideSrc } from '../../utils/guideUtils';
 import { formatDate } from '../../utils/blogUtils';
-import { renderMarkdown } from '../../utils/markdownRenderer';
+import { renderMarkdown, setMarkdownSrcKey } from '../../utils/markdownRenderer';
 import { Nav, BlogFooter } from '../blog/BlogListPage';
 import { PromoCard, hasPromoCard, splitAtFirstSection } from '../PromoCard';
 import { track } from '../../lib/track';
@@ -47,6 +47,8 @@ export function GuidePostPage() {
   // before the first H2, so it's seen without scrolling. Guides without the
   // frontmatter take the single-article path exactly as before.
   const hasPromo = hasPromoCard(guide);
+  // 본문의 우리 제품 링크에 ?src=guide-<슬러그>-<언어>를 붙인다 — 프리렌더와 같은 규칙.
+  setMarkdownSrcKey(`${guide.slug}-${guide.lang}`);
   const [intro, afterIntro] = hasPromo ? splitAtFirstSection(beforeFaq) : [beforeFaq, ''];
   // Only offer the other language when that file actually exists — a
   // Korean-only guide has no English page, and a link to one would 404.

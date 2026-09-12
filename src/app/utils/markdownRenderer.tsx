@@ -1,5 +1,28 @@
 import React from 'react';
 
+import { withGuideSrc } from './guideUtils';
+
+/** 본문 링크 태깅 키. 가이드 렌더 동안만 세워진다 — `setMarkdownSrcKey`.
+ *  scripts/prerender-seo.mjs 의 CURRENT_SRC_KEY 와 짝이다. 한쪽만 고치지 말 것. */
+let SRC_KEY = '';
+export function setMarkdownSrcKey(key: string) {
+  SRC_KEY = key || '';
+}
+
+/** 우리 **다른 제품**으로 가는 링크만 태그한다. saveboard.app 자기 자신은 제외 —
+ *  가이드끼리 잇는 내부 링크까지 태그하면 내부 이동이 유입으로 잡힌다. */
+function ownProductSrc(href: string): string {
+  if (!SRC_KEY) return href;
+  const hosts = [/^courtclock-iota\.vercel\.app$/, /^periodvol\.app$/, /^studigo\.info$/];
+  try {
+    const host = new URL(href).hostname.replace(/^www\./, '');
+    return hosts.some((re) => re.test(host)) ? withGuideSrc(href, SRC_KEY) : href;
+  } catch {
+    return href;
+  }
+}
+
+
 // Recurses into bold/italic/link contents so nesting works — a linked name in
 // bold ("**[Venue](https://…)**") is a link, not literal brackets.
 function inlineFormat(text: string): React.ReactNode {
@@ -24,7 +47,7 @@ function inlineFormat(text: string): React.ReactNode {
       return <em key={i}>{inlineFormat(part.slice(1, -1))}</em>;
     const m = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
     if (m)
-      return <a key={i} href={m[2]} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">{inlineFormat(m[1])}</a>;
+      return <a key={i} href={ownProductSrc(m[2])} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">{inlineFormat(m[1])}</a>;
     return part;
   });
 }
