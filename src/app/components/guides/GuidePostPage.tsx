@@ -98,7 +98,7 @@ export function GuidePostPage() {
             {renderMarkdown(intro)}
           </article>
 
-          {hasPromo && <PromoCard promo={guide} ko={ko} src={guide.slug} />}
+          {hasPromo && <PromoCard promo={guide} ko={ko} src={`${guide.slug}-${guide.lang}`} />}
 
           {afterIntro && (
             <article className="prose-style">
@@ -140,7 +140,7 @@ export function GuidePostPage() {
                       reads the board fresh; a client-side Link is fine, but an <a>
                       also works when this page is opened from prerendered HTML. */}
                   <a
-                    href={withGuideSrc(guide.boardUrl, guide.slug)}
+                    href={withGuideSrc(guide.boardUrl, `${guide.slug}-${guide.lang}`)}
                     onClick={() => track('board_click', { slug: guide.slug, lang: guide.lang })}
                     className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#A259FF] to-[#FF7262] text-white rounded-2xl font-bold text-[15px] hover:opacity-90 active:scale-95 transition-all [text-shadow:0_1px_2px_rgba(0,0,0,.35)] shadow-lg shadow-purple-200"
                   >

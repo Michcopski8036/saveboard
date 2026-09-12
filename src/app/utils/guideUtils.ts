@@ -131,13 +131,17 @@ export function getGuideByRouteSlug(routeSlug: string): { guide: GuideMeta; pair
  * CourtClock이 `?utm_source=courtclock`으로 이미 잡히고 있는 것과 같은 방식이다.
  *
  * 이미 utm_source나 src가 붙어 있으면 건드리지 않는다 — 손으로 정한 값이 이긴다.
+ *
+ * `key`는 슬러그에 언어를 붙인 값이다(`flo-clue-alternatives-ko`). 영·한 가이드는
+ * 슬러그가 같아서 언어를 안 붙이면 한 칸으로 합쳐지고, **한국어 가이드가 사람을
+ * 데려오는지**를 따로 볼 수 없다(2026-09-12 누나 지시).
  */
-export function withGuideSrc(url: string, slug: string): string {
+export function withGuideSrc(url: string, key: string): string {
   if (!url) return url;
   try {
     const u = new URL(url, 'https://www.saveboard.app');
     if (u.searchParams.has('utm_source') || u.searchParams.has('src')) return url;
-    u.searchParams.set('src', `guide-${slug}`.slice(0, 60));
+    u.searchParams.set('src', `guide-${key}`.slice(0, 60));
     return u.toString();
   } catch {
     return url; // 파싱 안 되는 주소는 그대로 둔다
