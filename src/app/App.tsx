@@ -1039,7 +1039,9 @@ function AppContent() {
       // Record the most recent active transaction in Supabase
       const tx = transactions[0];
       const isYearly = tx.productId.includes('yearly');
-      await supabase.from('subscriptions').upsert({
+      // supabase-js 는 에러를 반환만 한다 — 확인하지 않으면 "복원했습니다"라고 해 놓고
+      // 아무것도 안 바뀐다. UpgradePage.handlePurchase 와 같은 이유로 확인한다.
+      const { error: upsertError } = await supabase.from('subscriptions').upsert({
         user_id: user.id,
         plan: 'pro',
         status: 'active',
@@ -1051,6 +1053,7 @@ function AppContent() {
         storage_limit: '2GB',
         source: STORE_SOURCE,
       }, { onConflict: 'user_id' });
+      if (upsertError) throw new Error(`Could not restore: ${upsertError.message}`);
       await refreshSubscription();
     } else {
       const active = await refreshSubscription();

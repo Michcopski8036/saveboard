@@ -117,7 +117,11 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
     try {
       const tx = await StoreKit.purchase({ productId });
       const billingCycle = productId === IAP_PRODUCTS.proYearly ? 'yearly' : 'monthly';
-      await supabase.from('subscriptions').upsert({
+      // ⚠️ supabase-js 는 에러를 throw 하지 않고 반환한다. 이 반환값을 확인하지 않아서
+      // 2026-05-27 부터 09-12 까지, 스토어 결제는 성사되는데 구독 행은 안 써지고 화면은
+      // 성공한 듯 닫히는 상태였다(subscriptions.source 컬럼이 없어 42703 으로 거부됨).
+      // 결제가 끝난 뒤라 여기서 실패하면 사용자는 이미 돈을 낸 상태다 — 반드시 말해 줘야 한다.
+      const { error: upsertError } = await supabase.from('subscriptions').upsert({
         user_id: userId,
         plan: 'pro',
         status: 'active',
@@ -129,6 +133,11 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
         storage_limit: '2GB',
         source: STORE_SOURCE,
       }, { onConflict: 'user_id' });
+      if (upsertError) {
+        throw new Error(ko
+          ? `결제는 끝났는데 계정에 반영하지 못했어요. 설정 → 구매 복원을 눌러 주세요. (${upsertError.message})`
+          : `Payment went through but we could not unlock your account. Try Settings → Restore purchases. (${upsertError.message})`);
+      }
       onPurchaseSuccess?.();
       onClose();
     } catch (err: any) {
