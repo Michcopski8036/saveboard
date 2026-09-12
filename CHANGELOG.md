@@ -78,6 +78,42 @@ checked by grep against the shipped bundle, not from the installed app.
 `app_config` untouched. **After 1.0.11 goes live:** bump
 `app_config.latest_version` (iOS `1.0.11`).
 
+## 2026-09-12 — 인앱 결제가 4개월 반 동안 조용히 실패하고 있었다 (DB 수정, 빌드 불필요)
+
+안드로이드 첫 실결제 테스트에서 드러났다. 구글 결제는 끝까지 성사되는데 Pro 가
+열리지 않고, 성공인지 실패인지도 화면에 안 나왔다.
+
+**근본 원인은 두 겹이다.**
+1. 클라이언트 upsert 가 `source` 를 쓰는데 **`subscriptions` 테이블에 그 컬럼이 없다.**
+   `GET /rest/v1/subscriptions?select=source` → `42703 column subscriptions.source
+   does not exist`. (클라이언트가 쓰는 나머지 9개 컬럼은 전부 존재한다.) PostgREST 는
+   없는 컬럼이 오면 요청 전체를 거부한다.
+2. **supabase-js 는 에러를 throw 하지 않고 반환하는데, 두 호출부 모두 그 반환값을
+   확인하지 않았다.** 거부가 통째로 삼켜지고 `onPurchaseSuccess()` → `onClose()` 가
+   그대로 실행됐다. `api/stripe-webhook.ts` 는 진작 `if (error) throw` 를 하고 있었고,
+   클라이언트만 구멍이었다.
+
+**언제부터:** `source: 'apple'` 은 2026-05-27 `9706de4c`(Apple IAP 도입)에 들어왔고
+그 뒤로 한 번도 바뀌지 않았다. 구매 호출부는 앱 전체에 하나뿐(`UpgradePage.tsx`)이라
+**iOS 인앱 결제도 같이 실패하고 있었다.**
+
+**피해 없음 — 확인됨.** App Store Connect → Trends/Sales 의 인앱 매출이 **0**이다
+(누나 확인, 2026-09-12). 앱 안에서 실제로 산 사람이 아무도 없어서 4개월 반 동안
+드러나지 않았다. 그 전에 "아이폰에서 Pro 가 잘 됐다"고 기억한 것은 웹(Stripe) 결제
+또는 어드민 화면의 수동 부여였다 — 둘 다 `source` 를 쓰지 않아 정상 동작한다.
+
+**고침**
+- `supabase/migrations/20260912_subscriptions_source.sql` — 컬럼 추가 + 백필
+  (`stripe_subscription_id` 유무로 `stripe`/`admin` 을 가른다 — 전부 stripe 로 칠하면
+  어드민 부여 행이 거짓이 된다) + 기본값 `stripe`.
+  ⭐ **이 SQL 만 적용하면 이미 스토어에 올라간 빌드가 새 빌드 없이 고쳐진다.**
+- `UpgradePage.handlePurchase` / `App.handleRestorePurchases` — upsert 에러를 확인하고
+  사용자에게 보여 준다. 결제 뒤에 실패하면 이미 돈을 낸 상태이므로 "설정 → 구매 복원"
+  으로 안내한다. **다음 빌드부터.**
+
+**교훈:** `supabase-js` 의 반환 에러를 안 보는 곳이 또 있는지는 별도로 훑어야 한다.
+서버(`api/`)는 확인하고 클라이언트는 안 하는 비대칭이 이 버그를 만들었다.
+
 ## Android 1.0.18 (versionCode 23) — built 2026-09-11
 
 **Google Play 결제를 앱 안에 붙였다.** 여태 안드로이드 앱에는 인앱 결제가 **설계상
