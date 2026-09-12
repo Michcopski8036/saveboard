@@ -13,12 +13,20 @@
 alter table public.subscriptions
   add column if not exists source text;
 
--- 지금까지 존재하는 행은 전부 Stripe 웹훅(api/stripe-webhook.ts)이 쓴 것이다.
--- 웹훅은 source 를 쓰지 않으므로 앞으로 들어오는 웹 결제도 기본값으로 채워진다.
-update public.subscriptions set source = 'stripe' where source is null;
+-- 지금 있는 행을 쓴 것은 둘 중 하나다: Stripe 웹훅(api/stripe-webhook.ts) 또는
+-- 어드민 화면(api/admin-update-plan.ts, 수동 부여). 인앱 결제는 위 이유로 한 번도
+-- 행을 쓰지 못했으므로 'apple'/'google' 인 행은 존재할 수 없다.
+-- stripe_subscription_id 유무로 둘을 가른다 — 전부 'stripe' 라고 칠하면 거짓이 된다.
+update public.subscriptions
+   set source = case when stripe_subscription_id is not null then 'stripe' else 'admin' end
+ where source is null;
 
 alter table public.subscriptions
   alter column source set default 'stripe';
 
 comment on column public.subscriptions.source is
   'stripe | apple | google — 결제가 성사된 스토어. 환불 응대와 스토어별 매출 대조에 쓴다.';
+
+-- 📌 남은 꼬리: api/admin-update-plan.ts 는 source 를 쓰지 않으므로 앞으로 어드민이
+-- 부여하는 행도 기본값 'stripe' 가 된다. 거기에 source:'admin' 을 넣는 건 이 SQL 이
+-- 적용된 뒤에 해야 한다(컬럼이 없는 상태에서 배포하면 어드민 화면이 깨진다).
