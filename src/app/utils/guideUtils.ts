@@ -121,3 +121,25 @@ export function getGuideByRouteSlug(routeSlug: string): { guide: GuideMeta; pair
   if (!guide) return undefined;
   return { guide, pair };
 }
+
+/**
+ * 가이드에서 나가는 링크에 `?src=guide-<슬러그>`를 붙인다.
+ *
+ * 가이드는 앱과 **같은 도메인**(saveboard.app)에 있다. 그래서 가이드에서 앱으로
+ * 넘어가는 클릭은 referrer가 같은 출처라 'direct'로 떨어지고, 어느 가이드가
+ * 사람을 데려왔는지 영영 알 수 없었다(2026-09-12 확인 — 가이드 유입 0건).
+ * CourtClock이 `?utm_source=courtclock`으로 이미 잡히고 있는 것과 같은 방식이다.
+ *
+ * 이미 utm_source나 src가 붙어 있으면 건드리지 않는다 — 손으로 정한 값이 이긴다.
+ */
+export function withGuideSrc(url: string, slug: string): string {
+  if (!url) return url;
+  try {
+    const u = new URL(url, 'https://www.saveboard.app');
+    if (u.searchParams.has('utm_source') || u.searchParams.has('src')) return url;
+    u.searchParams.set('src', `guide-${slug}`.slice(0, 60));
+    return u.toString();
+  } catch {
+    return url; // 파싱 안 되는 주소는 그대로 둔다
+  }
+}

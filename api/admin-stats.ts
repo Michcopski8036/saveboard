@@ -168,6 +168,48 @@ function computeTraffic(events: PageEvent[], now: Date, prevWeekViews: number) {
 }
 
 
+// ── 글 조회수 ───────────────────────────────────────────────────────────────
+// /guides/* 와 /blog/* 만, 기본 30일. 경로 접두사로 DB에서 먼저 걸러서 행 수를
+// 줄인다 — page_events 는 방문마다 커지므로 30일치를 통째로 끌어오면 안 된다.
+//
+// ⚠️ 같은 글이 경로 두 개로 들어온다: 프리렌더된 정적 HTML 은 `/guides/x/` 로,
+// 라우터가 그린 화면은 `/guides/x` 로 찍힌다. 끝 슬래시를 떼서 하나로 합친다.
+async function handleArticles(req: VercelRequest, res: VercelResponse) {
+  const days = Math.min(Math.max(parseInt(String(req.query.days ?? '30'), 10) || 30, 1), 90);
+  const since = new Date(Date.now() - days * 86400000).toISOString();
+
+  const { data, error } = await supabase
+    .from('page_events')
+    .select('path, created_at')
+    .eq('event', 'pageview')
+    .gte('created_at', since)
+    .or('path.like./guides%,path.like./blog%');
+
+  // 실패는 0이 아니라 "모름"이다 — 0으로 내려보내면 화면이 "아무도 안 봤다"고 거짓말한다.
+  if (error) return res.status(200).json({ days, articles: null, error: error.message });
+
+  const norm = (p: string) => (p.length > 1 ? p.replace(/\/+$/, '') : p);
+  const counts: Record<string, number> = {};
+  for (const row of data ?? []) {
+    const path = norm(row.path);
+    // 허브 페이지(/guides, /blog)는 글이 아니다 — 목록만 보고 지나간 것까지
+    // 글 조회수에 섞이면 어느 글이 읽혔는지가 흐려진다.
+    if (path === '/guides' || path === '/blog') continue;
+    counts[path] = (counts[path] ?? 0) + 1;
+  }
+
+  const articles = Object.entries(counts)
+    .map(([path, views]) => ({
+      path,
+      views,
+      kind: path.startsWith('/guides') ? 'guide' as const : 'blog' as const,
+    }))
+    .sort((a, b) => b.views - a.views);
+
+  return res.status(200).json({ days, articles });
+}
+
+
 // 개별 쿼리 시간을 재서 느린 놈을 이름으로 지목할 수 있게 한다. Promise.all 과
 // 동작이 같고(병렬·전부 대기), 마지막 배치의 소요시간만 모듈 변수에 남긴다.
 // 2026-09-04: 이 엔드포인트가 1.9~3.6초였는데 "무엇이 느린가"를 답할 수 없었다.
@@ -204,6 +246,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   if (req.query.resource === 'app-config') return handleAppConfig(req, res, actor);
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  // 글(가이드·블로그) 조회수만 따로. AI Office 의 글 조회수 패널이 이걸 읽는다.
+  // 메인 응답의 byPath 는 상위 12개·7일이라 글이 홈·랜딩에 밀려 안 보인다.
+  if (req.query.resource === 'articles') return handleArticles(req, res);
 
   const now      = new Date();
 

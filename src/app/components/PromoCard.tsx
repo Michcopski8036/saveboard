@@ -1,3 +1,4 @@
+import { withGuideSrc } from '../utils/guideUtils';
 import { ArrowRight } from 'lucide-react';
 
 /**
@@ -51,7 +52,7 @@ export function hasPromoCard(promo: Partial<PromoFields> | undefined): boolean {
   return Boolean(promo?.promoUrl && promo?.promoText);
 }
 
-export function PromoCard({ promo, ko }: { promo: PromoFields; ko: boolean }) {
+export function PromoCard({ promo, ko, src }: { promo: PromoFields; ko: boolean; src?: string }) {
   const theme = PROMO_THEMES[promo.promoTheme] ?? PROMO_THEMES.default;
 
   return (
@@ -63,7 +64,7 @@ export function PromoCard({ promo, ko }: { promo: PromoFields; ko: boolean }) {
           ⚠️ 이 마크업은 scripts/prerender-seo.mjs 의 프로모 카드와 짝이다. 한쪽만 고치면
           검색로봇이 보는 것과 사람이 보는 것이 갈린다(2026-09-05에 실제로 갈려 있었다). */}
       <a
-        href={promo.promoUrl}
+        href={src ? withGuideSrc(promo.promoUrl, src) : promo.promoUrl}
         aria-label={promo.promoCta}
         className={`block rounded-2xl overflow-hidden border-2 no-underline text-inherit ${theme.card}`}
       >

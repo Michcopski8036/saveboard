@@ -467,7 +467,7 @@ function guideHtml(guide, otherLang) {
         <p style="margin:0 0 16px">${boardKo
           ? '이 페이지의 모든 링크를 한번에 한곳에 모아 보세요. 전부 SaveBoard 보드 하나에 비주얼 카드로 정리돼 있어요 — 로그인 없이 열리고, 내 보드로 가져가면 다음에 다시 검색하지 않아도 돼요.'
           : 'See every link on this page in one go — they&#39;re all on a single SaveBoard board, laid out as visual cards. It opens without a login, and if you copy it to your own board you won&#39;t be searching for these again.'}</p>
-        <p style="margin:0"><a href="${escAttr(guide.boardUrl)}" style="display:inline-block;padding:12px 24px;background:linear-gradient(90deg,#A259FF,#FF7262);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35);border-radius:12px;font-weight:700;text-decoration:none">${boardKo ? '모든 링크 한곳에서 열기' : 'Open all the links in one place'} →</a></p>
+        <p style="margin:0"><a href="${escAttr(withGuideSrc(guide.boardUrl, guide.slug))}" style="display:inline-block;padding:12px 24px;background:linear-gradient(90deg,#A259FF,#FF7262);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35);border-radius:12px;font-weight:700;text-decoration:none">${boardKo ? '모든 링크 한곳에서 열기' : 'Open all the links in one place'} →</a></p>
       </aside>`
     : '';
 
@@ -639,7 +639,7 @@ function promoHtml(guide) {
   // 그래서 바깥을 <a>로 감싸고 버튼은 <span>으로 바꿨다. <a> 안에 <a>는 못 넣는다.
   // 스크린리더가 카드 전문을 링크 이름으로 읽지 않도록 aria-label 로 요약한다.
   return `${css}<aside aria-label="${guide.lang === 'ko' ? '광고' : 'Advertisement'}" style="margin:24px 0;max-width:680px">
-        <a class="pvp" href="${escAttr(guide.promoUrl)}" aria-label="${escAttr(guide.promoCta)}"
+        <a class="pvp" href="${escAttr(withGuideSrc(guide.promoUrl, guide.slug))}" aria-label="${escAttr(guide.promoCta)}"
            style="border:2px solid ${theme.border};background:${theme.bg}">
           <span class="pvp-in">
             ${img}
@@ -940,6 +940,20 @@ function esc(value) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+// 가이드는 앱과 **같은 도메인**에 있어서 내부 클릭은 referrer가 안 남고 'direct'로
+// 떨어진다 — 어느 가이드가 사람을 데려왔는지 알 수 없었다(2026-09-12 확인, 가이드 유입 0건).
+// CourtClock이 ?utm_source=courtclock 으로 이미 잡히는 것과 같은 방식으로 태그를 붙인다.
+// 이미 utm_source/src가 있으면 손대지 않는다. src/app/utils/guideUtils.ts 와 같은 규칙.
+function withGuideSrc(url, slug) {
+  if (!url) return url;
+  try {
+    const u = new URL(url, 'https://www.saveboard.app');
+    if (u.searchParams.has('utm_source') || u.searchParams.has('src')) return url;
+    u.searchParams.set('src', `guide-${slug}`.slice(0, 60));
+    return u.toString();
+  } catch { return url; }
 }
 
 function escAttr(value) {
