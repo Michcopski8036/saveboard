@@ -154,12 +154,16 @@ export function ProfileMenu({ onExport, onImport, onSignOut, onShowUpgrade, onSh
                 </button>
               ))}
               <div className="border-t border-gray-200 my-1" />
-              {isPro && (
-                <button onClick={() => { onShowBilling?.(); setShowMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
-                  <CreditCard className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm text-gray-700">{tr('billing')}</span>
-                </button>
-              )}
+              {/* ⚠️ 2026-09-13까지 이 항목이 `isPro &&` 로 가려져 있었다. 그래서 **결제는
+                  했는데 Pro 가 안 열린 사람이 "구매 복원" 버튼에 닿을 수가 없었다** —
+                  복원이 존재하는 이유가 정확히 그 상황인데 catch-22 였다. (안드로이드
+                  첫 실결제에서 실제로 막혔다.) BillingPage 자체는 무료 사용자도
+                  제대로 그린다("무료 플랜" 문구 + 사용량 + 요금제 보기). 가리던 건
+                  메뉴뿐이었다. */}
+              <button onClick={() => { onShowBilling?.(); setShowMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
+                <CreditCard className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-700">{tr('billing')}</span>
+              </button>
               <button onClick={handleExport} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-[10px] transition-colors">
                 <Download className="w-4 h-4 text-gray-500" />
                 <span className="text-sm text-gray-700">{tr('exportLinks')}</span>

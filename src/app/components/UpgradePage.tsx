@@ -135,8 +135,8 @@ function IAPUpgradeView({ userId, isPro, onClose, onPurchaseSuccess, onShowTerms
       }, { onConflict: 'user_id' });
       if (upsertError) {
         throw new Error(ko
-          ? `결제는 끝났는데 계정에 반영하지 못했어요. 설정 → 구매 복원을 눌러 주세요. (${upsertError.message})`
-          : `Payment went through but we could not unlock your account. Try Settings → Restore purchases. (${upsertError.message})`);
+          ? `결제는 끝났는데 계정에 반영하지 못했어요. 프로필 메뉴 → 결제 → 구매 복원을 눌러 주세요. (${upsertError.message})`
+          : `Payment went through but we could not unlock your account. Open the profile menu → Billing → Restore Purchases. (${upsertError.message})`);
       }
       onPurchaseSuccess?.();
       onClose();
