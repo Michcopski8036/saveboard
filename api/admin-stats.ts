@@ -107,7 +107,19 @@ async function handleAppConfig(req: VercelRequest, res: VercelResponse, actor: s
 // exactly this and nothing else — it's the only thing AI Office's
 // pullSaveBoard() (api/cron-analytics.ts) reads: traffic.{visits7d,
 // boardClicks7d, topSources, topReferrers}.
-type PageEvent = { event: string; path: string; referrer: string | null; source: string | null; created_at: string };
+type PageEvent = {
+  event: string; path: string; referrer: string | null; source: string | null; created_at: string;
+  // 2026-09-13부터 { bot: string | false }. **키가 없으면 그 전에 쌓인 행**이고,
+  // 그건 "사람"이 아니라 "모름"이다 — 셋을 따로 세는 이유다.
+  meta?: { bot?: string | false } | null;
+};
+
+/** 'human' | 'bot' | 'unknown'. 분류 전 행을 사람으로 치면 과거가 통째로 사람이 된다. */
+function visitorKind(e: PageEvent): 'human' | 'bot' | 'unknown' {
+  const bot = e.meta?.bot;
+  if (bot === undefined) return 'unknown';
+  return bot === false ? 'human' : 'bot';
+}
 
 // `prevWeekViews` 는 8~14일 구간의 pageview 수다. 그 구간에서 필요한 것은 이 숫자
 // 하나뿐이라 행을 가져오지 않고 DB에서 세어 넘긴다 — 예전에는 14일치 행을 전부
@@ -148,8 +160,22 @@ function computeTraffic(events: PageEvent[], now: Date, prevWeekViews: number) {
     } catch { /* unparseable referrer */ }
   }
 
+  // ⚠️ visits7d 의 뜻은 바꾸지 않는다(사람+봇+모름 전부). 이 값은 매일
+  // app_traffic_snapshots 에 적히는 시계열이라, 의미를 바꾸면 과거와 미래가
+  // 다른 것을 세는 한 줄이 되어 비교가 불가능해진다. 분해는 옆에 더한다.
+  const weekViews = views.filter(e => within(e, ago(7), trafficNow));
+  const botNames: Record<string, number> = {};
+  for (const e of weekViews) {
+    const bot = e.meta?.bot;
+    if (bot) botNames[bot] = (botNames[bot] ?? 0) + 1;
+  }
+
   return {
-    visits7d:      views.filter(e => within(e, ago(7), trafficNow)).length,
+    visits7d:      weekViews.length,
+    visits7dHuman:   weekViews.filter(e => visitorKind(e) === 'human').length,
+    visits7dBot:     weekViews.filter(e => visitorKind(e) === 'bot').length,
+    visits7dUnknown: weekViews.filter(e => visitorKind(e) === 'unknown').length,
+    topBots: Object.entries(botNames).map(([bot, n]) => ({ bot, n })).sort((a, b) => b.n - a.n).slice(0, 6),
     visits7dPrev:  prevWeekViews,
     boardClicks7d: clicks.filter(e => within(e, ago(7), trafficNow)).length,
     guideViews7d: views.filter(e => e.path.startsWith('/guides') && within(e, ago(7), trafficNow)).length,
@@ -180,7 +206,7 @@ async function handleArticles(req: VercelRequest, res: VercelResponse) {
 
   const { data, error } = await supabase
     .from('page_events')
-    .select('path, created_at')
+    .select('path, created_at, meta')
     .eq('event', 'pageview')
     .gte('created_at', since)
     .or('path.like./guides%,path.like./blog%');
@@ -189,19 +215,26 @@ async function handleArticles(req: VercelRequest, res: VercelResponse) {
   if (error) return res.status(200).json({ days, articles: null, error: error.message });
 
   const norm = (p: string) => (p.length > 1 ? p.replace(/\/+$/, '') : p);
-  const counts: Record<string, number> = {};
+  type Tally = { views: number; human: number; bot: number; unknown: number };
+  const counts: Record<string, Tally> = {};
   for (const row of data ?? []) {
     const path = norm(row.path);
     // 허브 페이지(/guides, /blog)는 글이 아니다 — 목록만 보고 지나간 것까지
     // 글 조회수에 섞이면 어느 글이 읽혔는지가 흐려진다.
     if (path === '/guides' || path === '/blog') continue;
-    counts[path] = (counts[path] ?? 0) + 1;
+    const t = counts[path] ?? { views: 0, human: 0, bot: 0, unknown: 0 };
+    t.views += 1;
+    t[visitorKind(row as PageEvent)] += 1;
+    counts[path] = t;
   }
 
   const articles = Object.entries(counts)
-    .map(([path, views]) => ({
+    .map(([path, t]) => ({
       path,
-      views,
+      views: t.views,
+      human: t.human,
+      bot: t.bot,
+      unknown: t.unknown,
       kind: path.startsWith('/guides') ? 'guide' as const : 'blog' as const,
     }))
     .sort((a, b) => b.views - a.views);
@@ -269,7 +302,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const [pageEventsRes, cronPrevWeekRes, cronUsersRes, cronLinksTotalRes, cronLinksWeekRes] = await Promise.all([
       // 행은 7일치만 — 경로·유입처별 묶기가 그 구간만 쓴다(메인 핸들러와 동일).
       supabase.from('page_events')
-        .select('event, path, referrer, source, created_at')
+        .select('event, path, referrer, source, created_at, meta')
         .gte('created_at', new Date(now.getTime() - 7 * 86400000).toISOString()),
       // 직전 주는 비교용 숫자 하나뿐이라 세기만 한다.
       supabase.from('page_events').select('id', { count: 'exact', head: true })
@@ -383,7 +416,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     supabase.from('boards').select('id, owner_id, name'),
 
     // 익명 트래픽 — 행은 최근 7일만. 그 구간만 경로·유입처별로 묶기 때문이다.
-    supabase.from('page_events').select('event, path, referrer, source, created_at')
+    supabase.from('page_events').select('event, path, referrer, source, created_at, meta')
       .gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString()),
 
     // 직전 주(8~14일)는 비교용 숫자 하나뿐이라 행을 받지 않고 센다.
