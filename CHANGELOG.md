@@ -21,6 +21,7 @@ notes live in `store/release-notes.md`.
 
 | iOS | build | Android | vc | Status | Date |
 |---|---|---|---|---|---|
+| — | — | 1.0.19 | 24 | **AAB built 2026-09-13** — 결제했는데 Pro 가 안 열린 사람이 "구매 복원"에 닿을 수 없던 catch-22 수정 + upsert 에러를 화면에 보여 준다 + 방문을 사람/크롤러로 가른다. **1.0.18 은 Internal testing 에만 올라갔고 이걸로 대체** | 2026-09-13 |
 | — | — | 1.0.18 | 23 | **AAB built 2026-09-11** — Google Play 결제를 앱 안에 붙였다. (vc22 는 업로드에서 거부됨 — Billing 7.1.1 → 8.3.0 으로 올려 vc23 으로 재빌드) 이 빌드가 Play Console 에서 구독 상품을 만들 수 있게 하는 첫 빌드다(BILLING 권한이 있는 빌드가 트랙에 올라가야 Create subscription 버튼이 열린다). 상품이 아직 없으면 기존 웹 결제 화면으로 조용히 내려간다 | 2026-09-11 |
 | — | — | 1.0.17 | 21 | **Play 심사 제출됨 2026-09-11**(창업자 업로드) — 안드로이드에서 Pro 결제를 시작조차 못 하던 것 수정(`startCheckout` 상대경로 + create-checkout CORS). 1.0.16 의 내용을 전부 포함 | 2026-09-10 |
 | 1.0.11 | 23 | — | — | **iOS only — uploaded to App Store Connect 2026-09-10, NOT submitted for review** (founder submits). Same client code as Android 1.0.16 | 2026-09-10 |
@@ -113,6 +114,35 @@ checked by grep against the shipped bundle, not from the installed app.
 
 **교훈:** `supabase-js` 의 반환 에러를 안 보는 곳이 또 있는지는 별도로 훑어야 한다.
 서버(`api/`)는 확인하고 클라이언트는 안 하는 비대칭이 이 버그를 만들었다.
+
+## Android 1.0.19 (versionCode 24) — built 2026-09-13
+
+**1.0.18 은 Internal testing 에만 올라갔고 이 빌드로 대체된다.** 그 빌드로 실결제를
+해 보다가 세 가지가 드러났다.
+
+**1. "구매 복원"에 닿을 수 없었다 (catch-22).** 프로필 메뉴의 "결제" 항목이
+`isPro &&` 로 가려져 있었고, 구매 복원 버튼이 그 안에 있다.
+
+    결제는 됐는데 구독 행이 안 써짐 → isPro=false → 결제 메뉴가 안 보임
+    → 구매 복원에 닿을 수 없음 → 고칠 방법이 없음
+
+복원이 존재하는 이유가 정확히 그 상황이다. BillingPage 자체는 무료 사용자도 제대로
+그리므로(무료 플랜 문구·사용량·요금제 보기) 메뉴 게이트만 없앴다.
+
+**2. upsert 실패가 조용했다.** 09-12에 고친 그 문제(→ 위 09-12 항목)의 클라이언트
+절반이 이 빌드에 실린다. 이제 실패하면 "결제는 끝났는데 계정에 반영하지 못했어요"가
+화면에 뜬다. ⚠️ 그 안내가 09-12에는 "설정 → 구매 복원"을 가리켰는데 **그런 경로가
+없었다.** 실제 이름(프로필 메뉴 → 결제 → 구매 복원)으로 고쳤다.
+
+**3. 구매 복원이 source 를 'apple' 로 하드코딩하고 있었다** (→ 위 09-11 항목).
+
+**같이 실리는 것**: 방문을 사람/크롤러로 가르는 판정(`src/app/lib/botCheck.ts`).
+`navigator.webdriver` 검사는 자동화 브라우저만 막고 크롤러는 통과시킨다 — 크롤러는
+WebDriver 로 몰지 않는다. UA 로 판정해 `page_events.meta.bot` 에 넣는다(meta 는 이미
+jsonb 라 스키마 변경 없음). **키가 없는 행은 "사람"이 아니라 "모름"이다.**
+
+검증 (2026-09-13): `jar verified.`, versionName `1.0.19` / versionCode `24`,
+`com.android.vending.BILLING` 있음, 웹 번들에 이번 커밋의 새 문구가 들어 있음.
 
 ## Android 1.0.18 (versionCode 23) — built 2026-09-11
 
