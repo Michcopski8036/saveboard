@@ -5,7 +5,36 @@ Console release notes. Play's limit is 500 characters per language.
 
 ---
 
-## Android 1.0.18 (Android only)
+## Android 1.0.19 (Android only)
+
+⚠️ **순서: Internal testing 먼저, Production 은 구매를 한 번 끝까지 해 본 뒤.**
+아래 노트는 **Production 승격 때** 쓴다. 내부 테스트 트랙에는 안 써도 된다.
+
+노트가 "결제가 고쳐졌다"가 아니라 "앱 안에서 살 수 있다"라고 말하는 이유: 안드로이드
+앱에는 인앱 결제가 **원래 없었다**. 고친 게 아니라 없던 길이 생긴 것이다.
+1.0.18 은 Internal testing 에만 올라갔고 이 빌드로 대체됐다 — 사용자 입장에서는
+1.0.17 다음이 1.0.19 다.
+
+### English
+
+You can now upgrade to Pro without leaving the app. Android purchases go through
+Google Play, the same way the iPhone app uses the App Store: pick monthly or
+yearly, pay with the card already on your Google account, and Pro unlocks right
+away. Already subscribed on the web? Nothing changes and you do not need to buy
+again. Restore Purchases has also moved somewhere you can always reach it —
+profile menu, then Billing.
+
+### 한국어
+
+이제 앱을 벗어나지 않고 Pro 로 업그레이드할 수 있어요. 안드로이드 결제는 구글
+플레이로 처리돼요. 아이폰 앱이 앱스토어를 쓰는 것과 같은 방식입니다. 월간이나 연간을
+고르고 구글 계정에 등록된 카드로 결제하면 바로 Pro 가 열려요. 웹에서 이미 구독
+중이라면 그대로 유지되고 다시 결제하지 않아도 됩니다. 구매 복원도 언제든 찾을 수 있는
+자리로 옮겼어요 — 프로필 메뉴 → 결제.
+
+---
+
+## Android 1.0.18 (Android only) — Internal testing 에만 올라갔고 1.0.19 로 대체됨
 
 ⚠️ **이 빌드는 먼저 Internal testing 으로 간다, Production 이 아니다.** Play Console 에서
 구독 상품(`pro_monthly` / `pro_yearly`)을 만들려면 BILLING 권한을 가진 빌드가 트랙에 먼저
