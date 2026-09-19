@@ -23,9 +23,9 @@ notes live in `store/release-notes.md`.
 |---|---|---|---|---|---|
 | — | — | 1.0.19 | 24 | **AAB built 2026-09-13** — 결제했는데 Pro 가 안 열린 사람이 "구매 복원"에 닿을 수 없던 catch-22 수정 + upsert 에러를 화면에 보여 준다 + 방문을 사람/크롤러로 가른다. **1.0.18 은 Internal testing 에만 올라갔고 이걸로 대체** | 2026-09-13 |
 | — | — | 1.0.18 | 23 | **AAB built 2026-09-11** — Google Play 결제를 앱 안에 붙였다. (vc22 는 업로드에서 거부됨 — Billing 7.1.1 → 8.3.0 으로 올려 vc23 으로 재빌드) 이 빌드가 Play Console 에서 구독 상품을 만들 수 있게 하는 첫 빌드다(BILLING 권한이 있는 빌드가 트랙에 올라가야 Create subscription 버튼이 열린다). 상품이 아직 없으면 기존 웹 결제 화면으로 조용히 내려간다 | 2026-09-11 |
-| — | — | 1.0.17 | 21 | **Play 심사 제출됨 2026-09-11**(창업자 업로드) — 안드로이드에서 Pro 결제를 시작조차 못 하던 것 수정(`startCheckout` 상대경로 + create-checkout CORS). 1.0.16 의 내용을 전부 포함 | 2026-09-10 |
+| — | — | 1.0.17 | 21 | **❌ 한 번도 업로드되지 않았다.** 09-10에 올린 것은 vc20(1.0.16)이었다 — 두 빌드가 같은 경로(`app-release.aab`)에 만들어져서, 1.0.17 빌드가 덮어쓰기 전의 파일이 올라갔다. 2026-09-19에 Play Console 로 확인. 내용은 1.0.19 에 전부 포함됨(빌드는 누적) — 안드로이드에서 Pro 결제를 시작조차 못 하던 것 수정(`startCheckout` 상대경로 + create-checkout CORS). 1.0.16 의 내용을 전부 포함 | 2026-09-10 |
 | 1.0.11 | 23 | — | — | **iOS only — uploaded to App Store Connect 2026-09-10, NOT submitted for review** (founder submits). Same client code as Android 1.0.16 | 2026-09-10 |
-| — | — | 1.0.16 | 20 | **업로드 전에 1.0.17 로 대체됨** — the app can finally reach our own API (expiring-thumbnail copy, account delete, in-app admin), TikTok share links read as video instead of "Article" | 2026-09-10 |
+| — | — | 1.0.16 | 20 | **LIVE on Play** — 2026-09-19 Play Console 확인(Production 트랙 `Latest release: 20 (1.0.16)`, 177개국, 스토어 페이지도 세 지역 모두 1.0.16 / Sep 10). ⚠️ 09-10에 1.0.17 을 올렸다고 적었던 것은 **틀렸다**(아래 참조) — the app can finally reach our own API (expiring-thumbnail copy, account delete, in-app admin), TikTok share links read as video instead of "Article" | 2026-09-10 |
 | 1.0.10 | 22 | 1.0.15 | 19 | **LIVE both stores** — iOS approved, released 2026-09-09 (App Store Connect + `itunes lookup` au/gb/kr all `1.0.10 2026-09-09`, re-checked 2026-09-10; the **us** storefront still answers `1.0.9` — stale CDN cache, not a second train). Play page store-verified 2026-09-10 | 2026-09-09 |
 | 1.0.9 | 21 | 1.0.14 | 18 | **LIVE both stores** (store-verified 2026-09-09: iOS released 2026-08-14, Play shows 1.0.14) — Android payment-screen fix (Apple IAP view shown since 05-27 → paying impossible) + all Aug feature work, cumulative | 2026-08-13 |
 | 1.0.8 | 20 | — | — | **iOS LIVE 2026-07-28** (store-verified 2026-08-13) — YouTube in-app playback fix (WKWebView UA + IFrame Player API), billing-failure recovery, iPhone layout (safe-area top, bottom-nav spacing). Android 1.0.13/vc17 was built 07-23 but **never uploaded** → superseded by 1.0.14/vc18 | 2026-07-27 |
@@ -114,6 +114,28 @@ checked by grep against the shipped bundle, not from the installed app.
 
 **교훈:** `supabase-js` 의 반환 에러를 안 보는 곳이 또 있는지는 별도로 훑어야 한다.
 서버(`api/`)는 확인하고 클라이언트는 안 하는 비대칭이 이 버그를 만들었다.
+
+## ⚠️ 2026-09-19 정정 — 1.0.17 은 한 번도 Play 에 올라가지 않았다
+
+**확인**: Play Console → Production → `Active · Latest release: 20 (1.0.16) · 177 countries`.
+스토어 페이지도 AU·US·KR 세 지역 모두 `1.0.16`, 업데이트 날짜 `Sep 10, 2026`.
+
+**무슨 일이 있었나**: 09-10에 1.0.16(vc20) AAB 를 만들고, 같은 날 안드로이드 결제 시작
+버그를 찾아 1.0.17(vc21)로 다시 빌드했다. 두 빌드는 **같은 경로**에 만들어진다 —
+`android/app/build/outputs/bundle/release/app-release.aab`. 올린 파일은 vc20 이었다.
+그런데 이 파일(과 할일 #92, app_config)에는 "1.0.17 롤아웃 완료"라고 적혔고, **9일 동안
+아무도 그걸 의심하지 않았다.**
+
+**교훈 — 업로드 뒤 versionCode 를 스토어에서 읽을 것.** "올렸다"는 기억이 아니라 Play
+Console 의 `Latest release: <vc>` 가 사실이다. 파일명이 버전을 안 담으므로, 빌드를 여러 번
+하면 어느 것을 올렸는지 파일만 봐서는 알 수 없다.
+
+**지금 조치할 것은 없다.** 빌드는 누적이라 1.0.19 가 1.0.17 의 내용(`startCheckout`
+절대주소 + create-checkout CORS)을 전부 담고 있다. 1.0.17 을 따로 살릴 이유가 없다.
+
+⚠️ **`app_config` 가 android `latest_version = 1.0.17` 로 되어 있다** — 존재하지 않는
+버전이다. 1.0.16 사용자에게 "업데이트 있음" 배너가 뜨는데 Play 에는 받을 것이 없다.
+막히지는 않는다(`min_version` 1.0.10). 1.0.19 가 프로덕션에 나가면 그 값으로 갱신할 것.
 
 ## Android 1.0.19 (versionCode 24) — built 2026-09-13
 
