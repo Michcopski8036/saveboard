@@ -377,6 +377,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     tagsRes,
     subscriptionsRes,
     sharedBoardsRes,
+    sharedBoardsCountRes,
     sharedViewsRes,
     boardsByUserRes,
     pageEventsRes,
@@ -406,8 +407,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // All subscriptions
     supabase.from('subscriptions').select('*'),
 
-    // Shared boards
+    // Shared boards — 화면 표는 조회수 상위 10개만 쓴다. **소유자로 거르지 않는다**:
+    // 어드민 화면이므로 모든 사용자의 공유 보드가 함께 보이는 것이 의도된 동작이다.
     supabase.from('shared_boards').select('token, category, owner_email, view_count, created_at').order('view_count', { ascending: false }).limit(10),
+
+    // 전체 개수는 따로 센다. 위 배열은 limit(10) 이 걸려 있어서 .length 로 세면
+    // 11개째부터 영원히 "10"으로 나온다 — 실제로 그 버그가 있었다(2026-09-19).
+    supabase.from('shared_boards').select('id', { count: 'exact', head: true }),
 
     // Total share views
     supabase.from('shared_board_views').select('id', { count: 'exact', head: true }),
@@ -636,7 +642,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }));
 
   // ── Shared boards ─────────────────────────────────────────────────────────
-  const totalSharedBoards = (sharedBoardsRes.data ?? []).length;
+  // ⚠️ sharedBoardsRes 는 limit(10) 이라 .length 로 세면 안 된다 — 11개째부터
+  // 영원히 10 으로 굳는다. 개수는 전용 count 쿼리에서 읽는다.
+  const totalSharedBoards = sharedBoardsCountRes.count ?? 0;
   const totalShareViews   = sharedViewsRes.count ?? 0;
 
   // ── Activation ────────────────────────────────────────────────────────────
